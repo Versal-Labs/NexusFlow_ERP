@@ -1,9 +1,16 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\NexusFlow.AppCore\NexusFlow.AppCore.csproj" />
+    <ProjectReference Include="..\NexusFlow.Infrastructure\NexusFlow.Infrastructure.csproj" />
+    <ProjectReference Include="..\NexusFlow.Notification\NexusFlow.Notification.csproj" />
+    <ProjectReference Include="..\NexusFlow.Shared\NexusFlow.Shared.csproj" />
+  </ItemGroup>
 
 </Project>
