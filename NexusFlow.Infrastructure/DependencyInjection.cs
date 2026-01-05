@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using NexusFlow.Infrastructure.Identity;
+using NexusFlow.Infrastructure.Persistence;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -23,8 +24,8 @@ namespace NexusFlow.Infrastructure
             .AddEntityFrameworkStores<ErpDbContext>()
             .AddDefaultTokenProviders();
 
-            // 2. Register Repositories (Example)
-            // services.AddScoped<IStockRepository, StockRepository>();
+
+            services.AddScoped<ApplicationDbContextInitialiser>();
 
             return services;
         }
