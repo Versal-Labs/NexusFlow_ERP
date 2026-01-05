@@ -1,6 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using NexusFlow.Infrastructure.Identity;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -16,6 +18,10 @@ namespace NexusFlow.Infrastructure
                 options.UseSqlServer(
                     configuration.GetConnectionString("DefaultConnection"),
                     b => b.MigrationsAssembly(typeof(ErpDbContext).Assembly.FullName)));
+
+            services.AddIdentity<ApplicationUser, IdentityRole>()
+            .AddEntityFrameworkStores<ErpDbContext>()
+            .AddDefaultTokenProviders();
 
             // 2. Register Repositories (Example)
             // services.AddScoped<IStockRepository, StockRepository>();
