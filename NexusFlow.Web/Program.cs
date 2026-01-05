@@ -1,11 +1,15 @@
 using NexusFlow.AppCore;
 using NexusFlow.Infrastructure;
 using NexusFlow.Notification;
+using Serilog;
 public partial class Program
 {
     private static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
+
+        builder.Host.UseSerilog((context, configuration) =>
+    configuration.ReadFrom.Configuration(context.Configuration));
 
         // Add services to the container.
         builder.Services.AddControllersWithViews();
@@ -25,6 +29,8 @@ public partial class Program
             // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
             app.UseHsts();
         }
+
+        app.UseSerilogRequestLogging();
 
         app.UseHttpsRedirection();
         app.UseRouting();
