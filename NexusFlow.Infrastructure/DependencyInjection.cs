@@ -21,6 +21,8 @@ namespace NexusFlow.Infrastructure
                     configuration.GetConnectionString("DefaultConnection"),
                     b => b.MigrationsAssembly(typeof(ErpDbContext).Assembly.FullName)));
 
+            services.AddScoped<IErpDbContext>(provider => provider.GetRequiredService<ErpDbContext>());
+
             services.AddIdentity<ApplicationUser, IdentityRole>()
             .AddEntityFrameworkStores<ErpDbContext>()
             .AddDefaultTokenProviders();

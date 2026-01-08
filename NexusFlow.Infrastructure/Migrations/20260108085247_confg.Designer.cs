@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NexusFlow.Infrastructure;
 
@@ -11,9 +12,11 @@ using NexusFlow.Infrastructure;
 namespace NexusFlow.Infrastructure.Migrations
 {
     [DbContext(typeof(ErpDbContext))]
-    partial class ErpDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260108085247_confg")]
+    partial class confg
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -201,7 +204,7 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.HasIndex("Module", "Prefix")
                         .IsUnique();
 
-                    b.ToTable("NumberSequences", "Config");
+                    b.ToTable("NumberSequences");
                 });
 
             modelBuilder.Entity("NexusFlow.Domain.Entities.Config.SystemConfig", b =>
@@ -247,59 +250,7 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.HasIndex("Key")
                         .IsUnique();
 
-                    b.ToTable("SystemConfigs", "Config");
-                });
-
-            modelBuilder.Entity("NexusFlow.Domain.Entities.Finance.Account", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<decimal>("Balance")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("Code")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsTransactionAccount")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime?>("LastModifiedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("LastModifiedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<int?>("ParentAccountId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Type")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Code")
-                        .IsUnique();
-
-                    b.HasIndex("ParentAccountId");
-
-                    b.ToTable("Accounts", "Finance");
+                    b.ToTable("SystemConfigs");
                 });
 
             modelBuilder.Entity("NexusFlow.Infrastructure.Identity.ApplicationUser", b =>
@@ -423,21 +374,6 @@ namespace NexusFlow.Infrastructure.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("NexusFlow.Domain.Entities.Finance.Account", b =>
-                {
-                    b.HasOne("NexusFlow.Domain.Entities.Finance.Account", "ParentAccount")
-                        .WithMany("ChildAccounts")
-                        .HasForeignKey("ParentAccountId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.Navigation("ParentAccount");
-                });
-
-            modelBuilder.Entity("NexusFlow.Domain.Entities.Finance.Account", b =>
-                {
-                    b.Navigation("ChildAccounts");
                 });
 #pragma warning restore 612, 618
         }

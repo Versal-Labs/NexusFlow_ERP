@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using NexusFlow.AppCore.Interfaces;
 using NexusFlow.Domain.Entities.Config;
+using NexusFlow.Domain.Entities.Finance;
 using NexusFlow.Infrastructure.Identity;
 using System;
 using System.Collections.Generic;
@@ -8,7 +10,7 @@ using System.Text;
 
 namespace NexusFlow.Infrastructure
 {
-    public class ErpDbContext : IdentityDbContext<ApplicationUser>
+    public class ErpDbContext : IdentityDbContext<ApplicationUser>, IErpDbContext
     {
         public ErpDbContext(DbContextOptions<ErpDbContext> options) : base(options)
         {
@@ -19,6 +21,7 @@ namespace NexusFlow.Infrastructure
 
         public DbSet<SystemConfig> SystemConfigs { get; set; }
         public DbSet<NumberSequence> NumberSequences { get; set; }
+        public DbSet<Account> Accounts { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

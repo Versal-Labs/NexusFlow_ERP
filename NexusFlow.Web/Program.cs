@@ -1,4 +1,5 @@
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi;
 using NexusFlow.AppCore;
 using NexusFlow.Infrastructure;
 using NexusFlow.Infrastructure.Persistence;
@@ -21,7 +22,48 @@ builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddNotifications();
 // -----------------------------------
 
-builder.Services.AddOpenApi();
+builder.Services.AddOpenApi(options =>
+{
+    options.AddDocumentTransformer((document, context, cancellationToken) =>
+    {
+        // 1. Define the Bearer JWT Scheme
+        var securityScheme = new OpenApiSecurityScheme
+        {
+            Name = "Authorization",
+            Type = SecuritySchemeType.Http,
+            Scheme = "bearer",
+            BearerFormat = "JWT",
+            In = ParameterLocation.Header,
+            Description = "Enter your JWT Token here."
+        };
+
+        // 2. Add to Components (Using the safe pattern from your snippet)
+        document.Components ??= new OpenApiComponents();
+        document.Components.SecuritySchemes ??= new Dictionary<string, IOpenApiSecurityScheme>();
+
+        if (!document.Components.SecuritySchemes.ContainsKey("Bearer"))
+        {
+            document.Components.SecuritySchemes.Add("Bearer", securityScheme);
+        }
+
+        // 3. Create the Security Requirement
+        // FIX 1: Use 'OpenApiSecuritySchemeReference' as the Key
+        var schemeReference = new OpenApiSecuritySchemeReference("Bearer", document);
+
+        // FIX: The dictionary expects a List<string>, not string[]
+        var requirement = new OpenApiSecurityRequirement
+        {
+            { schemeReference, new List<string>() }
+        };
+
+        document.Security = new List<OpenApiSecurityRequirement>
+        {
+            requirement
+        };
+
+        return Task.CompletedTask;
+    });
+});
 
 // 1. SETUP DUAL AUTHENTICATION (Cookie + JWT)
 builder.Services.AddAuthentication(options =>
@@ -54,7 +96,8 @@ if (app.Environment.IsDevelopment())
     app.MapScalarApiReference(options =>
     {
         options
-            .WithTitle("NexusFlow API");
+            .WithTitle("NexusFlow API")
+            .AddPreferredSecuritySchemes("Bearer");
     });
 }
 else

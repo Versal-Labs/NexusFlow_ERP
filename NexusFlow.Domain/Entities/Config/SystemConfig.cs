@@ -1,10 +1,12 @@
 ﻿using NexusFlow.Domain.Common;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
 
 namespace NexusFlow.Domain.Entities.Config
 {
+    [Table("SystemConfigs", Schema = "Config")]
     public class SystemConfig : AuditableEntity
     {
         // The "Key" will be the primary identifier for lookups (e.g., "Tax.VAT")
