@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using NexusFlow.Domain.Entities.Config;
 using NexusFlow.Infrastructure.Identity;
 using System;
 using System.Collections.Generic;
@@ -15,6 +16,9 @@ namespace NexusFlow.Infrastructure
 
         // Define your DbSets here later, e.g.:
         // public DbSet<StockLayer> StockLayers { get; set; }
+
+        public DbSet<SystemConfig> SystemConfigs { get; set; }
+        public DbSet<NumberSequence> NumberSequences { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

@@ -22,6 +22,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\NexusFlow.AppCore\NexusFlow.AppCore.csproj" />
+    <ProjectReference Include="..\NexusFlow.Domain\NexusFlow.Domain.csproj" />
   </ItemGroup>
 
 </Project>
