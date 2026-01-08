@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using NexusFlow.AppCore.Features.Finance.Commands;
 using NexusFlow.AppCore.Features.Finance.Queries;
 
 namespace NexusFlow.Web.Controllers.Api
@@ -28,6 +29,19 @@ namespace NexusFlow.Web.Controllers.Api
                 return Ok(result.Data);
 
             return BadRequest(result.Errors);
+        }
+
+        [HttpPost("account")]
+        public async Task<IActionResult> CreateAccount([FromBody] CreateAccountCommand command)
+        {
+            var result = await _mediator.Send(command);
+
+            if (result.Succeeded)
+            {
+                return Ok(result);
+            }
+
+            return BadRequest(result);
         }
     }
 }
