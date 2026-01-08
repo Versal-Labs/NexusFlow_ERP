@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using NexusFlow.AppCore.Interfaces;
 using NexusFlow.Infrastructure.Identity;
 using NexusFlow.Infrastructure.Persistence;
 using System;
@@ -26,6 +27,7 @@ namespace NexusFlow.Infrastructure
 
 
             services.AddScoped<ApplicationDbContextInitialiser>();
+            services.AddTransient<ITokenService, JwtTokenService>();
 
             return services;
         }

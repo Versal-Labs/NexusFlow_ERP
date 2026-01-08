@@ -20,4 +20,8 @@
     </PackageReference>
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\NexusFlow.AppCore\NexusFlow.AppCore.csproj" />
+  </ItemGroup>
+
 </Project>
