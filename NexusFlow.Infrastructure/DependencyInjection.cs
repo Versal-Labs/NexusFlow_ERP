@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using NexusFlow.AppCore.Interfaces;
 using NexusFlow.Infrastructure.Identity;
 using NexusFlow.Infrastructure.Persistence;
+using NexusFlow.Infrastructure.Services;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -30,6 +31,7 @@ namespace NexusFlow.Infrastructure
 
             services.AddScoped<ApplicationDbContextInitialiser>();
             services.AddTransient<ITokenService, JwtTokenService>();
+            services.AddScoped<ITaxService, TaxService>();
 
             return services;
         }

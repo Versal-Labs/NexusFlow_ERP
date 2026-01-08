@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using NexusFlow.AppCore.Interfaces;
 using NexusFlow.Domain.Entities.Config;
 using NexusFlow.Domain.Entities.Finance;
+using NexusFlow.Domain.Entities.Master;
 using NexusFlow.Infrastructure.Identity;
 using System;
 using System.Collections.Generic;
@@ -22,6 +23,16 @@ namespace NexusFlow.Infrastructure
         public DbSet<SystemConfig> SystemConfigs { get; set; }
         public DbSet<NumberSequence> NumberSequences { get; set; }
         public DbSet<Account> Accounts { get; set; }
+        public DbSet<TaxType> TaxTypes { get; set; }
+        public DbSet<TaxRate> TaxRates { get; set; }
+        public DbSet<Brand> Brands { get; set; }
+        public DbSet<Category> Categories { get; set; }
+        public DbSet<UnitOfMeasure> UnitOfMeasures { get; set; }
+        public DbSet<Product> Products { get; set; }
+        public DbSet<ProductVariant> ProductVariants { get; set; }
+        public DbSet<BillOfMaterial> BillOfMaterials { get; set; }
+        public DbSet<BomComponent> BomComponents { get; set; }
+        public DbSet<Warehouse> Warehouses { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

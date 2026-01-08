@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using NexusFlow.Domain.Entities.Config;
 using NexusFlow.Domain.Entities.Finance;
+using NexusFlow.Domain.Entities.Master;
 using NexusFlow.Domain.Enums;
 using NexusFlow.Infrastructure.Identity;
 using System;
@@ -160,6 +161,93 @@ namespace NexusFlow.Infrastructure.Persistence
                 };
 
                 _context.Accounts.AddRange(accounts);
+                await _context.SaveChangesAsync();
+            }
+
+            // ==========================================================
+            // 4. SEED TAX CONFIGURATION
+            // ==========================================================
+            if (!_context.TaxTypes.Any())
+            {
+                // First, find or create the Liability Accounts for Taxes
+                // Assuming "Liabilities" root is ID 2 (from previous seed)
+                // We ideally should look them up by Code, but for seeding simplicity:
+
+                // Let's ensure we have a "Duties & Taxes" parent folder
+                var liabilitiesId = _context.Accounts.FirstOrDefault(a => a.Code == "2000")?.Id;
+
+                if (liabilitiesId != null)
+                {
+                    var vatAccount = new Account { Code = "2050", Name = "VAT Payable", Type = AccountType.Liability, IsTransactionAccount = true, ParentAccountId = liabilitiesId };
+                    var ssclAccount = new Account { Code = "2060", Name = "SSCL Payable", Type = AccountType.Liability, IsTransactionAccount = true, ParentAccountId = liabilitiesId };
+
+                    _context.Accounts.AddRange(vatAccount, ssclAccount);
+                    await _context.SaveChangesAsync();
+
+                    // Now Create Tax Definitions
+                    var vat = new TaxType { Name = "VAT", Description = "Value Added Tax", AccountId = vatAccount.Id };
+                    var sscl = new TaxType { Name = "SSCL", Description = "Social Security Levy", AccountId = ssclAccount.Id };
+
+                    _context.TaxTypes.AddRange(vat, sscl);
+                    await _context.SaveChangesAsync();
+
+                    // Set Rates
+                    _context.TaxRates.AddRange(
+                        new TaxRate { TaxTypeId = vat.Id, Rate = 18.00m, EffectiveDate = DateTime.UtcNow.AddYears(-1) },
+                        new TaxRate { TaxTypeId = sscl.Id, Rate = 2.50m, EffectiveDate = DateTime.UtcNow.AddYears(-1) }
+                    );
+
+                    await _context.SaveChangesAsync();
+                }
+            }
+
+            // ==========================================================
+            // 5. SEED MASTER DATA (Product Attributes)
+            // ==========================================================
+            if (!_context.Brands.Any())
+            {
+                _context.Brands.AddRange(
+                    new Brand { Name = "Emerald", Description = "Premium Shirts" },
+                    new Brand { Name = "Signature", Description = "Formal Wear" }
+                );
+                await _context.SaveChangesAsync();
+            }
+
+            if (!_context.Categories.Any())
+            {
+                _context.Categories.AddRange(
+                    new Category { Name = "Men's Shirts", Code = "MSH" },
+                    new Category { Name = "Men's Trousers", Code = "MTR" }
+                );
+                await _context.SaveChangesAsync();
+            }
+
+            if (!_context.UnitOfMeasures.Any())
+            {
+                _context.UnitOfMeasures.AddRange(
+                    new UnitOfMeasure { Name = "Piece", Symbol = "pcs" },
+                    new UnitOfMeasure { Name = "Dozen", Symbol = "doz" }
+                );
+                await _context.SaveChangesAsync();
+            }
+
+            // 1. SEED WAREHOUSES
+            if (!_context.Warehouses.Any())
+            {
+                _context.Warehouses.AddRange(
+                    new Warehouse { Name = "Main Warehouse", IsSubcontractor = false },
+                    new Warehouse { Name = "Factory: ABC Garments", IsSubcontractor = true } // The Subcontractor
+                );
+                await _context.SaveChangesAsync();
+            }
+
+            // 2. SEED RAW MATERIAL CATEGORIES
+            // (Ensure you have a category for raw materials)
+            var fabricCat = await _context.Categories.FirstOrDefaultAsync(c => c.Code == "RM-FABRIC");
+            if (fabricCat == null)
+            {
+                fabricCat = new Category { Name = "Raw Materials - Fabric", Code = "RM-FABRIC" };
+                _context.Categories.Add(fabricCat);
                 await _context.SaveChangesAsync();
             }
         }
