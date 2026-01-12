@@ -35,6 +35,7 @@ namespace NexusFlow.Infrastructure
             services.AddScoped<ITaxService, TaxService>();
             services.AddScoped<IStockService, StockService>();
             services.AddScoped<IJournalService, JournalService>();
+            services.AddScoped<INotificationService, NotificationService>();
 
             return services;
         }

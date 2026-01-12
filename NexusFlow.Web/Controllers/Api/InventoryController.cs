@@ -10,7 +10,7 @@ namespace NexusFlow.Web.Controllers.Api
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(AuthenticationSchemes = $"{CookieAuthenticationDefaults.AuthenticationScheme},{JwtBearerDefaults.AuthenticationScheme}")]
+    [Authorize(AuthenticationSchemes = AuthConstants.HybridScheme)]
     public class InventoryController : ControllerBase
     {
         private readonly IMediator _mediator;

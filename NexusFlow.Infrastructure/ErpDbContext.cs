@@ -54,6 +54,7 @@ namespace NexusFlow.Infrastructure
         public DbSet<GRNItem> GRNItems { get; set; }
         public DbSet<AuditLog> AuditLogs { get; set; }
         public DbSet<PaymentTransaction> PaymentTransactions { get; set; }
+        public DbSet<NotificationItem> Notifications { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

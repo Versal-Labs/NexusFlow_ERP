@@ -37,6 +37,7 @@ namespace NexusFlow.AppCore.Interfaces
         DbSet<GRN> GRNs { get; set; }
         DbSet<AuditLog> AuditLogs { get; set; }
         DbSet<PaymentTransaction> PaymentTransactions { get; set; }
+        DbSet<NotificationItem> Notifications { get; set; }
 
         Task<int> SaveChangesAsync(CancellationToken cancellationToken);
     }

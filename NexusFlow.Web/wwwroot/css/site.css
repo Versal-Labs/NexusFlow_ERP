@@ -18,7 +18,10 @@ html {
 }
 
 body {
-  margin-bottom: 60px;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-size: 0.875rem; /* 14px Standard for ERPs */
+    background-color: #f8f9fa;
+    overflow: hidden; /* Important for the sticky layout */
 }
 
 .form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
@@ -29,3 +32,91 @@ body {
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
   text-align: start;
 }
+
+/* NAVBAR ALIGNMENT */
+.navbar {
+    height: 64px; /* Matches Sidebar Header Height */
+    background-color: white;
+}
+
+#wrapper {
+    overflow-x: hidden;
+}
+
+#sidebar-wrapper {
+    min-width: 260px;
+    max-width: 260px;
+    height: 100vh; /* Full Height */
+    display: flex;
+    flex-direction: column;
+    z-index: 1000;
+}
+
+    #sidebar-wrapper .list-group-item {
+        font-size: 0.9rem;
+        border-left: 4px solid transparent; /* Prepare for active state border */
+        border-radius: 0;
+        transition: all 0.2s;
+    }
+
+#sidebar-wrapper .list-group-item:hover {
+    background-color: #e9ecef;
+    color: #0d6efd;
+    transform: translateX(5px); /* Micro-interaction */
+}
+
+        #sidebar-wrapper .list-group-item.active {
+            background-color: #e7f1ff;
+            color: #0d6efd;
+            font-weight: 600;
+            border-right: none;
+            border-left: 4px solid #0d6efd; /* Highlight on Left is more modern */
+        }
+
+/* TOGGLED STATE */
+body.sb-sidenav-toggled #sidebar-wrapper {
+    margin-left: -260px;
+}
+
+/* CARD STYLING (ERP Standard) */
+.card {
+    border: none;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    margin-bottom: 1.5rem;
+}
+
+.card-header {
+    background-color: white;
+    border-bottom: 1px solid #edf2f9;
+    font-weight: 600;
+    padding: 1rem 1.25rem;
+}
+
+/* TABLE STYLING */
+table.dataTable {
+    border-collapse: collapse !important;
+}
+
+.table-hover tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+
+/* SCROLLBAR STYLING (Optional Polish) */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+}
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: #a8a8a8;
+    }

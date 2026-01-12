@@ -1,8 +1,11 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using NexusFlow.AppCore;
+using NexusFlow.Domain.Entities.System;
 using NexusFlow.Infrastructure;
+using NexusFlow.Infrastructure.Hubs;
 using NexusFlow.Infrastructure.Persistence;
 using NexusFlow.Notification;
 using Scalar.AspNetCore;
@@ -19,15 +22,54 @@ builder.Services.AddControllersWithViews();
 
 // --- CLEAN ARCHITECTURE DI SETUP ---
 builder.Services.AddAppCore();
+
+// IMPORTANT: This adds AddIdentity<ApplicationUser...>, which sets the Default Scheme to "Identity.Application"
 builder.Services.AddInfrastructure(builder.Configuration);
+
 builder.Services.AddNotifications();
+
+builder.Services.AddSignalR();
 // -----------------------------------
 
+// =================================================================
+// 1. CONFIGURE THE IDENTITY COOKIE (Fixes the Login Loop)
+// =================================================================
+// Since AddInfrastructure already added Identity, we just configure its cookie here.
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.LoginPath = "/Account/Login"; // Where to redirect if not logged in
+    options.ExpireTimeSpan = TimeSpan.FromHours(8);
+    options.SlidingExpiration = true;
+    options.Cookie.HttpOnly = true;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+});
+
+// =================================================================
+// 2. ADD JWT AUTHENTICATION (For Mobile/API)
+// =================================================================
+// We append JwtBearer to the existing AuthenticationBuilder
+builder.Services.AddAuthentication()
+    .AddJwtBearer(options =>
+    {
+        var jwtSettings = builder.Configuration.GetSection("JwtSettings");
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = jwtSettings["Issuer"],
+            ValidAudience = jwtSettings["Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(jwtSettings["Secret"]!))
+        };
+    });
+
+// OpenAPI / Swagger Configuration
 builder.Services.AddOpenApi(options =>
 {
     options.AddDocumentTransformer((document, context, cancellationToken) =>
     {
-        // 1. Define the Bearer JWT Scheme
         var securityScheme = new OpenApiSecurityScheme
         {
             Name = "Authorization",
@@ -38,7 +80,6 @@ builder.Services.AddOpenApi(options =>
             Description = "Enter your JWT Token here."
         };
 
-        // 2. Add to Components (Using the safe pattern from your snippet)
         document.Components ??= new OpenApiComponents();
         document.Components.SecuritySchemes ??= new Dictionary<string, IOpenApiSecurityScheme>();
 
@@ -47,60 +88,16 @@ builder.Services.AddOpenApi(options =>
             document.Components.SecuritySchemes.Add("Bearer", securityScheme);
         }
 
-        // 3. Create the Security Requirement
-        // FIX 1: Use 'OpenApiSecuritySchemeReference' as the Key
         var schemeReference = new OpenApiSecuritySchemeReference("Bearer", document);
-
-        // FIX: The dictionary expects a List<string>, not string[]
         var requirement = new OpenApiSecurityRequirement
         {
             { schemeReference, new List<string>() }
         };
 
-        document.Security = new List<OpenApiSecurityRequirement>
-        {
-            requirement
-        };
+        document.Security = new List<OpenApiSecurityRequirement> { requirement };
 
         return Task.CompletedTask;
     });
-});
-
-// =================================================================
-// DUAL AUTHENTICATION SETUP
-// =================================================================
-builder.Services.AddAuthentication(options =>
-{
-    // 1. Set the Default to check for Cookies first, then fall back logic
-    options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-})
-.AddCookie(options =>
-{
-    // Configuration for the MVC Cookie
-    options.LoginPath = "/Account/Login"; // Where to redirect if not logged in
-    options.ExpireTimeSpan = TimeSpan.FromHours(8);
-    options.SlidingExpiration = true;
-
-    // crucial for security
-    options.Cookie.HttpOnly = true;
-    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-})
-.AddJwtBearer(options =>
-{
-    // Configuration for Mobile App JWT (Keep your existing code here)
-    var jwtSettings = builder.Configuration.GetSection("JwtSettings");
-    options.TokenValidationParameters = new TokenValidationParameters
-    {
-        ValidateIssuer = true,
-        ValidateAudience = true,
-        ValidateLifetime = true,
-        ValidateIssuerSigningKey = true,
-        ValidIssuer = jwtSettings["Issuer"],
-        ValidAudience = jwtSettings["Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(jwtSettings["Secret"]!))
-    };
 });
 
 var app = builder.Build();
@@ -127,6 +124,7 @@ app.UseSerilogRequestLogging();
 app.UseHttpsRedirection();
 app.UseRouting();
 
+// 3. MIDDLEWARE ORDER IS CRITICAL
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -137,12 +135,14 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
 
-// In Top-Level statements, 'await' works automatically here
 using (var scope = app.Services.CreateScope())
 {
     var initialiser = scope.ServiceProvider.GetRequiredService<ApplicationDbContextInitialiser>();
-    await initialiser.InitialiseAsync(); // Runs Migrations
-    await initialiser.SeedAsync();       // Inserts Admin User
+    await initialiser.InitialiseAsync();
+    await initialiser.SeedAsync();
 }
+
+//Hubs
+app.MapHub<NotificationHub>("/hubs/notifications");
 
 app.Run();

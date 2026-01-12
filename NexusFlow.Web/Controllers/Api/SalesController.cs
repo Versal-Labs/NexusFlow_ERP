@@ -9,9 +9,9 @@ using NexusFlow.AppCore.Features.Sales.Commands;
 
 namespace NexusFlow.Web.Controllers.Api
 {
-    [Route("api/[controller]")]
+    [Route("api/[controller]")][Authorize(AuthenticationSchemes = AuthConstants.HybridScheme)]
     [ApiController]
-    [Authorize(AuthenticationSchemes = $"{CookieAuthenticationDefaults.AuthenticationScheme},{JwtBearerDefaults.AuthenticationScheme}")]
+    [Authorize(AuthenticationSchemes = AuthConstants.HybridScheme)]
     public class SalesController : ControllerBase
     {
         private readonly IMediator _mediator;

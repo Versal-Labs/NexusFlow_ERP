@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using NexusFlow.AppCore.Features.Finance.Commands;
 using NexusFlow.AppCore.Features.Finance.Queries;
@@ -11,7 +12,7 @@ namespace NexusFlow.Web.Controllers.Api
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(AuthenticationSchemes = $"{CookieAuthenticationDefaults.AuthenticationScheme},{JwtBearerDefaults.AuthenticationScheme}")]
+    [Authorize(AuthenticationSchemes = AuthConstants.HybridScheme)]
     public class FinanceController : ControllerBase
     {
         private readonly IMediator _mediator;
