@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -10,10 +11,11 @@ namespace NexusFlow.Web.Controllers.Api
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [Authorize(AuthenticationSchemes = $"{CookieAuthenticationDefaults.AuthenticationScheme},{JwtBearerDefaults.AuthenticationScheme}")]
     public class FinanceController : ControllerBase
     {
         private readonly IMediator _mediator;
+
 
         public FinanceController(IMediator mediator)
         {
@@ -42,6 +44,22 @@ namespace NexusFlow.Web.Controllers.Api
             }
 
             return BadRequest(result);
+        }
+
+        [HttpGet("trial-balance")]
+        public async Task<IActionResult> GetTrialBalance([FromQuery] DateTime? date)
+        {
+            var query = new GetTrialBalanceQuery { AsOfDate = date ?? DateTime.UtcNow };
+            var result = await _mediator.Send(query);
+            return Ok(result);
+        }
+
+        [HttpGet("balance-sheet")]
+        public async Task<IActionResult> GetBalanceSheet([FromQuery] DateTime? date)
+        {
+            var query = new GetBalanceSheetQuery { AsOfDate = date ?? DateTime.UtcNow };
+            var result = await _mediator.Send(query);
+            return Ok(result);
         }
     }
 }

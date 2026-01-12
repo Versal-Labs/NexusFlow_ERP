@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using NexusFlow.AppCore;
@@ -65,14 +66,29 @@ builder.Services.AddOpenApi(options =>
     });
 });
 
-// 1. SETUP DUAL AUTHENTICATION (Cookie + JWT)
+// =================================================================
+// DUAL AUTHENTICATION SETUP
+// =================================================================
 builder.Services.AddAuthentication(options =>
 {
-    // Default schemes can remain Cookies for MVC if you prefer
-    // But we configure JWT here so API Controllers can use [Authorize(AuthenticationSchemes = "Bearer")]
+    // 1. Set the Default to check for Cookies first, then fall back logic
+    options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+})
+.AddCookie(options =>
+{
+    // Configuration for the MVC Cookie
+    options.LoginPath = "/Account/Login"; // Where to redirect if not logged in
+    options.ExpireTimeSpan = TimeSpan.FromHours(8);
+    options.SlidingExpiration = true;
+
+    // crucial for security
+    options.Cookie.HttpOnly = true;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
 })
 .AddJwtBearer(options =>
 {
+    // Configuration for Mobile App JWT (Keep your existing code here)
     var jwtSettings = builder.Configuration.GetSection("JwtSettings");
     options.TokenValidationParameters = new TokenValidationParameters
     {

@@ -1,0 +1,20 @@
+﻿<nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom px-4">
+    <button class="btn btn-outline-secondary" id="menu-toggle"><i class="fas fa-bars"></i></button>
+
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav ms-auto mt-2 mt-lg-0">
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                    <i class="fas fa-user-circle"></i> Admin
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                    <li>
+                        <form action="/Account/Logout" method="post">
+                            <button class="dropdown-item" type="submit">Logout</button>
+                        </form>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+</nav>

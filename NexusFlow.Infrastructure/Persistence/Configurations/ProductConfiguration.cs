@@ -38,6 +38,8 @@ namespace NexusFlow.Infrastructure.Persistence.Configurations
                    .WithMany(x => x.Variants)
                    .HasForeignKey(x => x.ProductId)
                    .OnDelete(DeleteBehavior.Cascade); // Deleting Parent deletes variants (usually safe for setup, dangerous if history exists)
+
+            builder.Property(x => x.ReorderLevel).HasColumnType("decimal(18,4)");
         }
     }
 }

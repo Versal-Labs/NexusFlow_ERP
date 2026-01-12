@@ -4,10 +4,12 @@ using System.Text;
 
 namespace NexusFlow.AppCore.DTOs.Auth
 {
-    public class LoginResponse
+    public class LoginResponseDto
     {
         public string Token { get; set; } = string.Empty;
+        public string UserId { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
-        public IList<string> Roles { get; set; } = new List<string>();
+        public string FullName { get; set; } = string.Empty;
+        public string Role { get; set; } = string.Empty;
     }
 }

@@ -2,6 +2,7 @@
   <Project Path="NexusFlow.AppCore/NexusFlow.AppCore.csproj" Id="c134700b-b12a-4a40-9e32-3a4e618d60e4" />
   <Project Path="NexusFlow.Domain/NexusFlow.Domain.csproj" Id="74bc40b4-e881-43d2-910c-d970e9e1002d" />
   <Project Path="NexusFlow.Infrastructure/NexusFlow.Infrastructure.csproj" Id="5482ccef-fd24-4b45-b91a-2adc33a76d12" />
+  <Project Path="NexusFlow.IntegrationTests/NexusFlow.IntegrationTests.csproj" Id="5d2791d1-d7d9-4aa8-bf8b-0bfc554a178e" />
   <Project Path="NexusFlow.Notification/NexusFlow.Notification.csproj" Id="79fdd32a-707c-4d24-97e2-2c018a1f3827" />
   <Project Path="NexusFlow.Shared/NexusFlow.Shared.csproj" Id="c33dca42-9c4c-4d88-afa1-3b5561b19adf" />
   <Project Path="NexusFlow.Web/NexusFlow.Web.csproj" Id="7f357800-6057-446e-bc05-2e38768295c6" />

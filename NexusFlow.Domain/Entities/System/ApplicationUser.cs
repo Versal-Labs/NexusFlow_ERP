@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace NexusFlow.Infrastructure.Identity
+namespace NexusFlow.Domain.Entities.System
 {
     public class ApplicationUser : IdentityUser
     {

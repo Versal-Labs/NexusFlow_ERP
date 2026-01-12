@@ -3,48 +3,110 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - NexusFlow.Web</title>
-    <script type="importmap"></script>
+    <title>@ViewData["Title"] - NexusFlow ERP</title>
+
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/NexusFlow.Web.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* CORE LAYOUT STYLES */
+        body {
+            display: flex;
+            min-height: 100vh;
+            overflow-x: hidden;
+            background-color: #f4f6f9;
+        }
+
+        /* Sidebar */
+        #sidebar-wrapper {
+            min-width: 250px;
+            max-width: 250px;
+            background-color: #343a40;
+            color: white;
+            transition: margin 0.25s ease-out;
+        }
+
+            #sidebar-wrapper .sidebar-heading {
+                padding: 1.5rem;
+                font-size: 1.25rem;
+                font-weight: bold;
+                border-bottom: 1px solid #4b545c;
+            }
+
+        /* Sidebar Links */
+        .list-group-item {
+            background-color: transparent;
+            color: #c2c7d0;
+            border: none;
+            padding: 12px 20px;
+        }
+
+            .list-group-item:hover {
+                background-color: #494e53;
+                color: white;
+            }
+
+            .list-group-item.active {
+                background-color: #007bff;
+                color: white;
+            }
+
+        /* Main Content Area (Right Side) */
+        #page-content-wrapper {
+            flex: 1; /* Takes remaining width */
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            transition: margin 0.25s ease-out;
+        }
+
+        .navbar {
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        /* Sidebar Toggled State (Hidden) */
+        body.sb-sidenav-toggled #sidebar-wrapper {
+            margin-left: -250px;
+        }
+    </style>
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">NexusFlow.Web</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
-                    </ul>
-                </div>
+
+    <partial name="_Sidebar" />
+
+    <div id="page-content-wrapper">
+
+        <partial name="_Header" />
+
+        <div class="container-fluid px-4 py-4">
+            <main role="main">
+                @RenderBody()
+            </main>
+        </div>
+
+        <footer class="border-top footer text-muted mt-auto py-3 bg-white text-center">
+            <div class="container">
+                &copy; 2026 - NexusFlow ERP
             </div>
-        </nav>
-    </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
+        </footer>
     </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - NexusFlow.Web - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-        </div>
-    </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+
+    <script src="~/js/api.js" asp-append-version="true"></script>
+
+    <script>
+        $(document).ready(function () {
+            $("#menu-toggle").click(function (e) {
+                e.preventDefault();
+                $("body").toggleClass("sb-sidenav-toggled");
+            });
+        });
+    </script>
+
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

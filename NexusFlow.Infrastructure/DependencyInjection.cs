@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using NexusFlow.AppCore.Interfaces;
+using NexusFlow.Domain.Entities.System;
 using NexusFlow.Infrastructure.Identity;
 using NexusFlow.Infrastructure.Persistence;
 using NexusFlow.Infrastructure.Services;
@@ -32,6 +33,8 @@ namespace NexusFlow.Infrastructure
             services.AddScoped<ApplicationDbContextInitialiser>();
             services.AddTransient<ITokenService, JwtTokenService>();
             services.AddScoped<ITaxService, TaxService>();
+            services.AddScoped<IStockService, StockService>();
+            services.AddScoped<IJournalService, JournalService>();
 
             return services;
         }
