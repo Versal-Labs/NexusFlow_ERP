@@ -1,11 +1,12 @@
-﻿<nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm">
+﻿<nav class="navbar navbar-expand-lg navbar-dark-erp border-bottom shadow-sm">
     <div class="container-fluid">
-        <button class="btn btn-primary btn-sm" id="sidebarToggle">
+
+        <button class="btn btn-ghost-light btn-sm" id="sidebarToggle">
             <i class="fas fa-bars"></i>
         </button>
 
         <form class="d-none d-md-flex ms-3">
-            <input class="form-control form-control-sm border-0 bg-light" type="search" placeholder="Search (Ctrl + /)" aria-label="Search">
+            <input class="form-control form-control-sm form-control-dark" type="search" placeholder="Search (Ctrl + /)" aria-label="Search">
         </form>
 
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent">
@@ -16,46 +17,45 @@
             <ul class="navbar-nav ms-auto mt-2 mt-lg-0 align-items-center">
 
                 <li class="nav-item dropdown me-3">
-                    <a class="nav-link position-relative" href="#" id="notificationDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="fas fa-bell text-secondary fa-lg"></i>
-                        <span id="notificationBadge" class="position-absolute top-10 start-90 translate-middle badge rounded-pill bg-danger border border-light" style="display: none; font-size: 0.6rem;">
+                    <a class="nav-link position-relative text-light-muted" href="#" id="notificationDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-bell fa-lg"></i>
+                        <span id="notificationBadge" class="position-absolute top-10 start-90 translate-middle badge rounded-pill bg-danger border border-dark" style="display: none; font-size: 0.6rem;">
                             0
                         </span>
                     </a>
 
-                    <ul class="dropdown-menu dropdown-menu-end shadow border-0" aria-labelledby="notificationDropdown" style="width: 320px; max-height: 400px; overflow-y: auto;">
-                        <li class="dropdown-header d-flex justify-content-between align-items-center bg-light py-2">
+                    <div class="dropdown-menu dropdown-menu-end shadow border-0" aria-labelledby="notificationDropdown" style="width: 320px; max-height: 400px; overflow-y: auto;">
+                        <div class="dropdown-header d-flex justify-content-between align-items-center bg-light py-2">
                             <span class="fw-bold small text-uppercase">Notifications</span>
                             <a href="#" class="small text-decoration-none" onclick="markAllRead()">Mark all read</a>
-                        </li>
-
+                        </div>
                         <div id="notificationList">
-                        <li class="text-center py-4 text-muted small">No new notifications</li>
-        </div>
+                            <div class="text-center py-4 text-muted small">No new notifications</div>
+                        </div>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item text-center small fw-bold text-primary" href="/Notifications">View All History</a>
+                    </div>
+                </li>
 
-        <li><hr class="dropdown-divider"></li>
-        <li><a class="dropdown-item text-center small fw-bold text-primary" href="/Notifications">View All History</a></li>
-        </ul>
-        </li>
-
-                <div class="vr h-50 mx-2 d-none d-lg-block"></div>
+                <li class="nav-item d-none d-lg-block">
+                    <div class="vr h-100 mx-2 bg-secondary opacity-25"></div>
+                </li>
 
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
-                        <img src="https://ui-avatars.com/api/?name=Admin+User&background=0D8ABC&color=fff" class="rounded-circle me-2" width="32" height="32">
-                        <span class="d-none d-lg-block small fw-bold text-dark">System Admin</span>
+                        <img src="https://ui-avatars.com/api/?name=Admin+User&background=3b82f6&color=fff" class="rounded-circle me-2 border border-2 border-secondary" width="32" height="32">
+                        <span class="d-none d-lg-block small fw-bold text-white">System Admin</span>
                     </a>
-                    <ul class="dropdown-menu dropdown-menu-end shadow border-0" aria-labelledby="navbarDropdown">
-                        <li><a class="dropdown-item small" href="#"><i class="fas fa-user me-2 text-muted"></i> Profile</a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li>
-                            <form action="/Account/Logout" method="post" class="d-inline">
-                                <button class="dropdown-item small text-danger" type="submit">
-                                    <i class="fas fa-sign-out-alt me-2"></i> Logout
-                                </button>
-                            </form>
-                        </li>
-                    </ul>
+
+                    <div class="dropdown-menu dropdown-menu-end shadow border-0" aria-labelledby="navbarDropdown">
+                        <a class="dropdown-item small" href="#"><i class="fas fa-user me-2 text-muted"></i> Profile</a>
+                        <div class="dropdown-divider"></div>
+                        <form action="/Account/Logout" method="post" class="d-inline">
+                            <button class="dropdown-item small text-danger" type="submit">
+                                <i class="fas fa-sign-out-alt me-2"></i> Logout
+                            </button>
+                        </form>
+                    </div>
                 </li>
             </ul>
         </div>

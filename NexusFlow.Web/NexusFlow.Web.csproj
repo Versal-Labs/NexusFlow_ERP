@@ -26,4 +26,8 @@
     <ProjectReference Include="..\NexusFlow.Shared\NexusFlow.Shared.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\Assets\" />
+  </ItemGroup>
+
 </Project>
