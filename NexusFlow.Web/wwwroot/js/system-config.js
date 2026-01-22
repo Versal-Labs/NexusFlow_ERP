@@ -13,6 +13,61 @@ var configApp = (function () {
     const URL_SETTINGS = "/api/config/settings";
     const URL_SEQUENCES = "/api/config/sequences";
 
+    function openCreateModal() {
+        // Reset Form
+        document.getElementById('settingForm').reset();
+        $('#IsEditMode').val("false");
+        $('#modalTitle').text("Add New Setting");
+
+        // Unlock Key & Type fields
+        $('#ConfigKey').prop('readonly', false).removeClass('form-control-plaintext').addClass('form-control');
+        $('#ConfigDataType').prop('disabled', false);
+
+        // Render default input
+        renderInput();
+
+        _settingModal.show();
+    }
+
+    function renderInput(value = "") {
+        var type = $('#ConfigDataType').val();
+        var container = $('#dynamicInputContainer');
+        container.empty();
+
+        if (type === 'Boolean') {
+            var isChecked = (value.toString().toLowerCase() === 'true') ? 'checked' : '';
+            container.html(`
+                <div class="form-check form-switch p-2 border rounded bg-light">
+                    <input class="form-check-input" type="checkbox" id="ConfigValueInput" ${isChecked}>
+                    <label class="form-check-label ms-2">Enable this setting</label>
+                </div>
+            `);
+        } else if (type === 'Decimal' || type === 'Integer') {
+            container.html(`<input type="number" class="form-control" id="ConfigValueInput" value="${value}" step="${type === 'Decimal' ? '0.01' : '1'}">`);
+        } else {
+            container.html(`<input type="text" class="form-control" id="ConfigValueInput" value="${value}">`);
+        }
+    }
+
+    function editSetting(row) {
+        $('#IsEditMode').val("true");
+        $('#modalTitle').text("Edit Setting");
+
+        // Populate Data
+        $('#ConfigKey').val(row.key);
+        $('#ConfigDataType').val(row.dataType);
+        $('#ConfigDescription').val(row.description);
+
+        // Lock Key & Type (Cannot change Type of existing config to prevent crashes)
+        $('#ConfigKey').prop('readonly', true).removeClass('form-control').addClass('form-control-plaintext');
+        $('#ConfigDataType').prop('disabled', true);
+
+        // Render Input with Value
+        renderInput(row.value);
+
+        _settingModal.show();
+    }
+
     function init() {
         // Init Modals
         _settingModal = new bootstrap.Modal(document.getElementById('settingModal'));
@@ -90,29 +145,93 @@ var configApp = (function () {
     }
 
     function saveSetting() {
+        var isEdit = $('#IsEditMode').val() === "true";
         var key = $('#ConfigKey').val();
         var dataType = $('#ConfigDataType').val();
-        var valInput = $('#ConfigValueInput');
 
-        var newValue;
-        if (dataType === 'Boolean') {
-            newValue = valInput.is(':checked').toString().toLowerCase(); // "true" or "false"
-        } else {
-            newValue = valInput.val();
-        }
+        // Get Value
+        var valInput = $('#ConfigValueInput');
+        var finalValue = (dataType === 'Boolean') ? valInput.is(':checked').toString().toLowerCase() : valInput.val();
+
+        if (!key) { Swal.fire('Error', 'Key is required', 'warning'); return; }
+
+        var payload = {
+            Key: key,
+            Value: finalValue,
+            DataType: dataType,
+            Description: $('#ConfigDescription').val()
+        };
+
+        // Determine Method and URL
+        var method = isEdit ? "PUT" : "POST";
 
         $.ajax({
-            url: URL_SETTINGS,
-            type: "PUT",
+            url: "/api/config/settings",
+            type: method,
             contentType: "application/json",
-            data: JSON.stringify({ key: key, value: newValue }),
+            data: JSON.stringify(payload),
             success: function () {
                 _settingModal.hide();
                 _settingsTable.ajax.reload();
-                _showToast("Setting updated successfully");
+                Swal.fire({ icon: 'success', title: isEdit ? 'Updated!' : 'Created!', toast: true, position: 'top-end', timer: 2000, showConfirmButton: false });
             },
-            error: function () {
-                _showToast("Failed to update setting", "error");
+            error: function (xhr) {
+                Swal.fire('Error', xhr.responseText || 'Operation failed', 'error');
+            }
+        });
+    }
+
+    function openCreateSequenceModal() {
+        // Reset Form
+        document.getElementById('sequenceForm').reset();
+        $('#SeqId').val(0); // 0 indicates Create Mode
+
+        // Enable Module Field (It is read-only in Edit mode)
+        $('#SeqModule').prop('readonly', false).removeClass('form-control-plaintext').addClass('form-control');
+
+        // Set Defaults
+        $('#SeqNext').val(1);
+        $('#SeqDelimiter').val('-');
+
+        // Update Title
+        $('#sequenceModal .modal-title').text("Create New Sequence");
+
+        _seqModal.show();
+    }
+
+    // Update the saveSequence function to handle Create (POST)
+    function saveSequence() {
+        var id = parseInt($('#SeqId').val()) || 0;
+
+        var payload = {
+            Id: id,
+            Module: $('#SeqModule').val(),
+            Prefix: $('#SeqPrefix').val(),
+            Delimiter: $('#SeqDelimiter').val(),
+            NextNumber: parseInt($('#SeqNext').val())
+        };
+
+        // Validation
+        if (!payload.Module || !payload.Prefix) {
+            Swal.fire('Error', 'Module and Prefix are required', 'warning');
+            return;
+        }
+
+        // Determine Logic
+        var method = (id === 0) ? "POST" : "PUT";
+
+        $.ajax({
+            url: URL_SEQUENCES,
+            type: method,
+            contentType: "application/json",
+            data: JSON.stringify(payload),
+            success: function () {
+                _seqModal.hide();
+                _seqTable.ajax.reload();
+                Swal.fire({ icon: 'success', title: 'Saved!', toast: true, position: 'top-end', showConfirmButton: false, timer: 1500 });
+            },
+            error: function (xhr) {
+                Swal.fire('Error', xhr.responseText || 'Failed to save', 'error');
             }
         });
     }
@@ -204,7 +323,12 @@ var configApp = (function () {
         saveSetting: saveSetting,
         editSequence: editSequence,
         updatePreview: updatePreview,
-        saveSequence: saveSequence
+        saveSequence: saveSequence,
+        openCreateModal: openCreateModal,
+        renderInput: renderInput,
+        openCreateSequenceModal: openCreateSequenceModal,
+		editSequence: editSequence
+
     };
 })();
 

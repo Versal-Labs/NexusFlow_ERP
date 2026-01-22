@@ -20,6 +20,21 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         #region System Configs (Key-Value)
+
+        [HttpPost("settings")]
+        public async Task<IActionResult> CreateSetting([FromBody] CreateSystemConfigCommand command)
+        {
+            var result = await _mediator.Send(command);
+            return result.Succeeded ? Ok(result) : BadRequest(result);
+        }
+
+        [HttpPost("sequences")]
+        public async Task<IActionResult> CreateSequence([FromBody] CreateNumberSequenceCommand command)
+        {
+            var result = await _mediator.Send(command);
+            return result.Succeeded ? Ok(result) : BadRequest(result);
+        }
+
         [HttpGet("settings")]
         public async Task<IActionResult> GetSettings()
         {
