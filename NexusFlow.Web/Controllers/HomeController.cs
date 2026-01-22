@@ -47,7 +47,17 @@ namespace NexusFlow.Web.Controllers
 
         public IActionResult Privacy()
         {
-            return View();
+            var vm = new UserName
+            {
+                Name = "Sakeel",
+                Age = new UserAge 
+                { 
+                    Age = 30,
+                    Gender = "Male"
+                },
+                Address = "Adresss"
+            };
+            return View(vm);
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

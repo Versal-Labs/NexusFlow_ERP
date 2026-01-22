@@ -1,0 +1,113 @@
+﻿@{
+    ViewData["Title"] = "Product Master";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold text-dark mb-1">Product Catalog</h2>
+        <p class="text-muted mb-0 small">Manage products, variants, and pricing strategies.</p>
+    </div>
+    <div class="d-flex gap-2">
+        <button class="btn btn-primary shadow-sm" onclick="productApp.openEditor()">
+            <i class="bi bi-box-seam me-2"></i>New Product
+        </button>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+        <table id="productsGrid" class="table table-hover align-middle w-100 mb-0">
+            <thead class="bg-light text-uppercase small text-muted">
+                <tr>
+                    <th class="ps-4">SKU / Barcode</th>
+                    <th>Product Name</th>
+                    <th>Variant Info</th>
+                    <th class="text-end">Cost</th>
+                    <th class="text-end">Selling Price</th>
+                    <th class="text-end pe-4">Actions</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>
+
+<div class="offcanvas offcanvas-end shadow" tabindex="-1" id="productDrawer" style="width: 900px;">
+    <div class="offcanvas-header border-bottom bg-light">
+        <h5 class="offcanvas-title fw-bold" id="drawerTitle">Create Product</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+    </div>
+
+    <div class="offcanvas-body p-0">
+        <form id="productForm" class="needs-validation" novalidate>
+
+            <div class="p-4 border-bottom">
+                <h6 class="text-uppercase small text-muted fw-bold mb-3">1. Product Definition</h6>
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label class="form-label small fw-bold">Product Name <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="Name" required placeholder="e.g. Slim Fit Oxford Shirt">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label small fw-bold">Description</label>
+                        <textarea class="form-control" id="Description" rows="2"></textarea>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label small fw-bold">Category <span class="text-danger">*</span></label>
+                        <select class="form-select" id="CategoryId" required></select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small fw-bold">Brand <span class="text-danger">*</span></label>
+                        <select class="form-select" id="BrandId" required></select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small fw-bold">Unit <span class="text-danger">*</span></label>
+                        <select class="form-select" id="UnitOfMeasureId" required></select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-4 bg-light">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="text-uppercase small text-muted fw-bold mb-0">2. Variants (Size & Color)</h6>
+                    <button type="button" class="btn btn-sm btn-secondary" onclick="productApp.addVariantRow()">
+                        <i class="bi bi-plus-lg"></i> Add Variant
+                    </button>
+                </div>
+
+                <div class="table-responsive bg-white border rounded">
+                    <table class="table table-sm mb-0" id="variantTable">
+                        <thead class="table-light">
+                            <tr>
+                                <th width="15%">Size</th>
+                                <th width="15%">Color</th>
+                                <th width="25%">SKU (Barcode)</th>
+                                <th width="15%">Cost</th>
+                                <th width="15%">Price</th>
+                                <th width="5%"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="variantList">
+                        </tbody>
+                    </table>
+                </div>
+                <div class="form-text small mt-2">
+                    Enter dimensions and pricing for each variation. SKU must be unique.
+                </div>
+            </div>
+
+        </form>
+    </div>
+
+    <div class="offcanvas-footer p-3 border-top bg-white d-flex justify-content-end gap-2">
+        <button type="button" class="btn btn-light border" data-bs-dismiss="offcanvas">Cancel</button>
+        <button type="button" class="btn btn-primary px-4" id="btnSave" onclick="productApp.save()">
+            <i class="bi bi-save me-1"></i> Save Product
+        </button>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/product-master.js" asp-append-version="true"></script>
+}

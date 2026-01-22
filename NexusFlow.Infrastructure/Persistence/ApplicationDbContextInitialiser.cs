@@ -275,7 +275,7 @@ namespace NexusFlow.Infrastructure.Persistence
             // ==========================================================
             // 5. SEED MASTER DATA (Product Attributes)
             // ==========================================================
-            if (!_context.Brands.Any())
+            if (!_context.Brands.Any()) 
             {
                 _context.Brands.AddRange(
                     new Brand { Name = "Emerald", Description = "Premium Shirts" },

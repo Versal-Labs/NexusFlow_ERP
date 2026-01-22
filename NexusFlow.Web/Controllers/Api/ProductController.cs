@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NexusFlow.AppCore.Features.Master.Commands;
+using NexusFlow.AppCore.Features.MasterData.Commands;
+using NexusFlow.AppCore.Features.MasterData.Queries;
 
 namespace NexusFlow.Web.Controllers.Api
 {
@@ -24,6 +26,48 @@ namespace NexusFlow.Web.Controllers.Api
         public async Task<IActionResult> CreateProduct([FromBody] CreateProductCommand command)
         {
             var result = await _mediator.Send(command);
+            return result.Succeeded ? Ok(result) : BadRequest(result);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetAll()
+        {
+            // Uses the GetProductsQuery you defined
+            var query = new GetProductsQuery();
+            var result = await _mediator.Send(query);
+
+            return result.Succeeded ? Ok(result) : BadRequest(result);
+        }
+
+        // 3. READ ONE (GET api/product/{id})
+        // Used when clicking "Edit" to populate the drawer
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(int id)
+        {
+            var query = new GetProductByIdQuery { Id = id };
+            var result = await _mediator.Send(query);
+
+            if (!result.Succeeded) return NotFound(result);
+            return Ok(result);
+        }
+
+        // 4. UPDATE (PUT api/product)
+        // Used to save changes to an existing product
+        [HttpPut]
+        public async Task<IActionResult> UpdateProduct([FromBody] UpdateProductCommand command)
+        {
+            var result = await _mediator.Send(command);
+            return result.Succeeded ? Ok(result) : BadRequest(result);
+        }
+
+        // 5. DELETE (DELETE api/product/{id})
+        // Used to soft-delete or remove a product
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteProduct(int id)
+        {
+            var command = new DeleteProductCommand { Id = id };
+            var result = await _mediator.Send(command);
+
             return result.Succeeded ? Ok(result) : BadRequest(result);
         }
     }

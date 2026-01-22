@@ -11,4 +11,9 @@ namespace NexusFlow.AppCore.Features.MasterData.Queries
     {
         // Optional: Add filtering here later (e.g. public string SearchTerm { get; set; })
     }
+
+    public class GetProductByIdQuery : IRequest<Result<ProductDto>>
+    {
+        public int Id { get; set; }
+    }
 }
