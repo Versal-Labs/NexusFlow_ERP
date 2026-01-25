@@ -1,0 +1,81 @@
+﻿@{
+    ViewData["Title"] = "Product Attributes";
+}
+
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Product Attributes</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <button type="button" class="btn btn-sm btn-primary" id="btnAddNew">
+            <i class="bi bi-plus-lg"></i> <span id="btnAddNewText">New Brand</span>
+        </button>
+    </div>
+</div>
+
+<ul class="nav nav-tabs mb-3" id="attributeTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="brands-tab" data-bs-toggle="tab" data-bs-target="#brands-pane" type="button" role="tab">Brands</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="categories-tab" data-bs-toggle="tab" data-bs-target="#categories-pane" type="button" role="tab">Categories</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="uom-tab" data-bs-toggle="tab" data-bs-target="#uom-pane" type="button" role="tab">Units of Measure</button>
+    </li>
+</ul>
+
+<div class="tab-content" id="attributeTabsContent">
+
+    <div class="tab-pane fade show active" id="brands-pane" role="tabpanel">
+        <div class="table-responsive">
+            <table id="tblBrands" class="table table-striped table-sm hover w-100">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Brand Name</th>
+                        <th>Description</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="tab-pane fade" id="categories-pane" role="tabpanel">
+        <div class="alert alert-light border text-center p-5">
+            <p class="text-muted">Category Management will be implemented here.</p>
+        </div>
+    </div>
+
+    <div class="tab-pane fade" id="uom-pane" role="tabpanel">
+        <div class="alert alert-light border text-center p-5">
+            <p class="text-muted">Unit Management will be implemented here.</p>
+        </div>
+    </div>
+</div>
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasBrand" aria-labelledby="offcanvasBrandLabel">
+    <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="offcanvasBrandLabel">Manage Brand</h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+        <form id="frmBrand">
+            <input type="hidden" id="hdnBrandId" value="0" />
+            <div class="mb-3">
+                <label class="form-label">Brand Name <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="txtName" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Description</label>
+                <textarea class="form-control" id="txtDescription" rows="3"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Save Brand</button>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/master/brands.js"></script>
+    <script src="~/js/master/definitions-orchestrator.js"></script>
+}

@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using NexusFlow.AppCore.Features.Master.Commands;
 using NexusFlow.AppCore.Features.MasterData.Commands;
 using NexusFlow.AppCore.Features.MasterData.Queries;
 

@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace NexusFlow.AppCore.Features.Master.Commands
+namespace NexusFlow.AppCore.Features.MasterData.Commands
 {
     public class CreateProductCommand : IRequest<Result<int>>
     {
