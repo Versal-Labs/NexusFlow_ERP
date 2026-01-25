@@ -1,9 +1,16 @@
-﻿<!DOCTYPE html>
+﻿@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Antiforgery
+@{
+    var requestToken = Antiforgery.GetAndStoreTokens(Context).RequestToken;
+}
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - NexusFlow ERP</title>
+
+    <meta name="csrf-token" content="@requestToken" />
 
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
@@ -126,6 +133,8 @@
             // Initialize Select2 globally (optional, usually done per page)
             $('.select2').select2({ theme: 'bootstrap-5' });
         });
+
+
     </script>
 
     @await RenderSectionAsync("Scripts", required: false)

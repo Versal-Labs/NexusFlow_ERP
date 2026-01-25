@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
@@ -8,6 +9,7 @@ using NexusFlow.Infrastructure;
 using NexusFlow.Infrastructure.Hubs;
 using NexusFlow.Infrastructure.Persistence;
 using NexusFlow.Notification;
+using NexusFlow.Web;
 using Scalar.AspNetCore;
 using Serilog;
 using System.Text;
@@ -38,10 +40,27 @@ builder.Services.AddSignalR();
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.LoginPath = "/Account/Login"; // Where to redirect if not logged in
-    options.ExpireTimeSpan = TimeSpan.FromHours(8);
+    options.ExpireTimeSpan = TimeSpan.FromHours(30);
     options.SlidingExpiration = true;
     options.Cookie.HttpOnly = true;
     options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+
+    // --- PRODUCTION FIX START ---
+    // Prevent 302 Redirects for API calls (return 401 instead)
+    options.Events.OnRedirectToLogin = context =>
+    {
+        // Check if the request is for an API endpoint
+        if (context.Request.Path.StartsWithSegments("/api") || context.Request.Path.StartsWithSegments("/hubs"))
+        {
+            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+            return Task.CompletedTask;
+        }
+
+        // Otherwise, do the normal redirect for MVC views
+        context.Response.Redirect(context.RedirectUri);
+        return Task.CompletedTask;
+    };
+    // --- PRODUCTION FIX END ---
 });
 
 // =================================================================
@@ -62,6 +81,27 @@ builder.Services.AddAuthentication()
             ValidAudience = jwtSettings["Audience"],
             IssuerSigningKey = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(jwtSettings["Secret"]!))
+        };
+
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                // 1. Look for "access_token" in the query string
+                var accessToken = context.Request.Query["access_token"];
+
+                // 2. Check if the request is for our Hub path
+                var path = context.HttpContext.Request.Path;
+
+                // If token exists AND request is for a Hub...
+                if (!string.IsNullOrEmpty(accessToken) &&
+                    (path.StartsWithSegments("/hubs/notifications")))
+                {
+                    // 3. Read the token from the query string instead of the header
+                    context.Token = accessToken;
+                }
+                return Task.CompletedTask;
+            }
         };
     });
 
@@ -97,6 +137,17 @@ builder.Services.AddOpenApi(options =>
         document.Security = new List<OpenApiSecurityRequirement> { requirement };
 
         return Task.CompletedTask;
+    });
+});
+
+builder.Services.AddAuthorization(options =>
+{
+    // Create a policy that accepts EITHER Cookie OR JWT
+    options.AddPolicy("HybridPolicy", policy =>
+    {
+        policy.AuthenticationSchemes.Add(AuthConstants.IdentityScheme);
+        policy.AuthenticationSchemes.Add(AuthConstants.JwtScheme);
+        policy.RequireAuthenticatedUser();
     });
 });
 
