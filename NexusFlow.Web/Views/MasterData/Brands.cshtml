@@ -1,0 +1,56 @@
+﻿@{
+    ViewData["Title"] = "Brand Registry";
+}
+
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Brand Registry</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <button type="button" class="btn btn-sm btn-primary" onclick="brandApp.openCreatePanel()">
+            <i class="bi bi-plus-lg"></i> New Brand
+        </button>
+    </div>
+</div>
+
+<div class="table-responsive">
+    <table id="tblBrands" class="table table-striped table-sm hover" style="width:100%">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Brand Name</th>
+                <th>Description</th>
+                <th class="text-end">Actions</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasBrand" aria-labelledby="offcanvasBrandLabel">
+    <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="offcanvasBrandLabel">Manage Brand</h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+        <form id="frmBrand">
+            <input type="hidden" id="hdnBrandId" value="0" />
+
+            <div class="mb-3">
+                <label for="txtName" class="form-label">Brand Name <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="txtName" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="txtDescription" class="form-label">Description</label>
+                <textarea class="form-control" id="txtDescription" rows="3"></textarea>
+            </div>
+
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-primary" id="btnSaveBrand">Save Brand</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/master/brands.js"></script>
+}
