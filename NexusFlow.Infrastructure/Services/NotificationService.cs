@@ -29,11 +29,12 @@ namespace NexusFlow.Infrastructure.Services
                 Message = message,
                 Type = type,
                 Url = url,
-                IsRead = false
+                IsRead = false,
+                CreatedAt = DateTime.UtcNow
             };
 
             _context.Notifications.Add(notification);
-            await _context.SaveChangesAsync(new CancellationToken());
+            await _context.SaveChangesAsync(CancellationToken.None);
 
             // 2. Push Real-Time to User
             // We broadcast to the specific "User Group"

@@ -1,32 +1,120 @@
 ﻿/**
- * Nexus ERP - System Configuration
- * Architecture: Hybrid (Tabbed View + API CRUD)
+ * Nexus ERP - System Configuration Module
+ * Architecture: Clean Architecture Client (Tabbed + API + Offcanvas)
  */
 
 var configApp = (function () {
     "use strict";
 
+    // --- State ---
     var _settingsTable, _seqTable;
-    var _settingModal, _seqModal;
+    var _offcanvasSettingEl = document.getElementById('offcanvasSetting');
+    var _offcanvasSequenceEl = document.getElementById('offcanvasSequence');
+    var _settingOffcanvas, _sequenceOffcanvas;
 
-    // API Endpoints
-    const URL_SETTINGS = "/api/config/settings";
+    // --- Endpoints ---
+    const URL_SETTINGS = "/api/config/settings"; // Ensure this matches your ConfigController Routes
     const URL_SEQUENCES = "/api/config/sequences";
 
-    function openCreateModal() {
-        // Reset Form
-        document.getElementById('settingForm').reset();
-        $('#IsEditMode').val("false");
-        $('#modalTitle').text("Add New Setting");
+    // --- Initialization ---
+    function init() {
+        // Init Offcanvas Instances
+        if (_offcanvasSettingEl) _settingOffcanvas = new bootstrap.Offcanvas(_offcanvasSettingEl);
+        if (_offcanvasSequenceEl) _sequenceOffcanvas = new bootstrap.Offcanvas(_offcanvasSequenceEl);
 
-        // Unlock Key & Type fields
+        _initSettingsGrid();
+        _registerEvents();
+
+        // Lazy load Sequences tab
+        document.getElementById('sequences-tab').addEventListener('shown.bs.tab', function () {
+            if (!_seqTable) _initSequenceGrid();
+            else _seqTable.columns.adjust();
+        });
+    }
+
+    function _registerEvents() {
+        // Form Submissions
+        $('#frmSetting').on('submit', function (e) {
+            e.preventDefault();
+            _saveSetting();
+        });
+
+        $('#frmSequence').on('submit', function (e) {
+            e.preventDefault();
+            _saveSequence();
+        });
+    }
+
+    // ============================================================
+    // TAB 1: GENERAL SETTINGS
+    // ============================================================
+
+    function _initSettingsGrid() {
+        // We use $.ajax for DataTables to keep it simple, or we can use the pipeline. 
+        // For consistency with previous modules, we use standard ajax source.
+        _settingsTable = $('#settingsGrid').DataTable({
+            ajax: {
+                url: URL_SETTINGS,
+                type: "GET",
+                dataSrc: "data",
+                error: function (xhr, error, thrown) {
+                    console.error("DataTables Error:", error);
+                }
+            },
+            columns: [
+                { data: 'key', className: "ps-4 fw-bold font-monospace text-dark", width: "30%" },
+                { data: 'description', className: "text-muted small", width: "35%" },
+                {
+                    data: 'value', width: "25%",
+                    render: function (data, type, row) {
+                        if (row.dataType === 'Boolean') {
+                            return (data.toString().toLowerCase() === 'true')
+                                ? '<span class="badge bg-success-subtle text-success border border-success-subtle">Enabled</span>'
+                                : '<span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle">Disabled</span>';
+                        }
+                        return `<span class="fw-medium text-dark font-monospace">${data}</span>`;
+                    }
+                },
+                {
+                    data: null, className: "text-end pe-4", width: "10%",
+                    render: function (data, type, row) {
+                        // Securely escape data for the onclick handler
+                        const safeRow = JSON.stringify(row).replace(/"/g, '&quot;');
+                        return `<button class="btn btn-sm btn-outline-secondary" onclick="configApp.editSetting(${safeRow})"><i class="bi bi-pencil"></i> Edit</button>`;
+                    }
+                }
+            ],
+            responsive: true,
+            language: { emptyTable: "No configurations defined." }
+        });
+    }
+
+    function openSettingPanel() {
+        $('#offcanvasSettingLabel').text("New Setting");
+        $('#frmSetting')[0].reset();
+        $('#IsEditMode').val("false");
+
+        // Enable Key Editing
         $('#ConfigKey').prop('readonly', false).removeClass('form-control-plaintext').addClass('form-control');
         $('#ConfigDataType').prop('disabled', false);
 
-        // Render default input
-        renderInput();
+        renderInput(""); // Render default text input
+        _settingOffcanvas.show();
+    }
 
-        _settingModal.show();
+    function editSetting(row) {
+        $('#offcanvasSettingLabel').text("Edit Setting");
+        $('#IsEditMode').val("true");
+        $('#ConfigKey').val(row.key);
+        $('#ConfigDataType').val(row.dataType);
+        $('#ConfigDescription').val(row.description);
+
+        // Lock Key & Type
+        $('#ConfigKey').prop('readonly', true).removeClass('form-control').addClass('form-control-plaintext');
+        $('#ConfigDataType').prop('disabled', true);
+
+        renderInput(row.value);
+        _settingOffcanvas.show();
     }
 
     function renderInput(value = "") {
@@ -37,123 +125,54 @@ var configApp = (function () {
         if (type === 'Boolean') {
             var isChecked = (value.toString().toLowerCase() === 'true') ? 'checked' : '';
             container.html(`
-                <div class="form-check form-switch p-2 border rounded bg-light">
+                <div class="form-check form-switch">
                     <input class="form-check-input" type="checkbox" id="ConfigValueInput" ${isChecked}>
-                    <label class="form-check-label ms-2">Enable this setting</label>
+                    <label class="form-check-label ms-2">Enable this feature</label>
                 </div>
             `);
         } else if (type === 'Decimal' || type === 'Integer') {
-            container.html(`<input type="number" class="form-control" id="ConfigValueInput" value="${value}" step="${type === 'Decimal' ? '0.01' : '1'}">`);
+            var step = (type === 'Decimal') ? '0.01' : '1';
+            container.html(`<input type="number" class="form-control font-monospace" id="ConfigValueInput" value="${value}" step="${step}" required>`);
         } else {
-            container.html(`<input type="text" class="form-control" id="ConfigValueInput" value="${value}">`);
+            container.html(`<input type="text" class="form-control" id="ConfigValueInput" value="${value}" required>`);
         }
     }
 
-    function editSetting(row) {
-        $('#IsEditMode').val("true");
-        $('#modalTitle').text("Edit Setting");
-
-        // Populate Data
-        $('#ConfigKey').val(row.key);
-        $('#ConfigDataType').val(row.dataType);
-        $('#ConfigDescription').val(row.description);
-
-        // Lock Key & Type (Cannot change Type of existing config to prevent crashes)
-        $('#ConfigKey').prop('readonly', true).removeClass('form-control').addClass('form-control-plaintext');
-        $('#ConfigDataType').prop('disabled', true);
-
-        // Render Input with Value
-        renderInput(row.value);
-
-        _settingModal.show();
-    }
-
-    function init() {
-        // Init Modals
-        _settingModal = new bootstrap.Modal(document.getElementById('settingModal'));
-        _seqModal = new bootstrap.Modal(document.getElementById('sequenceModal'));
-
-        // Init Grids
-        _initSettingsGrid();
-
-        // Lazy load Sequence grid only when tab is clicked (Performance)
-        $('button[data-bs-target="#tab-sequences"]').on('shown.bs.tab', function (e) {
-            if (!_seqTable) _initSequenceGrid();
-        });
-    }
-
-    // --- TAB 1: SYSTEM SETTINGS ---
-
-    function _initSettingsGrid() {
-        _settingsTable = $('#settingsGrid').DataTable({
-            ajax: { url: URL_SETTINGS, dataSrc: "data" },
-            columns: [
-                { data: 'key', className: "ps-4 fw-bold font-monospace text-dark" },
-                { data: 'description', className: "text-muted small" },
-                {
-                    data: 'value',
-                    render: function (data, type, row) {
-                        // Visual cues based on data type
-                        if (row.dataType === 'Boolean') {
-                            return data === 'true'
-                                ? '<span class="badge bg-success bg-opacity-10 text-success">Enabled</span>'
-                                : '<span class="badge bg-secondary bg-opacity-10 text-secondary">Disabled</span>';
-                        }
-                        return `<span class="fw-medium text-dark">${data}</span>`;
-                    }
-                },
-                {
-                    data: null, className: "text-end pe-4",
-                    render: function (data, type, row) {
-                        return `<button class="btn btn-sm btn-white border shadow-sm" onclick='configApp.editSetting(${JSON.stringify(row)})'>Edit</button>`;
-                    }
-                }
-            ],
-            dom: 't', // Simple table, no search/pagination needed for limited configs
-            paging: false
-        });
-    }
-
-    function editSetting(row) {
-        $('#ConfigKey').val(row.key);
-        $('#ConfigDataType').val(row.dataType);
-        $('#ConfigKeyDisplay').val(row.key);
-        $('#ConfigDescDisplay').text(row.description);
-
-        // Dynamic Input Renderer
-        var container = $('#dynamicInputContainer');
-        container.empty();
-
-        if (row.dataType === 'Boolean') {
-            // Render Switch
-            var isChecked = row.value.toLowerCase() === 'true' ? 'checked' : '';
-            container.html(`
-                <div class="form-check form-switch">
-                    <input class="form-check-input" type="checkbox" id="ConfigValueInput" ${isChecked}>
-                    <label class="form-check-label">Enable Feature</label>
-                </div>
-            `);
-        } else if (row.dataType === 'Decimal' || row.dataType === 'Integer') {
-            // Render Number Input
-            container.html(`<input type="number" class="form-control" id="ConfigValueInput" value="${row.value}" step="0.01">`);
-        } else {
-            // Default String Input
-            container.html(`<input type="text" class="form-control" id="ConfigValueInput" value="${row.value}">`);
+    function _validateInput(type, value) {
+        if (type === 'Integer') {
+            if (!/^-?\d+$/.test(value)) return "Value must be a valid integer.";
         }
+        if (type === 'Decimal') {
+            if (isNaN(value) || value === '') return "Value must be a valid number.";
+        }
+        if (type === 'Boolean') return null; // Checkbox always valid
+        if (type === 'String' && (!value || value.trim() === '')) return "Text value cannot be empty.";
 
-        _settingModal.show();
+        return null; // Valid
     }
 
-    function saveSetting() {
+    async function _saveSetting() {
         var isEdit = $('#IsEditMode').val() === "true";
         var key = $('#ConfigKey').val();
         var dataType = $('#ConfigDataType').val();
 
         // Get Value
         var valInput = $('#ConfigValueInput');
-        var finalValue = (dataType === 'Boolean') ? valInput.is(':checked').toString().toLowerCase() : valInput.val();
+        var finalValue;
+        if (dataType === 'Boolean') {
+            finalValue = valInput.is(':checked').toString().toLowerCase();
+        } else {
+            finalValue = valInput.val();
+        }
 
-        if (!key) { Swal.fire('Error', 'Key is required', 'warning'); return; }
+        // Client-Side Validation
+        var error = _validateInput(dataType, finalValue);
+        if (error) {
+            // If we had toastr, we'd use it. For now, alert or fallback.
+            if (typeof toastr !== 'undefined') toastr.warning(error);
+            else alert(error);
+            return;
+        }
 
         var payload = {
             Key: key,
@@ -162,47 +181,93 @@ var configApp = (function () {
             Description: $('#ConfigDescription').val()
         };
 
-        // Determine Method and URL
-        var method = isEdit ? "PUT" : "POST";
+        // Use Site.js API
+        var result;
+        if (isEdit) {
+            result = await api.put(URL_SETTINGS, payload);
+        } else {
+            result = await api.post(URL_SETTINGS, payload);
+        }
 
-        $.ajax({
-            url: "/api/config/settings",
-            type: method,
-            contentType: "application/json",
-            data: JSON.stringify(payload),
-            success: function () {
-                _settingModal.hide();
-                _settingsTable.ajax.reload();
-                Swal.fire({ icon: 'success', title: isEdit ? 'Updated!' : 'Created!', toast: true, position: 'top-end', timer: 2000, showConfirmButton: false });
+        if (result && result.succeeded) {
+            _settingOffcanvas.hide();
+            _settingsTable.ajax.reload();
+        }
+    }
+
+    // ============================================================
+    // TAB 2: NUMBER SEQUENCES
+    // ============================================================
+
+    function _initSequenceGrid() {
+        if ($.fn.DataTable.isDataTable('#sequenceGrid')) return;
+
+        _seqTable = $('#sequenceGrid').DataTable({
+            ajax: {
+                url: URL_SEQUENCES,
+                type: "GET",
+                dataSrc: "data"
             },
-            error: function (xhr) {
-                Swal.fire('Error', xhr.responseText || 'Operation failed', 'error');
-            }
+            columns: [
+                { data: 'module', className: "ps-4 fw-bold" },
+                { data: 'prefix', className: "text-center", render: d => `<span class="badge bg-light text-dark border font-monospace">${d}</span>` },
+                { data: 'nextNumber', className: "font-monospace" },
+                {
+                    data: null, className: "font-monospace text-muted",
+                    render: function (data, type, row) {
+                        return `${row.prefix}${row.delimiter}${row.nextNumber}`;
+                    }
+                },
+                {
+                    data: null, className: "text-end pe-4",
+                    render: function (data, type, row) {
+                        const safeRow = JSON.stringify(row).replace(/"/g, '&quot;');
+                        return `<button class="btn btn-sm btn-outline-secondary" onclick="configApp.editSequence(${safeRow})"><i class="bi bi-pencil"></i> Edit</button>`;
+                    }
+                }
+            ],
+            responsive: true
         });
     }
 
-    function openCreateSequenceModal() {
-        // Reset Form
-        document.getElementById('sequenceForm').reset();
-        $('#SeqId').val(0); // 0 indicates Create Mode
+    function openSequencePanel() {
+        $('#offcanvasSequenceLabel').text("New Sequence");
+        $('#frmSequence')[0].reset();
+        $('#SeqId').val(0);
 
-        // Enable Module Field (It is read-only in Edit mode)
+        // Enable Module ID editing
         $('#SeqModule').prop('readonly', false).removeClass('form-control-plaintext').addClass('form-control');
 
-        // Set Defaults
         $('#SeqNext').val(1);
         $('#SeqDelimiter').val('-');
-
-        // Update Title
-        $('#sequenceModal .modal-title').text("Create New Sequence");
-
-        _seqModal.show();
+        updatePreview();
+        _sequenceOffcanvas.show();
     }
 
-    // Update the saveSequence function to handle Create (POST)
-    function saveSequence() {
-        var id = parseInt($('#SeqId').val()) || 0;
+    function editSequence(row) {
+        $('#offcanvasSequenceLabel').text("Edit Sequence");
+        $('#SeqId').val(row.id);
+        $('#SeqModule').val(row.module);
+        $('#SeqPrefix').val(row.prefix);
+        $('#SeqDelimiter').val(row.delimiter);
+        $('#SeqNext').val(row.nextNumber);
 
+        // Lock Module ID
+        $('#SeqModule').prop('readonly', true).removeClass('form-control').addClass('form-control-plaintext');
+
+        updatePreview();
+        _sequenceOffcanvas.show();
+    }
+
+    function updatePreview() {
+        var pre = $('#SeqPrefix').val() || '';
+        var del = $('#SeqDelimiter').val() || '';
+        var num = $('#SeqNext').val() || '';
+        $('#SeqPreview').text(`${pre}${del}${num}`);
+    }
+
+    async function _saveSequence() {
+        var id = parseInt($('#SeqId').val()) || 0;
         var payload = {
             Id: id,
             Module: $('#SeqModule').val(),
@@ -211,124 +276,34 @@ var configApp = (function () {
             NextNumber: parseInt($('#SeqNext').val())
         };
 
-        // Validation
         if (!payload.Module || !payload.Prefix) {
-            Swal.fire('Error', 'Module and Prefix are required', 'warning');
+            if (typeof toastr !== 'undefined') toastr.warning("Module and Prefix are required.");
             return;
         }
 
-        // Determine Logic
-        var method = (id === 0) ? "POST" : "PUT";
+        var result;
+        if (id === 0) {
+            result = await api.post(URL_SEQUENCES, payload);
+        } else {
+            result = await api.put(URL_SEQUENCES, payload);
+        }
 
-        $.ajax({
-            url: URL_SEQUENCES,
-            type: method,
-            contentType: "application/json",
-            data: JSON.stringify(payload),
-            success: function () {
-                _seqModal.hide();
-                _seqTable.ajax.reload();
-                Swal.fire({ icon: 'success', title: 'Saved!', toast: true, position: 'top-end', showConfirmButton: false, timer: 1500 });
-            },
-            error: function (xhr) {
-                Swal.fire('Error', xhr.responseText || 'Failed to save', 'error');
-            }
-        });
+        if (result && result.succeeded) {
+            _sequenceOffcanvas.hide();
+            _seqTable.ajax.reload();
+        }
     }
 
-    // --- TAB 2: NUMBER SEQUENCES ---
-
-    function _initSequenceGrid() {
-        _seqTable = $('#sequenceGrid').DataTable({
-            ajax: { url: URL_SEQUENCES, dataSrc: "data" },
-            columns: [
-                { data: 'module', className: "ps-4 fw-bold" },
-                { data: 'prefix', render: function (d) { return `<span class="badge bg-light text-dark border">${d}</span>`; } },
-                { data: 'nextNumber' },
-                {
-                    data: null,
-                    render: function (d, t, row) {
-                        // Logic matching Entity PreviewNext()
-                        var suffix = row.suffix || '';
-                        return `<span class="font-monospace text-primary bg-primary bg-opacity-10 px-2 py-1 rounded">${row.prefix}${row.delimiter}${row.nextNumber}${suffix}</span>`;
-                    }
-                },
-                {
-                    data: null, className: "text-end pe-4",
-                    render: function (data, type, row) {
-                        return `<button class="btn btn-sm btn-white border shadow-sm" onclick='configApp.editSequence(${JSON.stringify(row)})'>Edit</button>`;
-                    }
-                }
-            ],
-            dom: 't',
-            paging: false
-        });
-    }
-
-    function editSequence(row) {
-        $('#SeqId').val(row.id);
-        $('#SeqModule').val(row.module);
-        $('#SeqPrefix').val(row.prefix);
-        $('#SeqDelimiter').val(row.delimiter);
-        $('#SeqNext').val(row.nextNumber);
-
-        updatePreview(); // Show initial preview
-        _seqModal.show();
-    }
-
-    function updatePreview() {
-        var pre = $('#SeqPrefix').val();
-        var del = $('#SeqDelimiter').val();
-        var num = $('#SeqNext').val();
-        // Assuming suffix is not editable in this UI for simplicity, or add hidden input
-        // Using a safe default or passing suffix via row data if needed
-
-        $('#SeqPreview').text(`${pre}${del}${num}`);
-    }
-
-    function saveSequence() {
-        var payload = {
-            id: $('#SeqId').val(),
-            prefix: $('#SeqPrefix').val(),
-            delimiter: $('#SeqDelimiter').val(),
-            nextNumber: parseInt($('#SeqNext').val())
-        };
-
-        if (!payload.prefix || !payload.nextNumber) return; // Simple validation
-
-        $.ajax({
-            url: URL_SEQUENCES,
-            type: "PUT",
-            contentType: "application/json",
-            data: JSON.stringify(payload),
-            success: function () {
-                _seqModal.hide();
-                _seqTable.ajax.reload();
-                _showToast("Sequence updated");
-            }
-        });
-    }
-
-    // Helper
-    function _showToast(msg, type = 'success') {
-        const Toast = Swal.mixin({
-            toast: true, position: 'top-end', showConfirmButton: false, timer: 3000
-        });
-        Toast.fire({ icon: type, title: msg });
-    }
-
+    // --- Public API ---
     return {
         init: init,
+        openSettingPanel: openSettingPanel,
         editSetting: editSetting,
-        saveSetting: saveSetting,
-        editSequence: editSequence,
-        updatePreview: updatePreview,
-        saveSequence: saveSequence,
-        openCreateModal: openCreateModal,
         renderInput: renderInput,
-        openCreateSequenceModal: openCreateSequenceModal,
-		editSequence: editSequence
 
+        openSequencePanel: openSequencePanel,
+        editSequence: editSequence,
+        updatePreview: updatePreview
     };
 })();
 

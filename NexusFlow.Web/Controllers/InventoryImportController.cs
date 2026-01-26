@@ -1,5 +1,7 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using NexusFlow.AppCore.Constants;
 using NexusFlow.Web.Models;
 using System;
 using System.Collections.Generic;
@@ -8,6 +10,7 @@ using System.Threading.Tasks;
 
 namespace NexusFlow.Web.Controllers
 {
+    [Authorize(AuthenticationSchemes = AuthConstants.IdentityScheme)]
     public class InventoryImportController : Controller
     {
         public IActionResult Index()

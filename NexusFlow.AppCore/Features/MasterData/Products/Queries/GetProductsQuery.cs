@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace NexusFlow.AppCore.Features.MasterData.Queries
+namespace NexusFlow.AppCore.Features.MasterData.Products.Queries
 {
     public class GetProductsQuery : IRequest<Result<List<ProductDto>>>
     {

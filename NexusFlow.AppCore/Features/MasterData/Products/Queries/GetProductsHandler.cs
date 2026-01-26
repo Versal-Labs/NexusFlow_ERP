@@ -6,7 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace NexusFlow.AppCore.Features.MasterData.Queries
+namespace NexusFlow.AppCore.Features.MasterData.Products.Queries
 {
     // DTO for the list view (lighter than the full entity)
     public class ProductDto

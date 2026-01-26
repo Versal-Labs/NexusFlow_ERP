@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authentication.OAuth;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using NexusFlow.AppCore.Constants;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -8,13 +10,12 @@ using System.Text.RegularExpressions;
 
 namespace NexusFlow.Infrastructure.Hubs
 {
-    [Authorize] // Only logged-in users can connect
+    [Authorize(AuthenticationSchemes = AuthConstants.HybridScheme)]
     public class NotificationHub : Hub
     {
-        // Frontend calls this to identify itself (though User.Identity.Name is auto-handled)
-        public async Task JoinGroup(string userId)
+        public override async Task OnConnectedAsync()
         {
-            await Groups.AddToGroupAsync(Context.ConnectionId, userId);
+            await base.OnConnectedAsync();
         }
     }
 }
