@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using NexusFlow.AppCore;
+using NexusFlow.AppCore.Constants;
 using NexusFlow.Domain.Entities.System;
 using NexusFlow.Infrastructure;
 using NexusFlow.Infrastructure.Hubs;

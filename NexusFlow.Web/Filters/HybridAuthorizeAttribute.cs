@@ -15,6 +15,12 @@ namespace NexusFlow.Web.Filters
                 return;
             }
 
+            var method = context.HttpContext.Request.Method;
+            if (HttpMethods.IsGet(method) || HttpMethods.IsHead(method) || HttpMethods.IsOptions(method) || HttpMethods.IsTrace(method))
+            {
+                return;
+            }
+
             // 2. Check how they authenticated
             // If they are using a Bearer Token (Mobile), skip CSRF check
             if (context.HttpContext.User.Identity.AuthenticationType == "AuthenticationTypes.Federation" ||

@@ -3,15 +3,19 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using NexusFlow.AppCore.Constants;
 using NexusFlow.AppCore.DTOs.Auth;
 using NexusFlow.AppCore.Features.Auth.Commands;
 using NexusFlow.AppCore.Interfaces;
 using NexusFlow.Infrastructure.Identity;
+using NexusFlow.Web.Filters;
 
 namespace NexusFlow.Web.Controllers.Api
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Policy = AuthConstants.HybridPolicy)] // Checks Cookie OR JWT
+    [HybridAuthorize]
     public class AuthController : ControllerBase
     {
         private readonly IMediator _mediator;

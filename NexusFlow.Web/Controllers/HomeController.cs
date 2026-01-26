@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using NexusFlow.AppCore.Constants;
 using NexusFlow.AppCore.Features.Inventory.Queries;
 using NexusFlow.Web.Models;
 using NexusFlow.Web.Models.Dashbaord;
@@ -10,7 +11,7 @@ using System.Diagnostics;
 
 namespace NexusFlow.Web.Controllers
 {
-    [Authorize]
+    [Authorize(AuthenticationSchemes = AuthConstants.IdentityScheme)]
     public class HomeController : Controller
     {
         private readonly IMediator _mediator;

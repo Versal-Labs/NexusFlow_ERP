@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -36,6 +37,8 @@ namespace NexusFlow.Infrastructure
             services.AddScoped<IStockService, StockService>();
             services.AddScoped<IJournalService, JournalService>();
             services.AddScoped<INotificationService, NotificationService>();
+
+            services.AddSingleton<IUserIdProvider, NameUserIdProvider>();
 
             return services;
         }

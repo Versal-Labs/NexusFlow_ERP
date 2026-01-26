@@ -6,7 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace NexusFlow.AppCore.Features.MasterData.Commands
+namespace NexusFlow.AppCore.Features.MasterData.Products.Commands
 {
     public class CreateProductHandler : IRequestHandler<CreateProductCommand, Result<int>>
     {
