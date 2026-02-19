@@ -88,58 +88,7 @@
 
     <script src="~/js/site.js" asp-append-version="true"></script>
 
-    <script>
-
-        // Global Initialization for Shell Interactions
-        $(document).ready(function () {
-
-            var tooltipList = [];
-
-            function enableSidebarTooltips() {
-                // Only target sidebar links
-                var tooltipTriggerList = [].slice.call(document.querySelectorAll('#sidebar-wrapper [title]'));
-                tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-                    return new bootstrap.Tooltip(tooltipTriggerEl);
-                });
-            }
-
-            function disableSidebarTooltips() {
-                tooltipList.forEach(function (tooltip) {
-                    tooltip.dispose(); // Destroy them so they don't pop up
-                });
-                tooltipList = [];
-            }
-
-            // Sidebar Toggle
-                $("#sidebarToggle").click(function (e) {
-                e.preventDefault();
-                $("body").toggleClass("sb-sidenav-toggled");
-
-                // Rotate Toggle Button Icon
-                $(this).find('i').toggleClass('fa-flip-horizontal');
-
-                // Check if we just closed it or opened it
-                if ($("body").hasClass("sb-sidenav-toggled")) {
-                    // Sidebar is now MINI (Collapsed) -> Enable Tooltips
-                    enableSidebarTooltips();
-                } else {
-                    // Sidebar is now FULL (Expanded) -> Disable Tooltips
-                    disableSidebarTooltips();
-                }
-            });
-
-            // Initialize all Tooltips globally
-            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]:not(#sidebar-wrapper *)'))
-            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-                return new bootstrap.Tooltip(tooltipTriggerEl)
-            });
-
-            // Initialize Select2 globally (optional, usually done per page)
-            $('.select2').select2({ theme: 'bootstrap-5' });
-        });
-
-
-    </script>
+    
 
     @await RenderSectionAsync("Scripts", required: false)
 </body>

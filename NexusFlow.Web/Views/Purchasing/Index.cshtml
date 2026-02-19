@@ -1,0 +1,181 @@
+﻿@{
+    ViewData["Title"] = "Purchase Orders";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+    <div>
+        <h2 class="fw-bold text-dark mb-1">Purchase Orders</h2>
+        <p class="text-muted mb-0 small">Manage procurement contracts and pending receipts.</p>
+    </div>
+    <button class="btn btn-primary shadow-sm" onclick="poApp.openCreatePanel()">
+        <i class="bi bi-cart-plus me-2"></i>New Order
+    </button>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+        <table id="poGrid" class="table table-hover align-middle w-100 mb-0">
+            <thead class="bg-light text-uppercase small text-muted">
+                <tr>
+                    <th class="ps-4">PO Number</th>
+                    <th>Date</th>
+                    <th>Supplier</th>
+                    <th>Status</th>
+                    <th class="text-end">Amount</th>
+                    <th class="text-end pe-4">Actions</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>
+
+<div class="offcanvas offcanvas-end w-75 shadow" tabindex="-1" id="poDrawer" aria-labelledby="poDrawerLabel">
+    <div class="offcanvas-header border-bottom bg-light">
+        <h5 class="offcanvas-title fw-bold" id="poDrawerLabel"><i class="bi bi-cart-plus me-2"></i>New Purchase Order</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+    </div>
+    <div class="offcanvas-body p-0">
+        <form id="frmPO">
+            <div class="p-4 border-bottom bg-white">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold small">Supplier <span class="text-danger">*</span></label>
+                        <select class="form-select" id="ddlSupplier" required style="width:100%"></select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold small">Order Date</label>
+                        <input type="date" class="form-control" id="txtDate" required>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold small">Expected Delivery</label>
+                        <input type="date" class="form-control" id="txtExpectedDate">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label fw-bold small">Status</label>
+                        <input type="text" class="form-control-plaintext fw-bold text-muted" value="DRAFT" readonly>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-4 bg-light h-100">
+                <div class="card border shadow-sm">
+                    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0 fw-bold">Order Items</h6>
+                        <div class="input-group input-group-sm w-50">
+                            <select class="form-select" id="ddlProductSearch" style="max-width: 300px;"></select>
+                            <button type="button" class="btn btn-success" id="btnAddLine">
+                                <i class="bi bi-plus-lg"></i> Add Item
+                            </button>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-striped mb-0" id="tblPoItems">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width: 35%;">Product / SKU</th>
+                                    <th style="width: 15%;" class="text-end">Unit Cost</th>
+                                    <th style="width: 15%;" class="text-center">Quantity</th>
+                                    <th style="width: 20%;" class="text-end">Total</th>
+                                    <th style="width: 15%;"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="poItemsBody">
+                            </tbody>
+                            <tfoot class="border-top-2">
+                                <tr>
+                                    <td colspan="3" class="text-end fw-bold pt-3">Grand Total:</td>
+                                    <td class="text-end fw-bold fs-5 pt-3" id="lblGrandTotal">0.00</td>
+                                    <td></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="mt-3">
+                    <label class="form-label fw-bold small">Internal Notes</label>
+                    <textarea class="form-control" id="txtNotes" rows="2" placeholder="Instructions for warehouse..."></textarea>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="offcanvas-footer p-3 border-top bg-white d-flex justify-content-end gap-2">
+        <button type="button" class="btn btn-light border" data-bs-dismiss="offcanvas">Cancel</button>
+        <button type="button" class="btn btn-primary px-4 fw-bold" onclick="poApp.save()">
+            <i class="bi bi-check2-circle me-1"></i> Confirm Order
+        </button>
+    </div>
+</div>
+
+<div class="offcanvas offcanvas-end w-75 shadow" tabindex="-1" id="grnDrawer">
+    <div class="offcanvas-header bg-success text-white border-bottom">
+        <div>
+            <h5 class="offcanvas-title fw-bold"><i class="bi bi-box-seam me-2"></i>Receive Stock (GRN)</h5>
+            <small class="opacity-75" id="lblGrnPoNumber">Loading...</small>
+        </div>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
+    </div>
+
+    <div class="offcanvas-body p-0">
+        <form id="frmGrn">
+            <input type="hidden" id="hdnGrnPoId">
+
+            <div class="p-4 bg-light border-bottom">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold small">Receiving Date <span class="text-danger">*</span></label>
+                        <input type="date" class="form-control" id="txtGrnDate" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold small">Supplier Invoice No</label>
+                        <input type="text" class="form-control" id="txtSupInvoice" placeholder="e.g. INV-998877">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold small">Target Warehouse <span class="text-danger">*</span></label>
+                        <select class="form-select" id="ddlWarehouse" required>
+                            <option value="1">Main Warehouse</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-0">
+                <div class="alert alert-info border-0 rounded-0 mb-0 small">
+                    <i class="bi bi-info-circle me-2"></i>
+                    Items with <strong>0</strong> Quantity to Receive will be skipped.
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0" id="tblGrnItems">
+                        <thead class="table-light text-uppercase small text-muted">
+                            <tr>
+                                <th style="width: 35%">Product Details</th>
+                                <th class="text-center" style="width: 15%">Ordered</th>
+                                <th class="text-center" style="width: 15%">Prev. Received</th>
+                                <th class="text-center bg-success-subtle border-success" style="width: 20%">Receive Now</th>
+                                <th class="text-end" style="width: 15%">Verify Cost</th>
+                            </tr>
+                        </thead>
+                        <tbody id="grnItemsBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="offcanvas-footer p-3 border-top bg-white d-flex justify-content-end gap-2">
+        <button type="button" class="btn btn-light border" data-bs-dismiss="offcanvas">Cancel</button>
+        <button type="button" class="btn btn-success px-4 fw-bold" onclick="grnApp.submitGrn()">
+            <i class="bi bi-check-lg me-2"></i>Post Goods Receipt
+        </button>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/purchasing/grn-wizard.js" asp-append-version="true"></script>
+
+    <script src="~/js/purchasing/purchase-order.js" asp-append-version="true"></script>
+}

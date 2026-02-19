@@ -21,7 +21,19 @@ namespace NexusFlow.AppCore.Features.MasterData.Products.Commands
         {
             var dto = request.Product;
 
-            // 1. Create Header
+            // --- 1. Industry Standard Validation ---
+            // A Service cannot have Inventory. A Physical Item MUST have Inventory.
+            if (dto.Type == Domain.Enums.ProductType.Service && dto.InventoryAccountId.HasValue)
+            {
+                // Soft warning or auto-correct: Services don't hold stock value.
+                dto.InventoryAccountId = null;
+            }
+            else if (dto.Type != Domain.Enums.ProductType.Service && !dto.InventoryAccountId.HasValue)
+            {
+                return Result<int>.Failure("Inventory Asset Account is required for Physical Products.");
+            }
+
+            // --- 2. Entity Mapping ---
             var product = new Product
             {
                 Name = dto.Name,
@@ -29,32 +41,36 @@ namespace NexusFlow.AppCore.Features.MasterData.Products.Commands
                 BrandId = dto.BrandId,
                 CategoryId = dto.CategoryId,
                 UnitOfMeasureId = dto.UnitOfMeasureId,
-                Type = dto.Type
+                Type = dto.Type,
+
+                // Financials
+                SalesAccountId = dto.SalesAccountId,
+                CogsAccountId = dto.CogsAccountId,
+                InventoryAccountId = dto.InventoryAccountId
             };
 
-            // 2. Add Variants
-            foreach (var vDto in dto.Variants)
+            // --- 3. Variants ---
+            if (dto.Variants != null)
             {
-                var variant = new ProductVariant
+                foreach (var v in dto.Variants)
                 {
-                    Size = vDto.Size,
-                    Color = vDto.Color,
-                    SKU = vDto.SKU,
-                    CostPrice = vDto.CostPrice,
-                    SellingPrice = vDto.SellingPrice,
-                    ReorderLevel = vDto.ReorderLevel,
-                    // Generate a Display Name automatically
-                    Name = $"{dto.Name} - {vDto.Size} - {vDto.Color}"
-                };
-
-                product.Variants.Add(variant);
+                    product.Variants.Add(new ProductVariant
+                    {
+                        Size = v.Size,
+                        Color = v.Color,
+                        SKU = v.SKU,
+                        CostPrice = v.CostPrice,
+                        SellingPrice = v.SellingPrice,
+                        ReorderLevel = v.ReorderLevel,
+                        Name = $"{dto.Name} ({v.Size}/{v.Color})"
+                    });
+                }
             }
 
-            // 3. Save (EF Core handles the transaction and Foreign Keys automatically)
             _context.Products.Add(product);
             await _context.SaveChangesAsync(cancellationToken);
 
-            return Result<int>.Success(product.Id, "Product and Variants created successfully.");
+            return Result<int>.Success(product.Id, "Product created successfully.");
         }
     }
 }

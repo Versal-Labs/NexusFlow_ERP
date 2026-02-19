@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NexusFlow.AppCore.Constants;
 using NexusFlow.AppCore.Features.MasterData.Products.Commands;
-using NexusFlow.AppCore.Features.MasterData.Queries;
+using NexusFlow.AppCore.Features.MasterData.Products.Queries;
 using NexusFlow.Web.Filters;
 
 namespace NexusFlow.Web.Controllers.Api
@@ -70,6 +70,13 @@ namespace NexusFlow.Web.Controllers.Api
             var command = new DeleteProductCommand { Id = id };
             var result = await _mediator.Send(command);
 
+            return result.Succeeded ? Ok(result) : BadRequest(result);
+        }
+
+        [HttpPost("bulk")]
+        public async Task<IActionResult> BulkCreate([FromBody] BulkImportProductsCommand command)
+        {
+            var result = await _mediator.Send(command);
             return result.Succeeded ? Ok(result) : BadRequest(result);
         }
     }

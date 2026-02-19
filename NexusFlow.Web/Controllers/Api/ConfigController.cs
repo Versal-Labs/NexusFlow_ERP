@@ -70,5 +70,26 @@ namespace NexusFlow.Web.Controllers.Api
             return result.Succeeded ? Ok(result) : BadRequest(result);
         }
         #endregion
+
+        #region Lookups (Dropdown)
+        [HttpGet("lookups")]
+        public async Task<IActionResult> GetAll([FromQuery] string type)
+            => Ok(await _mediator.Send(new GetLookupsQuery { Type = type }));
+
+        [HttpPost("lookups")]
+        public async Task<IActionResult> Create(CreateLookupCommand command)
+        {
+            var result = await _mediator.Send(command);
+            return result.Succeeded ? Ok(result) : BadRequest(result);
+        }
+
+        [HttpPut("lookups")]
+        public async Task<IActionResult> Update(int id, UpdateLookupCommand command)
+        {
+            if (id != command.Id) return BadRequest();
+            var result = await _mediator.Send(command);
+            return result.Succeeded ? Ok(result) : BadRequest(result);
+        }
+        #endregion
     }
 }

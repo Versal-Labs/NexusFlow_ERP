@@ -55,6 +55,7 @@ namespace NexusFlow.AppCore.Features.Inventory.Queries
                     s.ProductVariantId,
                     s.ProductVariant.Name,
                     s.ProductVariant.SKU,
+                    s.ProductVariant.Color,
                     s.WarehouseId,
                     WarehouseName = s.Warehouse.Name
                 })

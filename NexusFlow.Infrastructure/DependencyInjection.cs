@@ -37,6 +37,7 @@ namespace NexusFlow.Infrastructure
             services.AddScoped<IStockService, StockService>();
             services.AddScoped<IJournalService, JournalService>();
             services.AddScoped<INotificationService, NotificationService>();
+            services.AddScoped<INumberSequenceService, NumberSequenceService>();
 
             services.AddSingleton<IUserIdProvider, NameUserIdProvider>();
 

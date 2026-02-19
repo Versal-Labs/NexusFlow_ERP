@@ -102,3 +102,113 @@ document.addEventListener("DOMContentLoaded", function () {
         };
     }
 });
+
+$(document).ready(function () {
+
+    var tooltipList = [];
+
+    // --- 1. Tooltip Management ---
+    function enableSidebarTooltips() {
+        // Select items that have a 'title' attribute (top-level links)
+        // We exclude items inside .collapse (sub-menus) because they are hidden in mini mode
+        var sidebarItems = document.querySelectorAll('#sidebar-wrapper .list-group-item-action:not(.collapse .nav-link)');
+
+        sidebarItems.forEach(function (el) {
+            // Get text content if title is missing, or use existing title
+            var title = el.getAttribute('title');
+            if (!title) {
+                // Fallback: try to grab the text inside the span
+                var textSpan = el.querySelector('.fw-bold');
+                if (textSpan) title = textSpan.innerText;
+            }
+
+            if (title) {
+                el.setAttribute('title', title); // Ensure title attr exists for Bootstrap
+                el.setAttribute('data-bs-toggle', 'tooltip');
+                el.setAttribute('data-bs-placement', 'right');
+
+                var t = new bootstrap.Tooltip(el);
+                tooltipList.push(t);
+            }
+        });
+    }
+
+    function disableSidebarTooltips() {
+        tooltipList.forEach(function (tooltip) {
+            tooltip.dispose();
+        });
+        tooltipList = [];
+
+        // Cleanup attributes so they don't interfere with normal hover
+        $('#sidebar-wrapper .list-group-item-action').removeAttr('title').removeAttr('data-bs-toggle').removeAttr('data-bs-placement');
+    }
+
+    // --- 2. Sidebar Toggle Logic ---
+    $("#sidebarToggle").click(function (e) {
+        e.preventDefault();
+
+        var body = $("body");
+        var isCollapsing = !body.hasClass("sb-sidenav-toggled");
+
+        body.toggleClass("sb-sidenav-toggled");
+
+        if (isCollapsing) {
+            // === GOING MINI ===
+
+            // 1. Close all open accordions (sub-menus)
+            // This prevents weird floating menus when hidden
+            $('.collapse.show').each(function () {
+                var collapseInstance = bootstrap.Collapse.getInstance(this);
+                if (collapseInstance) {
+                    collapseInstance.hide();
+                } else {
+                    $(this).removeClass('show'); // Fallback
+                }
+
+                // Reset the chevron icon rotation
+                var trigger = $(`[href="#${this.id}"]`);
+                trigger.attr('aria-expanded', 'false');
+            });
+
+            // 2. Enable Tooltips (so user can see what icons mean)
+            enableSidebarTooltips();
+
+        } else {
+            // === GOING FULL ===
+
+            // 1. Disable Tooltips (Text is visible now)
+            disableSidebarTooltips();
+
+            // Optional: Re-open the menu of the current page
+            // (You can add logic here to re-open #menuInventory if on Product page)
+        }
+    });
+
+    // --- 3. Auto-Active Link & Auto-Open Menu (On Page Load) ---
+    const currentPath = window.location.pathname.toLowerCase();
+    const links = document.querySelectorAll('#sidebar-wrapper a');
+
+    links.forEach(link => {
+        const linkPath = link.getAttribute('href').toLowerCase();
+
+        // Check if this link matches current URL
+        if (linkPath !== '/' && currentPath.startsWith(linkPath) || (linkPath === '/' && currentPath === '/')) {
+
+            // Highlight Link
+            link.classList.add('active-page');
+
+            // If it's a sub-menu item, open the parent Accordion
+            const parentCollapse = link.closest('.collapse');
+            if (parentCollapse) {
+                // Ensure body isn't toggled (mini) before opening
+                if (!$("body").hasClass("sb-sidenav-toggled")) {
+                    new bootstrap.Collapse(parentCollapse, { toggle: true });
+
+                    // Rotate the arrow on the parent trigger
+                    const triggerBtn = document.querySelector(`[href="#${parentCollapse.id}"]`);
+                    if (triggerBtn) triggerBtn.setAttribute('aria-expanded', 'true');
+                }
+            }
+        }
+    });
+});

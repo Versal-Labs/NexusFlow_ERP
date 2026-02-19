@@ -26,6 +26,16 @@ namespace NexusFlow.Web.Controllers.Api
             _mediator = mediator;
         }
 
+        [HttpGet("accounts")]
+        public async Task<IActionResult> GetAccounts()
+        {
+            // Calls the flat list handler we just created
+            var result = await _mediator.Send(new GetAccountsQuery());
+
+            if (result.Succeeded) return Ok(result);
+            return BadRequest(result);
+        }
+
         [HttpGet("chart-of-accounts")]
         public async Task<IActionResult> GetChartOfAccounts()
         {

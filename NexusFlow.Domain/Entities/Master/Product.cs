@@ -1,4 +1,5 @@
 ﻿using NexusFlow.Domain.Common;
+using NexusFlow.Domain.Entities.Finance;
 using NexusFlow.Domain.Enums;
 using System;
 using System.Collections.Generic;
@@ -23,6 +24,21 @@ namespace NexusFlow.Domain.Entities.Master
         public int UnitOfMeasureId { get; set; }
         public UnitOfMeasure UnitOfMeasure { get; set; }
         public ProductType Type { get; set; }
+
+        public int SalesAccountId { get; set; }
+        [ForeignKey("SalesAccountId")]
+        public Account SalesAccount { get; set; }
+
+        // 2. Where do we book the Asset value? (e.g. "1200 - Inventory Asset")
+        // Nullable because 'Services' don't have stock value.
+        public int? InventoryAccountId { get; set; }
+        [ForeignKey("InventoryAccountId")]
+        public Account? InventoryAccount { get; set; }
+
+        // 3. Where do we book the Cost? (e.g. "5000 - Cost of Goods Sold")
+        public int CogsAccountId { get; set; }
+        [ForeignKey("CogsAccountId")]
+        public Account CogsAccount { get; set; }
 
         // Navigation
         public ICollection<ProductVariant> Variants { get; set; } = new List<ProductVariant>();

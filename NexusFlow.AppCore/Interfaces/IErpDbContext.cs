@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using NexusFlow.Domain.Entities.Config;
 using NexusFlow.Domain.Entities.Finance;
 using NexusFlow.Domain.Entities.Inventory;
@@ -38,7 +39,10 @@ namespace NexusFlow.AppCore.Interfaces
         DbSet<AuditLog> AuditLogs { get; set; }
         DbSet<PaymentTransaction> PaymentTransactions { get; set; }
         DbSet<NotificationItem> Notifications { get; set; }
+        DbSet<SystemLookup> SystemLookups { get; set; }
 
         Task<int> SaveChangesAsync(CancellationToken cancellationToken);
+
+        Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default);
     }
 }

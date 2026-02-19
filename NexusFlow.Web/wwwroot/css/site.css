@@ -1,87 +1,78 @@
+/* ==========================================================================
+   1. GLOBAL & TYPOGRAPHY
+   ========================================================================== */
 html {
-  font-size: 14px;
+    font-size: 14px;
+    position: relative;
+    min-height: 100%;
 }
 
 @media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
-}
-
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
-}
-
-html {
-  position: relative;
-  min-height: 100%;
+    html {
+        font-size: 16px;
+    }
 }
 
 body {
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
-    font-size: 0.875rem; /* 14px Standard for ERPs */
+    font-size: 0.875rem;
     background-color: #f8f9fa;
-    overflow: hidden; /* Important for the sticky layout */
+    overflow: hidden; /* Critical for sticky sidebar layout */
 }
 
-.form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
-  color: var(--bs-secondary-color);
-  text-align: end;
+/* Form Focus States */
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
 }
 
-.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
-  text-align: start;
-}
-
-/* NAVBAR ALIGNMENT */
+/* ==========================================================================
+   2. NAVBAR STYLING
+   ========================================================================== */
 .navbar {
-    height: 64px; /* Matches Sidebar Header Height */
+    height: 64px;
     background-color: white;
+    border-bottom: 1px solid #e2e8f0;
 }
 
 .navbar-dark-erp {
-    background-color: #1e293b; /* Matches Sidebar Body */
-    /* OR use #0f172a if you want it to match the Sidebar Header */
-
-    height: 64px; /* Consistent height */
-    border-bottom: 1px solid #334155 !important; /* Subtle separator */
+    background-color: #1e293b;
+    height: 64px;
+    border-bottom: 1px solid #334155 !important;
 }
 
-/* 1. Search Bar Styling (Translucent Dark Mode) */
+/* Translucent Search Bar */
 .form-control-dark {
-    background-color: rgba(255, 255, 255, 0.05); /* See-through white */
+    background-color: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.1);
     color: #fff;
     transition: all 0.2s;
 }
 
-.form-control-dark:focus {
-    background-color: rgba(255, 255, 255, 0.1);
-    border-color: #3b82f6; /* Blue highlight */
-    color: #fff;
-    box-shadow: none;
-}
+    .form-control-dark:focus {
+        background-color: rgba(255, 255, 255, 0.1);
+        border-color: #3b82f6;
+        color: #fff;
+        box-shadow: none;
+    }
 
-/* Placeholder text color fix */
-.form-control-dark::placeholder {
-    color: #94a3b8;
-}
+    .form-control-dark::placeholder {
+        color: #94a3b8;
+    }
 
-/* 2. Ghost Button (Sidebar Toggle) */
+/* Ghost Buttons & Icons */
 .btn-ghost-light {
     color: #cbd5e1;
     background: transparent;
     border: none;
 }
 
-.btn-ghost-light:hover {
-    color: #fff;
-    background: rgba(255, 255, 255, 0.1);
-}
+    .btn-ghost-light:hover {
+        color: #fff;
+        background: rgba(255, 255, 255, 0.1);
+    }
 
-/* 3. Notification Icon */
 .text-light-muted {
-    color: #cbd5e1 !important; /* Light Grey */
+    color: #cbd5e1 !important;
     transition: color 0.2s;
 }
 
@@ -89,202 +80,195 @@ body {
         color: #fff !important;
     }
 
-/* 4. Vertical Divider (VR) */
-.vr {
-    background-color: #cbd5e1; /* Make visible on dark bg */
-    opacity: 0.2;
-}
-
-/* 5. User Profile Area */
-.navbar-nav .nav-link {
-    color: #cbd5e1;
-}
-
-.navbar-nav .nav-link:hover {
-    color: #ffffff;
-}
-
-/* 6. Dropdowns (Keep these white for readability) */
-.dropdown-menu {
-    border-radius: 0.5rem; /* Modern rounded corners */
-    margin-top: 10px !important; /* Spacing from bar */
-}
-
+/* ==========================================================================
+   3. SIDEBAR CORE LAYOUT
+   ========================================================================== */
 #wrapper {
-    overflow-x: hidden;
+    display: flex;
     width: 100%;
     height: 100vh;
     overflow: hidden;
 }
 
 #sidebar-wrapper {
-    min-width: 260px;
-    max-width: 260px;
-    height: 100vh; /* Full Height */
+    min-width: 250px;
+    max-width: 250px;
+    height: 100vh;
+    background-color: white; /* Clean Light Theme */
+    border-right: 1px solid #e2e8f0;
+    transition: all 0.25s ease-in-out;
     display: flex;
     flex-direction: column;
     z-index: 1000;
-    background-color: #1e293b;
-    border-right: 1px solid #0f172a;
-    transition: all 0.3s ease-in-out;
-    white-space: nowrap;
-    flex-shrink: 0;
+    overflow-y: auto;
     overflow-x: hidden;
 }
 
-#sidebar-wrapper i {
-    width: 20px;
-    text-align: center;
-}
-
-#page-content-wrapper {
-    flex-grow: 1; /* This makes the content expand to fill the remaining space */
-    min-width: 0; /* Critical: allows flex child to shrink below content width */
-    display: flex;
-    flex-direction: column;
-    transition: all 0.3s ease-in-out; /* Smoothly stretch the content area */
-}
-
-body.sb-sidenav-toggled #sidebar-wrapper {
-    min-width: 60px; /* Shrink to icon width */
-    max-width: 80px;
-    margin-left: 0; /* Keep it on screen */
-}
-
-#sidebarToggle i {
-    transition: transform 0.3s ease-in-out;
-}
-
-body.sb-sidenav-toggled .nav-link-text {
-    display: none;
-}
-
-body.sb-sidenav-toggled .sidebar-section-header {
-    display: none;
-}
-
-body.sb-sidenav-toggled .sidebar-brand-text {
-    display: none;
-}
-
-body.sb-sidenav-toggled #sidebarToggle i {
-    transform: rotate(180deg); /* Flips the hamburger icon */
-}
-
-/* Optional: Fade out text slightly before the width finishes shrinking */
-.nav-link-text, .sidebar-brand-text, .sidebar-section-header {
-    transition: opacity 0.2s ease;
-}
-
-body.sb-sidenav-toggled .nav-link-text,
-body.sb-sidenav-toggled .sidebar-brand-text,
-body.sb-sidenav-toggled .sidebar-section-header {
-    opacity: 0;
-    pointer-events: none; /* User can't click invisible text */
-}
-
-body.sb-sidenav-toggled .list-group-item {
-    text-align: center;
-    padding-left: 0 !important;
-    padding-right: 0 !important;
-    justify-content: center;
-}
-
-/* 5. Adjust Icon Margins when collapsed */
-body.sb-sidenav-toggled .list-group-item i {
-    margin-right: 0 !important; /* Remove margin between icon and (hidden) text */
-    font-size: 1rem; /* Make icons slightly bigger in mini mode */
-}
-
-/* 6. Logo Centering */
-body.sb-sidenav-toggled .sidebar-heading i {
-    margin-right: 0 !important;
-}
-
+/* Sidebar Brand Header */
 .sidebar-heading {
     height: 64px;
-    background-color: #0f172a; /* Darker header for contrast */
-    border-bottom: 1px solid #334155 !important;
-}
-
-.sidebar-brand-text {
-    color: #ffffff;
-    letter-spacing: 0.5px;
-}
-
-.sidebar-section-header {
-    font-size: 0.7rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    font-weight: 700;
-    color: #64748b; /* Muted Slate for headers */
-}
-
-#sidebar-wrapper .list-group-item {
-    background-color: transparent; /* Remove white background */
-    color: #cbd5e1; /* Light Grayish Blue text - readable on dark */
-    border: none;
-    font-size: 0.9rem;
-    border-left: 3px solid transparent;
-    transition: all 0.2s ease-in-out;
-}
-
-#sidebar-wrapper .list-group-item i {
-    color: #94a3b8; /* Muted icon color */
-    transition: color 0.2s;
-}
-
-#sidebar-wrapper .list-group-item:hover {
-    background-color: rgba(255, 255, 255, 0.05); /* Subtle lighting effect */
-    color: #ffffff;
-    transform: translateX(5px);
-}
-
-#sidebar-wrapper .list-group-item:hover i {
-    color: #ffffff;
-}
-
-#sidebar-wrapper .list-group-item.active {
-    background-color: #0d6efd; /* Primary ERP Blue */
-    color: #ffffff;
-    border-left: 3px solid #60a5fa; /* Lighter blue accent border */
-    font-weight: 600;
-}
-
-#sidebar-wrapper .list-group-item.active i {
-    color: #ffffff;
-}
-
-#sidebar-wrapper ::-webkit-scrollbar-thumb {
-    background: #475569;
-}
-
-
-/* CARD STYLING (ERP Standard) */
-.card {
-    border: none;
-    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-    margin-bottom: 1.5rem;
-}
-
-.card-header {
+    flex-shrink: 0;
     background-color: white;
-    border-bottom: 1px solid #edf2f9;
-    font-weight: 600;
-    padding: 1rem 1.25rem;
+    border-bottom: 1px solid #e2e8f0;
 }
 
-/* TABLE STYLING */
-table.dataTable {
-    border-collapse: collapse !important;
+/* Page Content Wrapper */
+#page-content-wrapper {
+    flex-grow: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto; /* Content scrolls independently */
 }
 
-.table-hover tbody tr:hover {
-    background-color: #f8f9fa;
+/* ==========================================================================
+   4. SIDEBAR ITEMS & ACCORDION
+   ========================================================================== */
+/* Main Links */
+#sidebar-wrapper .list-group-item {
+    border: none;
+    color: #475569;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    transition: all 0.2s;
 }
 
+    #sidebar-wrapper .list-group-item:hover {
+        background-color: #f1f5f9;
+        color: #0d6efd;
+    }
 
-/* SCROLLBAR STYLING (Optional Polish) */
+    #sidebar-wrapper .list-group-item i {
+        width: 24px;
+        text-align: center;
+        color: #94a3b8;
+        transition: color 0.2s;
+    }
+
+    #sidebar-wrapper .list-group-item:hover i {
+        color: #0d6efd;
+    }
+
+/* Sub-menu Links */
+.nav-link {
+    color: #64748b;
+    padding-left: 3rem; /* Indent sub-items */
+    font-size: 0.85rem;
+}
+
+    .nav-link:hover {
+        color: #0d6efd;
+    }
+
+/* Active State */
+.active-page {
+    color: #0d6efd !important;
+    font-weight: 700;
+    background-color: rgba(13, 110, 253, 0.05);
+    border-right: 3px solid #0d6efd;
+}
+
+/* Rotate Chevron on Expand */
+.list-group-item[aria-expanded="true"] .transition-icon {
+    transform: rotate(180deg);
+}
+
+.transition-icon {
+    transition: transform 0.2s;
+}
+
+/* ==========================================================================
+   5. TOGGLED STATE (MINI SIDEBAR)
+   ========================================================================== */
+body.sb-sidenav-toggled #sidebar-wrapper {
+    min-width: 70px;
+    max-width: 70px;
+}
+
+    /* HIDE Text Elements */
+    body.sb-sidenav-toggled #sidebar-wrapper span.fw-bold, /* Main Text */
+    body.sb-sidenav-toggled #sidebar-wrapper small, /* Subtext */
+    body.sb-sidenav-toggled #sidebar-wrapper .sidebar-section-header, /* Headers */
+    body.sb-sidenav-toggled #sidebar-wrapper .fa-chevron-down, /* Arrows */
+    body.sb-sidenav-toggled .sidebar-heading .ms-3 /* Brand Text */ {
+        display: none !important;
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    /* Hide Open Sub-menus */
+    body.sb-sidenav-toggled #sidebar-wrapper .collapse.show {
+        display: none !important;
+    }
+
+    /* Center Icons */
+    body.sb-sidenav-toggled #sidebar-wrapper .list-group-item {
+        justify-content: center !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+        text-align: center;
+    }
+
+        body.sb-sidenav-toggled #sidebar-wrapper .list-group-item i {
+            margin-right: 0 !important;
+            font-size: 1.2rem;
+        }
+
+/* Toggle Button Rotation */
+body.sb-sidenav-toggled #sidebarToggle i {
+    transform: rotate(180deg);
+}
+
+/* ==========================================================================
+   6. RESPONSIVE (MOBILE)
+   ========================================================================== */
+@media (max-width: 768px) {
+    #sidebar-wrapper {
+        margin-left: -250px; /* Hidden by default */
+    }
+
+    /* Show fully when toggled */
+    body.sb-sidenav-toggled #sidebar-wrapper {
+        margin-left: 0;
+        min-width: 250px;
+        max-width: 250px;
+    }
+
+        /* Force show text elements on mobile even if toggled */
+        body.sb-sidenav-toggled #sidebar-wrapper span.fw-bold,
+        body.sb-sidenav-toggled #sidebar-wrapper .fa-chevron-down {
+            display: inline-block !important;
+            opacity: 1;
+        }
+
+        /* Reset alignment */
+        body.sb-sidenav-toggled #sidebar-wrapper .list-group-item {
+            justify-content: space-between !important; /* Restore flex spacing */
+            padding-left: 1rem !important;
+        }
+
+            body.sb-sidenav-toggled #sidebar-wrapper .list-group-item i {
+                margin-right: 1rem !important; /* Restore icon margin */
+            }
+
+    /* Dark Overlay */
+    body.sb-sidenav-toggled #page-content-wrapper::before {
+        content: "";
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.5);
+        z-index: 900;
+    }
+}
+
+/* ==========================================================================
+   7. UTILITIES
+   ========================================================================== */
+/* Scrollbars */
 ::-webkit-scrollbar {
     width: 8px;
     height: 8px;
@@ -295,33 +279,27 @@ table.dataTable {
 }
 
 ::-webkit-scrollbar-thumb {
-    background: #c1c1c1;
+    background: #cbd5e1;
     border-radius: 4px;
 }
 
-::-webkit-scrollbar-thumb:hover {
-    background: #a8a8a8;
+    ::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
+    }
+
+/* Card & Table Polish */
+.card {
+    border: none;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    margin-bottom: 1.5rem;
 }
 
-@media (max-width: 768px) {
-    #sidebar-wrapper {
-        margin-left: -260px; /* Hidden by default on mobile */
-    }
+.card-header {
+    background: white;
+    border-bottom: 1px solid #f1f5f9;
+    font-weight: 600;
+}
 
-    /* When toggled on mobile, bring it back to 0 */
-    body.sb-sidenav-toggled #sidebar-wrapper {
-        margin-left: 0;
-    }
-
-    /* Optional: Dark overlay when sidebar is open on mobile */
-    body.sb-sidenav-toggled #page-content-wrapper::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        background: rgba(0,0,0,0.5);
-        z-index: 999;
-    }
+.table-hover tbody tr:hover {
+    background-color: #f8fafc;
 }

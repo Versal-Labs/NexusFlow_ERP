@@ -1,57 +1,92 @@
-﻿<div class="border-end" id="sidebar-wrapper">
-    <div class="sidebar-heading border-bottom d-flex align-items-center justify-content-center">
-        <i class="fas fa-cube text-primary fa-lg"></i>
-        <span class="fw-bold fs-5 sidebar-brand-text ms-2">NexusFlow</span>
+﻿<div class="border-end bg-white" id="sidebar-wrapper" style="width: 250px; min-height: 100vh;">
+    <div class="sidebar-heading border-bottom d-flex align-items-center justify-content-center py-4 text-primary">
+        <i class="fas fa-cube fa-2x"></i>
+        <div class="ms-3 lh-1">
+            <span class="fw-bold fs-5 d-block">NexusFlow</span>
+            <small class="text-muted text-uppercase" style="font-size: 0.65rem; letter-spacing: 1px;">Enterprise ERP</small>
+        </div>
     </div>
 
-    <div class="list-group list-group-flush pt-2">
+    <div class="list-group list-group-flush pt-3">
 
-        <div class="sidebar-section-header px-3 py-2">Core</div>
-
-        <a class="list-group-item list-group-item-action p-2 px-3 d-flex align-items-center"
-           href="/" title="Dashboard" data-bs-placement="right">
-            <i class="fas fa-tachometer-alt fa-fw me-2"></i>
-            <span class="nav-link-text">Dashboard</span>
+        <a class="list-group-item list-group-item-action border-0 d-flex align-items-center mb-1 py-2 px-3" href="/">
+            <i class="fas fa-tachometer-alt fa-fw me-3 text-secondary"></i>
+            <span class="fw-bold">Dashboard</span>
         </a>
 
-        <div class="sidebar-section-header px-3 pt-3 pb-1">Modules</div>
+        <div class="small fw-bold text-uppercase text-muted px-3 mt-4 mb-2 sidebar-section-header" style="font-size: 0.75rem;">Operations</div>
 
-        <a class="list-group-item list-group-item-action p-2 px-3 d-flex align-items-center"
-           href="/Purchasing" title="Purchasing" data-bs-placement="right">
-            <i class="fas fa-shopping-cart fa-fw me-2"></i>
-            <span class="nav-link-text">Purchasing</span>
+        <a class="list-group-item list-group-item-action border-0 d-flex justify-content-between align-items-center py-2 px-3"
+           data-bs-toggle="collapse" href="#menuProcurement" role="button" aria-expanded="false">
+            <div class="d-flex align-items-center">
+                <i class="fas fa-shopping-cart fa-fw me-3 text-secondary"></i>
+                <span class="fw-bold text-dark">Procurement</span>
+            </div>
+            <i class="fas fa-chevron-down small text-muted transition-icon"></i>
         </a>
-        <a class="list-group-item list-group-item-action p-2 px-3 d-flex align-items-center"
-           href="/Inventory" title="Inventory" data-bs-placement="right">
-            <i class="fas fa-boxes fa-fw me-2"></i>
-            <span class="nav-link-text">Inventory</span>
+        <div class="collapse bg-light" id="menuProcurement">
+            <nav class="nav flex-column py-1 ps-4">
+                <a href="/Purchasing" class="nav-link py-1 text-dark small">Purchase Orders</a>
+                <a href="/Supplier" class="nav-link py-1 text-dark small">Suppliers</a>
+                <a href="/Purchasing" class="nav-link py-1 text-dark small">Goods Receipt (GRN)</a>
+            </nav>
+        </div>
+
+        <a class="list-group-item list-group-item-action border-0 d-flex justify-content-between align-items-center py-2 px-3"
+           data-bs-toggle="collapse" href="#menuInventory" role="button" aria-expanded="false">
+            <div class="d-flex align-items-center">
+                <i class="fas fa-boxes fa-fw me-3 text-secondary"></i>
+                <span class="fw-bold text-dark">Inventory</span>
+            </div>
+            <i class="fas fa-chevron-down small text-muted transition-icon"></i>
         </a>
-        <a class="list-group-item list-group-item-action p-2 px-3 d-flex align-items-center" 
-           href="/InventoryImport" title="Import Wizard" data-bs-placement="right">
-            <i class="fas fa-file-import fa-fw me-2"></i> 
-            <span class="nav-link-text">Import Wizard</span>
+        <div class="collapse bg-light" id="menuInventory">
+            <nav class="nav flex-column py-1 ps-4">
+                <a href="/Product" class="nav-link py-1 text-dark small">Product Master</a>
+                <a href="/Inventory" class="nav-link py-1 text-dark small">Stock Levels</a>
+                <a href="/InventoryImport" class="nav-link py-1 text-dark small">Import Wizard</a>
+            </nav>
+        </div>
+
+        <a class="list-group-item list-group-item-action border-0 d-flex justify-content-between align-items-center py-2 px-3"
+           data-bs-toggle="collapse" href="#menuSales" role="button" aria-expanded="false">
+            <div class="d-flex align-items-center">
+                <i class="fas fa-file-invoice-dollar fa-fw me-3 text-secondary"></i>
+                <span class="fw-bold text-dark">Sales & CRM</span>
+            </div>
+            <i class="fas fa-chevron-down small text-muted transition-icon"></i>
         </a>
-        <a class="list-group-item list-group-item-action p-2 px-3 d-flex align-items-center" href="/Sales" title="Sales" data-bs-placement="right">
-            <i class="fas fa-file-invoice-dollar fa-fw me-2"></i>
-            <span class="nav-link-text">Sales</span>
-        </a>
-        <a class="list-group-item list-group-item-action p-2 px-3 d-flex align-items-center"
-           href="/Finance" title="Finance" data-bs-placement="right">
-            <i class="fas fa-chart-line fa-fw me-2"></i>
-            <span class="nav-link-text">Finance</span>
+        <div class="collapse bg-light" id="menuSales">
+            <nav class="nav flex-column py-1 ps-4">
+                <a href="/Sales" class="nav-link py-1 text-dark small">Sales Orders</a>
+                <a href="/Customer" class="nav-link py-1 text-dark small">Customers</a>
+            </nav>
+        </div>
+
+        <div class="small fw-bold text-uppercase text-muted px-3 mt-4 mb-2 sidebar-section-header" style="font-size: 0.75rem;">Financials</div>
+
+        <a class="list-group-item list-group-item-action border-0 d-flex align-items-center py-2 px-3" href="/Finance">
+            <i class="fas fa-chart-line fa-fw me-3 text-secondary"></i>
+            <span class="fw-bold text-dark">General Ledger</span>
         </a>
 
-        <div class="sidebar-section-header px-3 pt-3 pb-1">System</div>
+        <div class="small fw-bold text-uppercase text-muted px-3 mt-4 mb-2 sidebar-section-header" style="font-size: 0.75rem;">System</div>
 
-        <a class="list-group-item list-group-item-action p-2 px-3 d-flex align-items-center"
-           href="/Admin/Settings" title="Settings" data-bs-placement="right">
-            <i class="fas fa-cogs fa-fw me-2"></i>
-            <span class="nav-link-text">Settings</span>
+        <a class="list-group-item list-group-item-action border-0 d-flex justify-content-between align-items-center py-2 px-3"
+           data-bs-toggle="collapse" href="#menuConfig" role="button" aria-expanded="false">
+            <div class="d-flex align-items-center">
+                <i class="fas fa-cogs fa-fw me-3 text-secondary"></i>
+                <span class="fw-bold text-dark">Settings</span>
+            </div>
+            <i class="fas fa-chevron-down small text-muted transition-icon"></i>
         </a>
-        <a class="list-group-item list-group-item-action p-2 px-3 d-flex align-items-center"
-           href="/Config" title="Configuration" data-bs-placement="right">
-            <i class="fas fa-tools fa-fw me-2"></i>
-            <span class="nav-link-text">Configuration</span>
-        </a>
+        <div class="collapse bg-light" id="menuConfig">
+            <nav class="nav flex-column py-1 ps-4">
+                <a href="/Config" class="nav-link py-1 text-dark small">Lookups & Enums</a>
+                <a href="/Admin/Users" class="nav-link py-1 text-dark small">User Management</a>
+                <a href="/Admin/Settings" class="nav-link py-1 text-dark small">Global Config</a>
+            </nav>
+        </div>
+
     </div>
 </div>
