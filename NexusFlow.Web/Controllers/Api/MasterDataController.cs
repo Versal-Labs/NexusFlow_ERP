@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NexusFlow.AppCore.Constants;
-using NexusFlow.AppCore.Features.MasterData.Queries;
+using NexusFlow.AppCore.Features.MasterData.Products.Queries;
 using NexusFlow.Web.Filters;
 
 namespace NexusFlow.Web.Controllers.Api

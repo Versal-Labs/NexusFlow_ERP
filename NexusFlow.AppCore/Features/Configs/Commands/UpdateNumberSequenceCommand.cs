@@ -33,16 +33,25 @@ namespace NexusFlow.AppCore.Features.Configs.Commands
                 return Result<int>.Failure("Sequence ID not found.");
             }
 
-            // Validation: Don't allow resetting number to 0 or negative
+            // --- VALIDATION 1: Basic Sanity ---
             if (request.NextNumber < 1)
             {
                 return Result<int>.Failure("Next Number must be greater than 0.");
             }
 
+            // --- VALIDATION 2: ANTI-REWIND SECURITY CHECK (The Fix) ---
+            // If the user tries to set the number LOWER than what it is currently, block it.
+            // This prevents "Unique Key Violation" crashes in production.
+            if (request.NextNumber < entity.NextNumber)
+            {
+                return Result<int>.Failure($"Invalid Operation: You cannot rewind the sequence to {request.NextNumber}. The current value is {entity.NextNumber}. Reducing this will cause duplicate ID errors.");
+            }
+
             // Update Fields
-            entity.Prefix = request.Prefix.ToUpper().Trim(); // Standardize formatting
+            entity.Prefix = request.Prefix.ToUpper().Trim();
             entity.NextNumber = request.NextNumber;
-            entity.Delimiter = request.Delimiter;
+            entity.Delimiter = request.Delimiter ?? "-"; // Default protection
+            entity.LastUsed = DateTime.UtcNow;
 
             await _context.SaveChangesAsync(cancellationToken);
 

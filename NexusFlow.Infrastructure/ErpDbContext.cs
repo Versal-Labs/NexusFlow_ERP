@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using NexusFlow.AppCore.Interfaces;
 using NexusFlow.Domain.Common;
 using NexusFlow.Domain.Entities.Config;
@@ -55,6 +56,7 @@ namespace NexusFlow.Infrastructure
         public DbSet<AuditLog> AuditLogs { get; set; }
         public DbSet<PaymentTransaction> PaymentTransactions { get; set; }
         public DbSet<NotificationItem> Notifications { get; set; }
+        public DbSet<SystemLookup> SystemLookups { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -210,6 +212,11 @@ namespace NexusFlow.Infrastructure
             }
 
             await base.SaveChangesAsync(); // Save the logs themselves
+        }
+
+        public async Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default)
+        {
+            return await Database.BeginTransactionAsync(cancellationToken);
         }
     }
 }

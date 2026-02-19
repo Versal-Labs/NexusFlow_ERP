@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NexusFlow.AppCore.Constants;
 using NexusFlow.AppCore.Features.Purchasing.Commands;
+using NexusFlow.AppCore.Features.Purchasing.PurchaseOrders.Commands;
+using NexusFlow.AppCore.Features.Purchasing.PurchaseOrders.Queries;
 using NexusFlow.Web.Filters;
 
 namespace NexusFlow.Web.Controllers.Api
@@ -23,6 +25,21 @@ namespace NexusFlow.Web.Controllers.Api
             _mediator = mediator;
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetAll()
+        {
+            var result = await _mediator.Send(new GetPurchaseOrdersQuery());
+            return Ok(result);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Create(CreatePurchaseOrderCommand command)
+        {
+            var result = await _mediator.Send(command);
+            return result.Succeeded ? Ok(result) : BadRequest(result);
+        }
+
+
         // POST api/purchasing/grn
         [HttpPost("grn")]
         public async Task<IActionResult> CreateGrn([FromBody] CreateGrnCommand command)
@@ -31,6 +48,12 @@ namespace NexusFlow.Web.Controllers.Api
             return result.Succeeded ? Ok(result) : BadRequest(result);
         }
 
-        // TODO: Add endpoint for CreatePurchaseOrderCommand when you are ready
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(int id)
+        {
+            var result = await _mediator.Send(new GetPurchaseOrderByIdQuery { Id = id });
+            return result.Succeeded ? Ok(result) : BadRequest(result);
+        }
+
     }
 }

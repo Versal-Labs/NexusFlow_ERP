@@ -21,6 +21,8 @@ namespace NexusFlow.Domain.Entities.Config
         // E.g., "-" or "/"
         public string Delimiter { get; set; } = "-";
 
+        public DateTime LastUsed { get; set; }
+
         // Optional: E.g., "/2024"
         public string? Suffix { get; set; }
 

@@ -180,6 +180,9 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.Property<string>("LastModifiedBy")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime>("LastUsed")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Module")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -248,6 +251,57 @@ namespace NexusFlow.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("SystemConfigs", "Config");
+                });
+
+            modelBuilder.Entity("NexusFlow.Domain.Entities.Config.SystemLookup", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("LastModifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Value")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Type", "Code")
+                        .IsUnique();
+
+                    b.HasIndex("Type", "IsActive");
+
+                    b.ToTable("SystemLookups", "Config");
                 });
 
             modelBuilder.Entity("NexusFlow.Domain.Entities.Finance.Account", b =>
@@ -817,6 +871,9 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.Property<int>("CategoryId")
                         .HasColumnType("int");
 
+                    b.Property<int>("CogsAccountId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -826,6 +883,9 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("InventoryAccountId")
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("LastModifiedAt")
                         .HasColumnType("datetime2");
@@ -838,6 +898,9 @@ namespace NexusFlow.Infrastructure.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
+                    b.Property<int>("SalesAccountId")
+                        .HasColumnType("int");
+
                     b.Property<int>("Type")
                         .HasColumnType("int");
 
@@ -849,6 +912,12 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.HasIndex("BrandId");
 
                     b.HasIndex("CategoryId");
+
+                    b.HasIndex("CogsAccountId");
+
+                    b.HasIndex("InventoryAccountId");
+
+                    b.HasIndex("SalesAccountId");
 
                     b.HasIndex("UnitOfMeasureId");
 
@@ -1098,6 +1167,10 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.Property<string>("LastModifiedBy")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Note")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("PoNumber")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -1170,13 +1243,65 @@ namespace NexusFlow.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Address")
+                    b.Property<string>("AccountsEmail")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("AddressLine1")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("AddressLine2")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("BankAccountNumber")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("BankBranch")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("BankIBAN")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("BankName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("BankSwiftCode")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("BusinessRegNo")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("City")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("ContactPerson")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Country")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -1184,7 +1309,15 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.Property<string>("CreatedBy")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("DefaultCreditPeriodDays")
+                    b.Property<decimal>("CreditLimit")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("CurrencyCode")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("nvarchar(3)");
+
+                    b.Property<int?>("DefaultExpenseAccountId")
                         .HasColumnType("int");
 
                     b.Property<int?>("DefaultPayableAccountId")
@@ -1192,7 +1325,16 @@ namespace NexusFlow.Infrastructure.Migrations
 
                     b.Property<string>("Email")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("InternalNotes")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
 
                     b.Property<DateTime?>("LastModifiedAt")
                         .HasColumnType("datetime2");
@@ -1200,19 +1342,67 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.Property<string>("LastModifiedBy")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Mobile")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("PaymentTermId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Phone")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int?>("RatingId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("State")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("SupplierGroupId")
+                        .HasColumnType("int");
 
                     b.Property<string>("TaxRegNo")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("TradeName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Website")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("ZipCode")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("DefaultPayableAccountId");
+
+                    b.HasIndex("Email");
+
+                    b.HasIndex("IsActive");
+
+                    b.HasIndex("Name");
+
+                    b.HasIndex("TaxRegNo")
+                        .IsUnique();
 
                     b.ToTable("Suppliers", "Purchasing");
                 });
@@ -1711,24 +1901,47 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.HasOne("NexusFlow.Domain.Entities.Master.Brand", "Brand")
                         .WithMany()
                         .HasForeignKey("BrandId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("NexusFlow.Domain.Entities.Master.Category", "Category")
                         .WithMany()
                         .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("NexusFlow.Domain.Entities.Finance.Account", "CogsAccount")
+                        .WithMany()
+                        .HasForeignKey("CogsAccountId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("NexusFlow.Domain.Entities.Finance.Account", "InventoryAccount")
+                        .WithMany()
+                        .HasForeignKey("InventoryAccountId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("NexusFlow.Domain.Entities.Finance.Account", "SalesAccount")
+                        .WithMany()
+                        .HasForeignKey("SalesAccountId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("NexusFlow.Domain.Entities.Master.UnitOfMeasure", "UnitOfMeasure")
                         .WithMany()
                         .HasForeignKey("UnitOfMeasureId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Brand");
 
                     b.Navigation("Category");
+
+                    b.Navigation("CogsAccount");
+
+                    b.Navigation("InventoryAccount");
+
+                    b.Navigation("SalesAccount");
 
                     b.Navigation("UnitOfMeasure");
                 });
@@ -1802,6 +2015,14 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.Navigation("ProductVariant");
 
                     b.Navigation("PurchaseOrder");
+                });
+
+            modelBuilder.Entity("NexusFlow.Domain.Entities.Purchasing.Supplier", b =>
+                {
+                    b.HasOne("NexusFlow.Domain.Entities.Finance.Account", null)
+                        .WithMany()
+                        .HasForeignKey("DefaultPayableAccountId")
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("NexusFlow.Domain.Entities.Sales.SalesInvoice", b =>

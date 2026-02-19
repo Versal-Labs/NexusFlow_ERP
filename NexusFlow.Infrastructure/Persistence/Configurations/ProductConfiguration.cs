@@ -15,9 +15,24 @@ namespace NexusFlow.Infrastructure.Persistence.Configurations
             builder.Property(x => x.Name).HasMaxLength(200).IsRequired();
 
             // Relationships
-            builder.HasOne(x => x.Brand).WithMany().HasForeignKey(x => x.BrandId);
-            builder.HasOne(x => x.Category).WithMany().HasForeignKey(x => x.CategoryId);
-            builder.HasOne(x => x.UnitOfMeasure).WithMany().HasForeignKey(x => x.UnitOfMeasureId);
+            builder.HasOne(x => x.Brand).WithMany().HasForeignKey(x => x.BrandId).OnDelete(DeleteBehavior.Restrict);
+            builder.HasOne(x => x.Category).WithMany().HasForeignKey(x => x.CategoryId).OnDelete(DeleteBehavior.Restrict);
+            builder.HasOne(x => x.UnitOfMeasure).WithMany().HasForeignKey(x => x.UnitOfMeasureId).OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasOne(x => x.SalesAccount)
+                   .WithMany()
+                   .HasForeignKey(x => x.SalesAccountId)
+                   .OnDelete(DeleteBehavior.Restrict); // CRITICAL FIX
+
+            builder.HasOne(x => x.CogsAccount)
+                   .WithMany()
+                   .HasForeignKey(x => x.CogsAccountId)
+                   .OnDelete(DeleteBehavior.Restrict); // CRITICAL FIX
+
+            builder.HasOne(x => x.InventoryAccount)
+                   .WithMany()
+                   .HasForeignKey(x => x.InventoryAccountId)
+                   .OnDelete(DeleteBehavior.Restrict); // CRITICAL FIX
         }
     }
 
@@ -40,6 +55,11 @@ namespace NexusFlow.Infrastructure.Persistence.Configurations
                    .OnDelete(DeleteBehavior.Cascade); // Deleting Parent deletes variants (usually safe for setup, dangerous if history exists)
 
             builder.Property(x => x.ReorderLevel).HasColumnType("decimal(18,4)");
+
+            builder.HasOne(x => x.Product)
+                   .WithMany(x => x.Variants)
+                   .HasForeignKey(x => x.ProductId)
+                   .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

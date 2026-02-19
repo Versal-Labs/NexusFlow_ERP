@@ -1,0 +1,205 @@
+﻿@{
+    ViewData["Title"] = "Supplier Master";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+    <div>
+        <h2 class="fw-bold text-dark mb-1">Supplier Directory</h2>
+        <p class="text-muted mb-0 small">Manage vendors, compliance, and banking details.</p>
+    </div>
+    <button class="btn btn-primary shadow-sm" onclick="supplierApp.openEditor()">
+        <i class="bi bi-plus-lg me-2"></i>New Vendor
+    </button>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+        <table id="supplierGrid" class="table table-hover align-middle w-100 mb-0">
+            <thead class="bg-light text-uppercase small text-muted">
+                <tr>
+                    <th class="ps-4">Company Name</th>
+                    <th>Contact</th>
+                    <th>Group</th>
+                    <th>Tax ID</th>
+                    <th class="text-center">Status</th>
+                    <th class="text-end pe-4">Actions</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>
+
+<div class="offcanvas offcanvas-end w-50 shadow" tabindex="-1" id="supplierDrawer">
+    <div class="offcanvas-header border-bottom bg-light">
+        <h5 class="offcanvas-title fw-bold" id="drawerTitle">Register Vendor</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+    </div>
+
+    <div class="offcanvas-body p-0">
+        <form id="frmSupplier">
+            <input type="hidden" id="Id" value="0">
+
+            <ul class="nav nav-tabs nav-justified bg-white border-bottom" id="supplierTabs" role="tablist">
+                <li class="nav-item">
+                    <button class="nav-link active rounded-0 py-3" data-bs-toggle="tab" data-bs-target="#tabGeneral" type="button">General</button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link rounded-0 py-3" data-bs-toggle="tab" data-bs-target="#tabAddress" type="button">Address</button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link rounded-0 py-3" data-bs-toggle="tab" data-bs-target="#tabFinance" type="button">Financials</button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link rounded-0 py-3" data-bs-toggle="tab" data-bs-target="#tabBanking" type="button">Banking</button>
+                </li>
+            </ul>
+
+            <div class="tab-content p-4">
+
+                <div class="tab-pane fade show active" id="tabGeneral">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label fw-bold small">Company Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="Name" required>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label fw-bold small">Trade Name (DBA)</label>
+                            <input type="text" class="form-control" id="TradeName">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label fw-bold small">Tax / VAT ID <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="TaxRegNo" required>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label fw-bold small">Supplier Group</label>
+                            <select class="form-select" id="SupplierGroupId"></select>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label fw-bold small">Business Reg No</label>
+                            <input type="text" class="form-control" id="BusinessRegNo">
+                        </div>
+
+                        <div class="col-12"><hr class="text-muted"></div>
+
+                        <div class="col-6">
+                            <label class="form-label fw-bold small">Primary Contact</label>
+                            <input type="text" class="form-control" id="ContactPerson">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label fw-bold small">Primary Email <span class="text-danger">*</span></label>
+                            <input type="email" class="form-control" id="Email" required>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label fw-bold small">Phone</label>
+                            <input type="text" class="form-control" id="Phone">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label fw-bold small">Website</label>
+                            <input type="text" class="form-control" id="Website">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-pane fade" id="tabAddress">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label fw-bold small">Address Line 1 <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="AddressLine1" required>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-bold small">Address Line 2</label>
+                            <input type="text" class="form-control" id="AddressLine2">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label fw-bold small">City</label>
+                            <input type="text" class="form-control" id="City">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label fw-bold small">State / Province</label>
+                            <input type="text" class="form-control" id="State">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label fw-bold small">Zip / Postal Code</label>
+                            <input type="text" class="form-control" id="ZipCode">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label fw-bold small">Country</label>
+                            <select class="form-select" id="Country">
+                                <option value="USA">United States</option>
+                                <option value="LKR">Sri Lanka</option>
+                                <option value="GB">United Kingdom</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-pane fade" id="tabFinance">
+                    <div class="alert alert-info border-0 small"><i class="bi bi-info-circle me-2"></i>These settings control AP Posting.</div>
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <label class="form-label fw-bold small">Currency <span class="text-danger">*</span></label>
+                            <select class="form-select" id="CurrencyCode">
+                                <option value="USD">USD - US Dollar</option>
+                                <option value="EUR">EUR - Euro</option>
+                                <option value="LKR">LKR - Sri Lankan Rupee</option>
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label fw-bold small">Payment Terms</label>
+                            <select class="form-select" id="PaymentTermId"></select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-bold small">AP Control Account</label>
+                            <select class="form-select" id="DefaultPayableAccountId"></select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-bold small">Default Expense Account</label>
+                            <select class="form-select" id="DefaultExpenseAccountId"></select>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label fw-bold small">Credit Limit</label>
+                            <input type="number" class="form-control text-end" id="CreditLimit" value="0.00">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-pane fade" id="tabBanking">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label fw-bold small">Bank Name</label>
+                            <input type="text" class="form-control" id="BankName">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-bold small">Branch</label>
+                            <input type="text" class="form-control" id="BankBranch">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-bold small">Account Number</label>
+                            <input type="text" class="form-control" id="BankAccountNumber">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label fw-bold small">SWIFT / BIC</label>
+                            <input type="text" class="form-control" id="BankSwiftCode">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label fw-bold small">IBAN</label>
+                            <input type="text" class="form-control" id="BankIBAN">
+                        </div>
+                    </div>
+                </div>
+
+            </div> <div class="offcanvas-footer p-3 border-top bg-white d-flex justify-content-between align-items-center">
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="IsActive" checked>
+                    <label class="form-check-label small" for="IsActive">Active Vendor</label>
+                </div>
+                <button type="submit" class="btn btn-primary px-4 fw-bold">Save Vendor</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/purchasing/supplier-master.js" asp-append-version="true"></script>
+}

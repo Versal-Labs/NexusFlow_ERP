@@ -12,8 +12,8 @@ using NexusFlow.Infrastructure;
 namespace NexusFlow.Infrastructure.Migrations
 {
     [DbContext(typeof(ErpDbContext))]
-    [Migration("20260116171143_janith")]
-    partial class janith
+    [Migration("20260126111603_addd")]
+    partial class addd
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -820,6 +820,9 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.Property<int>("CategoryId")
                         .HasColumnType("int");
 
+                    b.Property<int>("CogsAccountId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -829,6 +832,9 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("InventoryAccountId")
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("LastModifiedAt")
                         .HasColumnType("datetime2");
@@ -841,6 +847,9 @@ namespace NexusFlow.Infrastructure.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
+                    b.Property<int>("SalesAccountId")
+                        .HasColumnType("int");
+
                     b.Property<int>("Type")
                         .HasColumnType("int");
 
@@ -852,6 +861,12 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.HasIndex("BrandId");
 
                     b.HasIndex("CategoryId");
+
+                    b.HasIndex("CogsAccountId");
+
+                    b.HasIndex("InventoryAccountId");
+
+                    b.HasIndex("SalesAccountId");
 
                     b.HasIndex("UnitOfMeasureId");
 
@@ -1714,24 +1729,47 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.HasOne("NexusFlow.Domain.Entities.Master.Brand", "Brand")
                         .WithMany()
                         .HasForeignKey("BrandId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("NexusFlow.Domain.Entities.Master.Category", "Category")
                         .WithMany()
                         .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("NexusFlow.Domain.Entities.Finance.Account", "CogsAccount")
+                        .WithMany()
+                        .HasForeignKey("CogsAccountId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("NexusFlow.Domain.Entities.Finance.Account", "InventoryAccount")
+                        .WithMany()
+                        .HasForeignKey("InventoryAccountId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("NexusFlow.Domain.Entities.Finance.Account", "SalesAccount")
+                        .WithMany()
+                        .HasForeignKey("SalesAccountId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("NexusFlow.Domain.Entities.Master.UnitOfMeasure", "UnitOfMeasure")
                         .WithMany()
                         .HasForeignKey("UnitOfMeasureId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Brand");
 
                     b.Navigation("Category");
+
+                    b.Navigation("CogsAccount");
+
+                    b.Navigation("InventoryAccount");
+
+                    b.Navigation("SalesAccount");
 
                     b.Navigation("UnitOfMeasure");
                 });

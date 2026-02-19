@@ -11,9 +11,9 @@ namespace NexusFlow.Infrastructure.Services
     public class NotificationService : INotificationService
     {
         private readonly IHubContext<NotificationHub> _hubContext;
-        private readonly ErpDbContext _context;
+        private readonly IErpDbContext _context;
 
-        public NotificationService(IHubContext<NotificationHub> hubContext, ErpDbContext context)
+        public NotificationService(IHubContext<NotificationHub> hubContext, IErpDbContext context)
         {
             _hubContext = hubContext;
             _context = context;

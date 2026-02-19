@@ -20,6 +20,7 @@ namespace NexusFlow.Domain.Entities.Purchasing
         public PurchaseOrderStatus Status { get; set; } = PurchaseOrderStatus.Draft;
 
         public decimal TotalAmount { get; set; }
+        public string Note { get; set; }
 
         public ICollection<PurchaseOrderItem> Items { get; set; } = new List<PurchaseOrderItem>();
     }
