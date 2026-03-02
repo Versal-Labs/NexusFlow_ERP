@@ -12,95 +12,93 @@ namespace NexusFlow.Infrastructure.Services
     public class JournalService : IJournalService
     {
         private readonly IErpDbContext _context;
+        private readonly INumberSequenceService _sequenceService;
 
-        public JournalService(IErpDbContext context)
+        // Inject the centralized Sequence Service to prevent DB locking/race conditions
+        public JournalService(IErpDbContext context, INumberSequenceService sequenceService)
         {
             _context = context;
+            _sequenceService = sequenceService;
         }
 
         public async Task<Result<int>> PostJournalAsync(JournalEntryRequest request)
         {
+            // Use standard cancellation token pattern
+            var ct = CancellationToken.None;
+
             // =============================================================
-            // RULE 1: PERIOD LOCKING (Prevent Back-dating)
+            // RULE 1: STRICT PERIOD LOCKING
             // =============================================================
             var period = await _context.FinancialPeriods
-                .FirstOrDefaultAsync(p => request.Date >= p.StartDate && request.Date <= p.EndDate);
+                .FirstOrDefaultAsync(p => request.Date.Date >= p.StartDate.Date && request.Date.Date <= p.EndDate.Date, ct);
 
-            if (period != null && period.IsClosed)
+            // FAIL if period does not exist OR is closed.
+            if (period == null)
             {
-                return Result<int>.Failure($"Accounting Error: The Financial Period '{period.Name}' is CLOSED. You cannot post transactions to this date.");
+                return Result<int>.Failure($"Accounting Error: No Financial Period exists for the date {request.Date:yyyy-MM-dd}. Please open the period first.");
             }
-            // (Optional: You can also fail if no period exists at all)
-
-            // =============================================================
-            // RULE 2: ACCOUNT VALIDATION (Integrity Check)
-            // =============================================================
-            var accountIds = request.Lines.Select(l => l.AccountId).Distinct().ToList();
-            var validAccounts = await _context.Accounts
-                .Where(a => accountIds.Contains(a.Id))
-                .ToDictionaryAsync(a => a.Id);
-
-            foreach (var line in request.Lines)
+            if (period.IsClosed)
             {
-                if (!validAccounts.ContainsKey(line.AccountId))
-                    return Result<int>.Failure($"Accounting Error: Account ID {line.AccountId} does not exist.");
-
-                // Standard: You cannot post to a "Parent/Folder" account, only transaction accounts
-                if (!validAccounts[line.AccountId].IsTransactionAccount)
-                    return Result<int>.Failure($"Accounting Error: Account '{validAccounts[line.AccountId].Name}' is a Folder/Parent. You cannot post directly to it.");
+                return Result<int>.Failure($"Accounting Error: The Financial Period '{period.Year}-{period.Month}' is CLOSED. You cannot post transactions to this date.");
             }
 
             // =============================================================
-            // RULE 3: STRICT DOUBLE ENTRY (The Golden Rule)
+            // RULE 2: STRICT DOUBLE ENTRY (The Golden Rule)
             // =============================================================
             decimal totalDebits = request.Lines.Sum(x => x.Debit);
             decimal totalCredits = request.Lines.Sum(x => x.Credit);
 
-            if (Math.Abs(totalDebits - totalCredits) > 0.00m) // Tolerance for floating point
+            if (Math.Abs(totalDebits - totalCredits) > 0.00m)
             {
-                return Result<int>.Failure($"Double Entry Violation: Debits ({totalDebits:N2}) != Credits ({totalCredits:N2}). Difference: {totalDebits - totalCredits}");
+                return Result<int>.Failure($"Double Entry Violation: Debits ({totalDebits:N2}) do not equal Credits ({totalCredits:N2}). Difference: {totalDebits - totalCredits}");
             }
 
-            if (totalDebits == 0) return Result<int>.Failure("Transaction cannot be zero.");
+            if (totalDebits == 0)
+                return Result<int>.Failure("Transaction cannot be zero.");
 
             // =============================================================
-            // RULE 4: AUTO-SEQUENCING (Audit Trail)
+            // RULE 3: ACCOUNT VALIDATION & BALANCE UPDATES
             // =============================================================
-            // Format: JV-{Year}-{Sequence} (e.g., JV-2024-0005)
-            // Note: In high-traffic systems, use a dedicated Sequence Table or Database Sequence.
-            // For this simplified version, we count existing entries for the year.
+            var accountIds = request.Lines.Select(l => l.AccountId).Distinct().ToList();
 
-            string yearPrefix = $"JV-{request.Date.Year}-";
+            // Note: We do NOT use AsNoTracking() here because we MUST mutate the balances
+            var validAccounts = await _context.Accounts
+                .Where(a => accountIds.Contains(a.Id))
+                .ToDictionaryAsync(a => a.Id, ct);
 
-            // This is a simplified "Last Number" logic. 
-            // Real ERPs use a locked sequence table to prevent race conditions.
-            var lastEntry = await _context.JournalEntries
-                .Where(j => j.ReferenceNo.StartsWith(yearPrefix))
-                .OrderByDescending(j => j.ReferenceNo)
-                .Select(j => j.ReferenceNo)
-                .FirstOrDefaultAsync();
-
-            int nextNum = 1;
-            if (lastEntry != null)
+            foreach (var line in request.Lines)
             {
-                string numPart = lastEntry.Substring(yearPrefix.Length);
-                if (int.TryParse(numPart, out int lastNum)) nextNum = lastNum + 1;
+                if (!validAccounts.TryGetValue(line.AccountId, out var account))
+                    return Result<int>.Failure($"Accounting Error: Account ID {line.AccountId} does not exist.");
+
+                if (!account.IsTransactionAccount)
+                    return Result<int>.Failure($"Accounting Error: Account '{account.Name}' is a Folder/Parent. You cannot post directly to it.");
+
+                // UPDATE DOMAIN STATE: Standard Accounting Sign Convention
+                // Debits increase asset/expense (positive). Credits increase liability/revenue/equity (negative).
+                // Standard convention logic: Balance = Balance + Debit - Credit
+                decimal movement = line.Debit - line.Credit;
+                account.UpdateBalance(movement);
             }
 
-            string journalId = $"{yearPrefix}{nextNum:D6}"; // JV-2024-000001
+            // =============================================================
+            // RULE 4: AUTO-SEQUENCING (Thread-Safe)
+            // =============================================================
+            // Fetch the guaranteed unique sequence number via the Sequence Service
+            string journalId = await _sequenceService.GenerateNextNumberAsync("JOURNAL", ct);
 
             // =============================================================
-            // COMMIT
+            // COMMIT TO DATABASE
             // =============================================================
             var journal = new JournalEntry
             {
-                ReferenceNo = journalId, // The Official Accounting ID
-                Description = request.Description,
+                ReferenceNo = request.ReferenceNo, // Source Document (e.g., GRN-2024-001)
+                Description = string.IsNullOrWhiteSpace(request.Description) ? $"JV Auto-Generated ({journalId})" : request.Description,
                 Date = request.Date,
-                Module = request.Module, // "Inventory", "Sales"
-                TotalAmount = totalDebits,
-                // Store the "Source Document" reference separately (e.g., Invoice #)
-                // Note: You might want to add a property 'SourceRef' to JournalEntry entity for this.
+                Module = request.Module, // e.g., "Purchasing", "Sales"
+                TotalAmount = totalDebits
+                // Note: The actual JV number might be stored in a dedicated field later, 
+                // but appending it to the description or relying on an Audit log is common.
             };
 
             foreach (var line in request.Lines)
@@ -110,12 +108,14 @@ namespace NexusFlow.Infrastructure.Services
                     AccountId = line.AccountId,
                     Debit = line.Debit,
                     Credit = line.Credit,
-                    Description = line.Note
+                    Description = string.IsNullOrWhiteSpace(line.Note) ? journal.Description : line.Note
                 });
             }
 
             _context.JournalEntries.Add(journal);
-            await _context.SaveChangesAsync(CancellationToken.None);
+
+            // The Accounts are automatically updated here because EF Core tracks the validAccounts dictionary.
+            await _context.SaveChangesAsync(ct);
 
             return Result<int>.Success(journal.Id, $"Posted successfully: {journalId}");
         }

@@ -62,14 +62,14 @@ var grnApp = (function () {
             const html = `
                 <tr class="${isCompleted ? 'bg-light text-muted' : ''}">
                     <td>
-                        <div class="fw-bold">${item.productName}</div>
+                        <div class="fw-semibold">${item.productName}</div>
                         <div class="small font-monospace">${item.sku}</div>
                     </td>
                     <td class="text-center">${item.quantityOrdered}</td>
                     <td class="text-center">${item.quantityReceived}</td>
                     
                     <td class="bg-success-subtle">
-                        <input type="number" class="form-control form-control-sm text-center fw-bold text-success grn-qty" 
+                        <input type="number" class="form-control form-control-sm text-center fw-semibold text-success grn-qty" 
                                data-index="${index}"
                                value="${defaultReceive}" 
                                min="0" 

@@ -1,90 +1,139 @@
-﻿<div class="border-end bg-white" id="sidebar-wrapper" style="width: 250px; min-height: 100vh;">
-    <div class="sidebar-heading border-bottom d-flex align-items-center justify-content-center py-4 text-primary">
-        <i class="fas fa-cube fa-2x"></i>
-        <div class="ms-3 lh-1">
-            <span class="fw-bold fs-5 d-block">NexusFlow</span>
-            <small class="text-muted text-uppercase" style="font-size: 0.65rem; letter-spacing: 1px;">Enterprise ERP</small>
-        </div>
+﻿<div id="sidebar-wrapper" style="width: 250px; min-height: 100vh;">
+    <div class="sidebar-heading d-flex align-items-center justify-content-center">
+        <a href="/" class="text-decoration-none d-flex align-items-center justify-content-center w-100 h-100">
+            <img src="~/Assets/Asset 4@3x.png" alt="NexusFlow ERP" class="sidebar-brand-full" style="max-height: 35px; width: auto;">
+            <img src="~/Assets/Asset 4@3logo onlyx.png" alt="Nexus" class="sidebar-brand-mini" style="max-height: 30px; width: auto; display: none;">
+        </a>
     </div>
 
-    <div class="list-group list-group-flush pt-3">
+    <div class="list-group list-group-flush pt-3 pb-5">
 
         <a class="list-group-item list-group-item-action border-0 d-flex align-items-center mb-1 py-2 px-3" href="/">
-            <i class="fas fa-tachometer-alt fa-fw me-3 text-secondary"></i>
-            <span class="fw-bold">Dashboard</span>
+            <i class="fas fa-tachometer-alt fa-fw me-3"></i>
+            <span class="fw-semibold">Dashboard</span>
         </a>
 
-        <div class="small fw-bold text-uppercase text-muted px-3 mt-4 mb-2 sidebar-section-header" style="font-size: 0.75rem;">Operations</div>
+        <div class="small fw-semibold text-uppercase px-3 mt-4 mb-2 sidebar-section-header">Master Data</div>
+
+        <a class="list-group-item list-group-item-action border-0 d-flex justify-content-between align-items-center py-2 px-3"
+           data-bs-toggle="collapse" href="#menuMasterData" role="button" aria-expanded="false">
+            <div class="d-flex align-items-center">
+                <i class="fas fa-database fa-fw me-3"></i>
+                <span class="fw-semibold">Registries</span>
+            </div>
+            <i class="fas fa-chevron-down small transition-icon"></i>
+        </a>
+        <div class="collapse" id="menuMasterData">
+            <nav class="nav flex-column py-1 ps-4">
+                <a href="/Product" class="nav-link py-1 small">Products & Services</a>
+                <a href="/Customer" class="nav-link py-1 small">Customers</a>
+                <a href="/Supplier" class="nav-link py-1 small">Suppliers & Contractors</a>
+                <a href="/MasterData/Definitions" class="nav-link py-1 small">Categories & Brands</a>
+                <a href="/MasterData/Warehouses" class="nav-link py-1 small">Warehouses</a>
+            </nav>
+        </div>
+
+
+        <div class="small fw-semibold text-uppercase px-3 mt-4 mb-2 sidebar-section-header">Operations</div>
+
+        <a class="list-group-item list-group-item-action border-0 d-flex justify-content-between align-items-center py-2 px-3"
+           data-bs-toggle="collapse" href="#menuSales" role="button" aria-expanded="false">
+            <div class="d-flex align-items-center">
+                <i class="fas fa-file-invoice-dollar fa-fw me-3"></i>
+                <span class="fw-semibold">Sales (O2C)</span>
+            </div>
+            <i class="fas fa-chevron-down small transition-icon"></i>
+        </a>
+        <div class="collapse" id="menuSales">
+            <nav class="nav flex-column py-1 ps-4">
+                <a href="/Sales/Quotations" class="nav-link py-1 small">Quotations</a>
+                <a href="/Sales/Orders" class="nav-link py-1 small">Sales Orders</a>
+                <a href="/Sales/Invoices" class="nav-link py-1 small">Sales Invoices</a>
+                <a href="/Sales/Returns" class="nav-link py-1 small">Credit Notes (Returns)</a>
+            </nav>
+        </div>
 
         <a class="list-group-item list-group-item-action border-0 d-flex justify-content-between align-items-center py-2 px-3"
            data-bs-toggle="collapse" href="#menuProcurement" role="button" aria-expanded="false">
             <div class="d-flex align-items-center">
-                <i class="fas fa-shopping-cart fa-fw me-3 text-secondary"></i>
-                <span class="fw-bold text-dark">Procurement</span>
+                <i class="fas fa-shopping-cart fa-fw me-3"></i>
+                <span class="fw-semibold">Purchasing (P2P)</span>
             </div>
-            <i class="fas fa-chevron-down small text-muted transition-icon"></i>
+            <i class="fas fa-chevron-down small transition-icon"></i>
         </a>
-        <div class="collapse bg-light" id="menuProcurement">
+        <div class="collapse" id="menuProcurement">
             <nav class="nav flex-column py-1 ps-4">
-                <a href="/Purchasing" class="nav-link py-1 text-dark small">Purchase Orders</a>
-                <a href="/Supplier" class="nav-link py-1 text-dark small">Suppliers</a>
-                <a href="/Purchasing" class="nav-link py-1 text-dark small">Goods Receipt (GRN)</a>
+                <a href="/Purchasing" class="nav-link py-1 small">Purchase Orders</a>
+                <a href="/Purchasing/GRN" class="nav-link py-1 small">Goods Receipt (GRN)</a>
+                <a href="/Purchasing/Bills" class="nav-link py-1 small">Supplier Bills</a>
+                <a href="/Purchasing/Returns" class="nav-link py-1 small">Debit Notes (Returns)</a>
             </nav>
         </div>
 
         <a class="list-group-item list-group-item-action border-0 d-flex justify-content-between align-items-center py-2 px-3"
            data-bs-toggle="collapse" href="#menuInventory" role="button" aria-expanded="false">
             <div class="d-flex align-items-center">
-                <i class="fas fa-boxes fa-fw me-3 text-secondary"></i>
-                <span class="fw-bold text-dark">Inventory</span>
+                <i class="fas fa-boxes fa-fw me-3"></i>
+                <span class="fw-semibold">Inventory & Mfg</span>
             </div>
-            <i class="fas fa-chevron-down small text-muted transition-icon"></i>
+            <i class="fas fa-chevron-down small transition-icon"></i>
         </a>
-        <div class="collapse bg-light" id="menuInventory">
+        <div class="collapse" id="menuInventory">
             <nav class="nav flex-column py-1 ps-4">
-                <a href="/Product" class="nav-link py-1 text-dark small">Product Master</a>
-                <a href="/Inventory" class="nav-link py-1 text-dark small">Stock Levels</a>
-                <a href="/InventoryImport" class="nav-link py-1 text-dark small">Import Wizard</a>
+                <a href="/Inventory" class="nav-link py-1 small">Stock Valuation</a>
+                <a href="/Inventory/Transfers" class="nav-link py-1 small">Warehouse Transfers</a>
+                <a href="/Inventory/Adjustments" class="nav-link py-1 small">Stock Adjustments</a>
+                <a href="/Manufacturing/JobOrders" class="nav-link py-1 small">Job Orders (Outsourced)</a>
+                <a href="/InventoryImport" class="nav-link py-1 small">Bulk Import Wizard</a>
             </nav>
         </div>
+
+
+        <div class="small fw-semibold text-uppercase px-3 mt-4 mb-2 sidebar-section-header">Financials</div>
 
         <a class="list-group-item list-group-item-action border-0 d-flex justify-content-between align-items-center py-2 px-3"
-           data-bs-toggle="collapse" href="#menuSales" role="button" aria-expanded="false">
+           data-bs-toggle="collapse" href="#menuFinance" role="button" aria-expanded="false">
             <div class="d-flex align-items-center">
-                <i class="fas fa-file-invoice-dollar fa-fw me-3 text-secondary"></i>
-                <span class="fw-bold text-dark">Sales & CRM</span>
+                <i class="fas fa-chart-line fa-fw me-3"></i>
+                <span class="fw-semibold">Accounting</span>
             </div>
-            <i class="fas fa-chevron-down small text-muted transition-icon"></i>
+            <i class="fas fa-chevron-down small transition-icon"></i>
         </a>
-        <div class="collapse bg-light" id="menuSales">
+        <div class="collapse" id="menuFinance">
             <nav class="nav flex-column py-1 ps-4">
-                <a href="/Sales" class="nav-link py-1 text-dark small">Sales Orders</a>
-                <a href="/Customer" class="nav-link py-1 text-dark small">Customers</a>
+                <a href="/Finance/Journals" class="nav-link py-1 small">Journal Entries</a>
+                <a href="/Treasury/Receipts" class="nav-link py-1 small">Customer Receipts</a>
+                <a href="/Treasury/Payments" class="nav-link py-1 small">Supplier Payments</a>
+                <a href="/Finance/Reports" class="nav-link py-1 small">Financial Reports</a>
             </nav>
         </div>
 
-        <div class="small fw-bold text-uppercase text-muted px-3 mt-4 mb-2 sidebar-section-header" style="font-size: 0.75rem;">Financials</div>
-
-        <a class="list-group-item list-group-item-action border-0 d-flex align-items-center py-2 px-3" href="/Finance">
-            <i class="fas fa-chart-line fa-fw me-3 text-secondary"></i>
-            <span class="fw-bold text-dark">General Ledger</span>
+        <a class="list-group-item list-group-item-action border-0 d-flex align-items-center py-2 px-3" href="/ChartOfAccounts">
+            <i class="fa-solid fa-sitemap fa-fw me-3"></i>
+            <span class="fw-semibold">Chart of Accounts</span>
         </a>
 
-        <div class="small fw-bold text-uppercase text-muted px-3 mt-4 mb-2 sidebar-section-header" style="font-size: 0.75rem;">System</div>
+        <a class="list-group-item list-group-item-action border-0 d-flex align-items-center py-2 px-3" href="/FinancialPeriod">
+            <i class="fa-solid fa-calendar-week fa-fw me-3"></i>
+            <span class="fw-semibold">Financial Periods</span>
+        </a>
+
+
+        <div class="small fw-semibold text-uppercase px-3 mt-4 mb-2 sidebar-section-header">System</div>
 
         <a class="list-group-item list-group-item-action border-0 d-flex justify-content-between align-items-center py-2 px-3"
            data-bs-toggle="collapse" href="#menuConfig" role="button" aria-expanded="false">
             <div class="d-flex align-items-center">
-                <i class="fas fa-cogs fa-fw me-3 text-secondary"></i>
-                <span class="fw-bold text-dark">Settings</span>
+                <i class="fas fa-cogs fa-fw me-3"></i>
+                <span class="fw-semibold">Configuration</span>
             </div>
-            <i class="fas fa-chevron-down small text-muted transition-icon"></i>
+            <i class="fas fa-chevron-down small transition-icon"></i>
         </a>
-        <div class="collapse bg-light" id="menuConfig">
+        <div class="collapse" id="menuConfig">
             <nav class="nav flex-column py-1 ps-4">
-                <a href="/Config" class="nav-link py-1 text-dark small">Lookups & Enums</a>
-                <a href="/Admin/Users" class="nav-link py-1 text-dark small">User Management</a>
-                <a href="/Admin/Settings" class="nav-link py-1 text-dark small">Global Config</a>
+                <a href="/Config" class="nav-link py-1 small">System Parameters</a>
+                <a href="/Config/Taxes" class="nav-link py-1 small">Tax Engine</a>
+                <a href="/Admin/Users" class="nav-link py-1 small">User & Roles</a>
             </nav>
         </div>
 

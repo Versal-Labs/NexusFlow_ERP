@@ -118,7 +118,7 @@ $(document).ready(function () {
             var title = el.getAttribute('title');
             if (!title) {
                 // Fallback: try to grab the text inside the span
-                var textSpan = el.querySelector('.fw-bold');
+                var textSpan = el.querySelector('.fw-semibold');
                 if (textSpan) title = textSpan.innerText;
             }
 

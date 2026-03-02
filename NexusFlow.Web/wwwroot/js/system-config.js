@@ -62,7 +62,7 @@ var configApp = (function () {
                 }
             },
             columns: [
-                { data: 'key', className: "ps-4 fw-bold font-monospace text-dark", width: "30%" },
+                { data: 'key', className: "ps-4 fw-semibold font-monospace text-dark", width: "30%" },
                 { data: 'description', className: "text-muted small", width: "35%" },
                 {
                     data: 'value', width: "25%",
@@ -209,7 +209,7 @@ var configApp = (function () {
                 dataSrc: "data"
             },
             columns: [
-                { data: 'module', className: "ps-4 fw-bold" },
+                { data: 'module', className: "ps-4 fw-semibold" },
                 { data: 'prefix', className: "text-center", render: d => `<span class="badge bg-light text-dark border font-monospace">${d}</span>` },
                 { data: 'nextNumber', className: "font-monospace" },
                 {

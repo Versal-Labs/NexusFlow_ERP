@@ -10,6 +10,8 @@ namespace NexusFlow.Domain.Entities.Finance
     public class FinancialPeriod : AuditableEntity
     {
         public string Name { get; set; } = string.Empty; // e.g., "January 2024"
+        public int Year { get; set; }
+        public int Month { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
 

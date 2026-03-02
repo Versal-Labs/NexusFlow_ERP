@@ -94,8 +94,10 @@ body {
     min-width: 250px;
     max-width: 250px;
     height: 100vh;
-    background-color: white; /* Clean Light Theme */
-    border-right: 1px solid #e2e8f0;
+    /* CHANGE 1: Match the Header Color */
+    background-color: #0f172a;
+    /* CHANGE 2: Darker right border */
+    border-right: 1px solid #1e293b;
     transition: all 0.25s ease-in-out;
     display: flex;
     flex-direction: column;
@@ -108,8 +110,8 @@ body {
 .sidebar-heading {
     height: 64px;
     flex-shrink: 0;
-    background-color: white;
-    border-bottom: 1px solid #e2e8f0;
+    background-color: #0f172a; /* Exact match to your dark theme header */
+    border-bottom: 1px solid #1e293b !important; /* Darker, subtle border */
 }
 
 /* Page Content Wrapper */
@@ -127,7 +129,9 @@ body {
 /* Main Links */
 #sidebar-wrapper .list-group-item {
     border: none;
-    color: #475569;
+    /* CHANGE 3: Light text for readability on dark background */
+    color: #cbd5e1;
+    background-color: transparent;
     font-weight: 500;
     white-space: nowrap;
     overflow: hidden;
@@ -135,8 +139,9 @@ body {
 }
 
     #sidebar-wrapper .list-group-item:hover {
-        background-color: #f1f5f9;
-        color: #0d6efd;
+        /* CHANGE 4: Subtle translucent white for hover effect */
+        background-color: rgba(255, 255, 255, 0.05);
+        color: #ffffff;
     }
 
     #sidebar-wrapper .list-group-item i {
@@ -152,13 +157,14 @@ body {
 
 /* Sub-menu Links */
 .nav-link {
-    color: #64748b;
-    padding-left: 3rem; /* Indent sub-items */
+    /* CHANGE 5: Muted light text for sub-menus */
+    color: #94a3b8;
+    padding-left: 3rem;
     font-size: 0.85rem;
 }
 
     .nav-link:hover {
-        color: #0d6efd;
+        color: #ffffff;
     }
 
 /* Active State */
@@ -187,7 +193,7 @@ body.sb-sidenav-toggled #sidebar-wrapper {
 }
 
     /* HIDE Text Elements */
-    body.sb-sidenav-toggled #sidebar-wrapper span.fw-bold, /* Main Text */
+    body.sb-sidenav-toggled #sidebar-wrapper span.fw-semibold, /* Main Text */
     body.sb-sidenav-toggled #sidebar-wrapper small, /* Subtext */
     body.sb-sidenav-toggled #sidebar-wrapper .sidebar-section-header, /* Headers */
     body.sb-sidenav-toggled #sidebar-wrapper .fa-chevron-down, /* Arrows */
@@ -195,12 +201,25 @@ body.sb-sidenav-toggled #sidebar-wrapper {
         display: none !important;
         opacity: 0;
         pointer-events: none;
+        
     }
 
-    /* Hide Open Sub-menus */
-    body.sb-sidenav-toggled #sidebar-wrapper .collapse.show {
-        display: none !important;
-    }
+.sidebar-section-header {
+    color: #878787;
+}
+/* Hide Open Sub-menus */
+body.sb-sidenav-toggled #sidebar-wrapper .collapse.show {
+    display: none !important;
+}
+
+#sidebar-wrapper .sidebar-brand-full {
+    display: block;
+    transition: opacity 0.2s ease-in-out;
+}
+
+#sidebar-wrapper .sidebar-brand-mini {
+    display: none !important;
+}
 
     /* Center Icons */
     body.sb-sidenav-toggled #sidebar-wrapper .list-group-item {
@@ -214,6 +233,15 @@ body.sb-sidenav-toggled #sidebar-wrapper {
             margin-right: 0 !important;
             font-size: 1.2rem;
         }
+
+/* 2. When Sidebar is COLLAPSED (Mini Mode) */
+body.sb-sidenav-toggled #sidebar-wrapper .sidebar-brand-full {
+    display: none !important; /* Hide the wide logo */
+}
+
+body.sb-sidenav-toggled #sidebar-wrapper .sidebar-brand-mini {
+    display: block !important; /* Show the small square icon */
+}
 
 /* Toggle Button Rotation */
 body.sb-sidenav-toggled #sidebarToggle i {
@@ -236,7 +264,7 @@ body.sb-sidenav-toggled #sidebarToggle i {
     }
 
         /* Force show text elements on mobile even if toggled */
-        body.sb-sidenav-toggled #sidebar-wrapper span.fw-bold,
+        body.sb-sidenav-toggled #sidebar-wrapper span.fw-semibold,
         body.sb-sidenav-toggled #sidebar-wrapper .fa-chevron-down {
             display: inline-block !important;
             opacity: 1;

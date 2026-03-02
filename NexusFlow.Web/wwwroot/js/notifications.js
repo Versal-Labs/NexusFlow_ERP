@@ -54,7 +54,7 @@ function addNotificationToDropdown(data) {
                     <i class="fas fa-info-circle text-primary"></i>
                 </div>
                 <div>
-                    <h6 class="mb-0 small fw-bold">${data.title}</h6>
+                    <h6 class="mb-0 small fw-semibold">${data.title}</h6>
                     <p class="mb-0 small text-muted text-truncate" style="max-width: 200px;">${data.message}</p>
                     <small class="text-xs text-muted">${new Date(data.created).toLocaleTimeString()}</small>
                 </div>
