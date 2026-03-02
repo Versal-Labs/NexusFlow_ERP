@@ -75,5 +75,21 @@ namespace NexusFlow.Web.Controllers.Api
             var result = await _mediator.Send(query);
             return Ok(result);
         }
+
+        [HttpGet("periods")]
+        public async Task<IActionResult> GetFinancialPeriods()
+        {
+            var result = await _mediator.Send(new GetFinancialPeriodsQuery());
+            return Ok(result);
+        }
+
+        [HttpPost("periods")]
+        public async Task<IActionResult> CreateFinancialPeriod([FromBody] CreateFinancialPeriodCommand command)
+        {
+            var result = await _mediator.Send(command);
+            if (result.Succeeded)
+                return Ok(result);
+            return BadRequest(result);
+        }
     }
 }

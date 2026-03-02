@@ -18,36 +18,34 @@ namespace NexusFlow.AppCore.Features.Purchasing.Commands
         private readonly IJournalService _journalService;
         private readonly INumberSequenceService _numSequenceService;
 
-        public CreateGrnHandler(IErpDbContext context, IStockService stockService, IJournalService journalService)
+        public CreateGrnHandler(INumberSequenceService numSequenceService, IErpDbContext context, IStockService stockService, IJournalService journalService)
         {
             _context = context;
             _stockService = stockService;
             _journalService = journalService;
+            _numSequenceService = numSequenceService;
         }
 
         public async Task<Result<int>> Handle(CreateGrnCommand command, CancellationToken cancellationToken)
         {
             // 1. EXECUTION STRATEGY (Use Transaction for Atomicity)
-            // If Stock updates or GL posting fails, the GRN is rolled back.
             using var transaction = await _context.BeginTransactionAsync(cancellationToken);
 
             try
             {
-                // 2. FETCH PO with Deep Graph (Product -> InventoryAccount)
+                // 2. FETCH PO with Deep Graph
                 var po = await _context.PurchaseOrders
                     .Include(p => p.Supplier)
                     .Include(p => p.Items)
                         .ThenInclude(i => i.ProductVariant)
-                            .ThenInclude(pv => pv.Product) // Needed for InventoryAccountId
+                            .ThenInclude(pv => pv.Product)
                     .FirstOrDefaultAsync(p => p.Id == command.PurchaseOrderId, cancellationToken);
 
                 if (po == null) return Result<int>.Failure("Purchase Order not found.");
                 if (po.Status == PurchaseOrderStatus.Closed) return Result<int>.Failure("PO is already Closed.");
 
                 // 3. GENERATE GRN NUMBER (Concurrency Safe)
-                // In production, use a Database Sequence or a dedicated Numbering Service.
-                // Here is a simpler timestamp-based fallback that avoids Count() collisions.
-                var grnNumber = await _numSequenceService.GenerateNextNumberAsync("Purchasing", cancellationToken); ;
+                var grnNumber = await _numSequenceService.GenerateNextNumberAsync("GRN", cancellationToken);
 
                 var grn = new GRN
                 {
@@ -56,13 +54,10 @@ namespace NexusFlow.AppCore.Features.Purchasing.Commands
                     PurchaseOrderId = command.PurchaseOrderId,
                     WarehouseId = command.WarehouseId,
                     SupplierInvoiceNo = command.SupplierInvoiceNo,
-                    CreatedBy = "Admin"
+                    CreatedBy = "Admin" // TODO: Wire to IUserService later
                 };
 
-                // Dictionary to group costs by Inventory Account (For Journal Entry)
-                // Key: InventoryAccountId, Value: Total Amount
                 var glGrouping = new Dictionary<int, decimal>();
-
                 decimal grnTotalValue = 0;
 
                 // 4. PROCESS LINES
@@ -72,13 +67,6 @@ namespace NexusFlow.AppCore.Features.Purchasing.Commands
 
                     var poLine = po.Items.FirstOrDefault(i => i.ProductVariantId == incomingItem.ProductVariantId);
                     if (poLine == null) continue;
-
-                    // A. Validation: Prevent Over-Receiving (Optional, strictly speaking)
-                    if ((poLine.QuantityReceived + incomingItem.QuantityReceived) > poLine.QuantityOrdered)
-                    {
-                        // You might want to allow this with a warning, or block it. 
-                        // For now, we proceed but log it.
-                    }
 
                     decimal lineTotal = incomingItem.QuantityReceived * incomingItem.UnitCost;
                     grnTotalValue += lineTotal;
@@ -104,11 +92,15 @@ namespace NexusFlow.AppCore.Features.Purchasing.Commands
                         grnNumber
                     );
 
-                    // E. Accumulate for GL (The "Bucket" Fix)
-                    // We grab the account from the Product Master (Phase 2 work)
-                    // If Product is a Service (InventoryAccount is null), we use an Expense Account fallback.
-                    int targetAccountId = poLine.ProductVariant.Product.InventoryAccountId
-                                          ?? poLine.ProductVariant.Product.CogsAccountId; // Fallback for services
+                    // E. Accumulate for GL
+                    // Fix: use null-conditional so both operands are nullable and the '??' chain is valid.
+                    // InventoryAccountId is int?; Product?.CogsAccountId becomes int? when using null-conditional.
+                    int targetAccountId = poLine.ProductVariant?.Product?.InventoryAccountId
+                                          ?? poLine.ProductVariant?.Product?.CogsAccountId
+                                          ?? 0;
+
+                    if (targetAccountId == 0)
+                        throw new Exception($"Product '{poLine.ProductVariant.Product.Name}' is missing an Inventory/Expense Account mapping.");
 
                     if (!glGrouping.ContainsKey(targetAccountId))
                         glGrouping[targetAccountId] = 0;
@@ -116,34 +108,33 @@ namespace NexusFlow.AppCore.Features.Purchasing.Commands
                     glGrouping[targetAccountId] += lineTotal;
                 }
 
+                if (grnTotalValue == 0)
+                    throw new Exception("GRN total value cannot be zero.");
+
                 grn.TotalAmount = grnTotalValue;
 
                 // 5. AUTO-CLOSE PO LOGIC
-                // If all items received within 99% tolerance, close PO
                 bool allReceived = po.Items.All(i => i.QuantityReceived >= (i.QuantityOrdered * 0.99m));
-                if (allReceived) po.Status = PurchaseOrderStatus.Closed;
-                else po.Status = PurchaseOrderStatus.Partial;
+                po.Status = allReceived ? PurchaseOrderStatus.Closed : PurchaseOrderStatus.Partial;
 
                 _context.GRNs.Add(grn);
-                await _context.SaveChangesAsync(cancellationToken);
+                await _context.SaveChangesAsync(cancellationToken); // Save to generate IDs
 
                 // 6. FINANCIAL POSTING (Grouped)
-                // This creates a clean Journal with 1 Credit line and Multiple Debit lines
-
-                // Credit: Accounts Payable
                 int apAccountId = po.Supplier.DefaultPayableAccountId ?? 0;
                 if (apAccountId == 0) throw new Exception($"Supplier {po.Supplier.Name} has no Payable Account configured.");
 
-                var journalLines = new List<JournalLineRequest>();
-
-                // CREDIT Line (Liability)
-                journalLines.Add(new JournalLineRequest
+                var journalLines = new List<JournalLineRequest>
                 {
-                    AccountId = apAccountId,
-                    Credit = grnTotalValue,
-                    Debit = 0,
-                    Note = $"Supplier: {po.Supplier.Name} | Invoice: {command.SupplierInvoiceNo}"
-                });
+                    // CREDIT Line (Liability)
+                    new JournalLineRequest
+                    {
+                        AccountId = apAccountId,
+                        Credit = grnTotalValue,
+                        Debit = 0,
+                        Note = $"Supplier: {po.Supplier.Name} | Invoice: {command.SupplierInvoiceNo}"
+                    }
+                };
 
                 // DEBIT Lines (Assets/Expenses grouped by Account)
                 foreach (var entry in glGrouping)
@@ -157,7 +148,8 @@ namespace NexusFlow.AppCore.Features.Purchasing.Commands
                     });
                 }
 
-                await _journalService.PostJournalAsync(new JournalEntryRequest
+                // CRITICAL FIX: We must capture the result of the Journal posting
+                var journalResult = await _journalService.PostJournalAsync(new JournalEntryRequest
                 {
                     Date = command.DateReceived,
                     Description = $"GRN: {grnNumber} for PO {po.PoNumber}",
@@ -166,6 +158,12 @@ namespace NexusFlow.AppCore.Features.Purchasing.Commands
                     Lines = journalLines
                 });
 
+                // If the journal fails, throw exception to trigger transaction rollback
+                if (!journalResult.Succeeded)
+                {
+                    throw new Exception(journalResult.Message ?? journalResult.Errors?.FirstOrDefault() ?? "Journal Entry Failed");
+                }
+
                 // 7. COMMIT TRANSACTION
                 await transaction.CommitAsync(cancellationToken);
 
@@ -173,7 +171,6 @@ namespace NexusFlow.AppCore.Features.Purchasing.Commands
             }
             catch (Exception ex)
             {
-                // Rollback everything if any step fails
                 await transaction.RollbackAsync(cancellationToken);
                 return Result<int>.Failure($"GRN Failed: {ex.Message}");
             }

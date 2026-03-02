@@ -18,7 +18,7 @@
             "ajax": { "url": "/api/Brand", "type": "GET", "dataSrc": "data" },
             "columns": [
                 { "data": "id", "width": "10%" },
-                { "data": "name", "width": "30%", "className": "fw-bold" },
+                { "data": "name", "width": "30%", "className": "fw-semibold" },
                 { "data": "description", "width": "40%" },
                 {
                     "data": "id", "width": "20%", "className": "text-end",

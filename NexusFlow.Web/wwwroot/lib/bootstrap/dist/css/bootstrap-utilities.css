@@ -1769,11 +1769,11 @@
   font-weight: 600 !important;
 }
 
-.fw-bold {
+.fw-semibold {
   font-weight: 700 !important;
 }
 
-.fw-bolder {
+.fw-semibolder {
   font-weight: bolder !important;
 }
 

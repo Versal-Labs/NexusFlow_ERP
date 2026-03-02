@@ -22,7 +22,7 @@ var poApp = (function () {
         table = $('#poGrid').DataTable({
             ajax: { url: "/api/Purchasing", type: "GET", dataSrc: "data" },
             columns: [
-                { data: "poNumber", className: "font-monospace fw-bold text-primary" },
+                { data: "poNumber", className: "font-monospace fw-semibold text-primary" },
                 {
                     data: "date",
                     render: function (d) { return new Date(d).toLocaleDateString(); }
@@ -36,7 +36,7 @@ var poApp = (function () {
                     }
                 },
                 {
-                    data: "totalAmount", className: "text-end fw-bold",
+                    data: "totalAmount", className: "text-end fw-semibold",
                     render: $.fn.dataTable.render.number(',', '.', 2)
                 },
                 {
@@ -152,7 +152,7 @@ var poApp = (function () {
             var html = `
                 <tr>
                     <td>
-                        <div class="fw-bold">${item.productName}</div>
+                        <div class="fw-semibold">${item.productName}</div>
                         <div class="small text-muted font-monospace">${item.sku}</div>
                     </td>
                     <td>
@@ -165,7 +165,7 @@ var poApp = (function () {
                                value="${item.quantity}" min="1"
                                onchange="poApp.updateItem(${index}, 'qty', this.value)">
                     </td>
-                    <td class="text-end fw-bold align-middle">
+                    <td class="text-end fw-semibold align-middle">
                         ${lineTotal.toFixed(2)}
                     </td>
                     <td class="text-end">

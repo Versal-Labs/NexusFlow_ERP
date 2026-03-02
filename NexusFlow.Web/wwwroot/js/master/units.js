@@ -15,7 +15,7 @@
             "ajax": { "url": "/api/UnitOfMeasure", "type": "GET", "dataSrc": "data" },
             "columns": [
                 { "data": "id", "width": "10%" },
-                { "data": "name", "width": "40%", "className": "fw-bold" },
+                { "data": "name", "width": "40%", "className": "fw-semibold" },
                 { "data": "symbol", "width": "30%" },
                 {
                     "data": "id", "width": "20%", "className": "text-end",

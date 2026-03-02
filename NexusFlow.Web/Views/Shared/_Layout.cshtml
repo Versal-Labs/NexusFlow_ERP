@@ -26,6 +26,8 @@
 
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 
+    @await RenderSectionAsync("styles", required: false)
+
     <script>
         (function() {
             const savedTheme = localStorage.getItem('theme');

@@ -321,17 +321,6 @@ namespace NexusFlow.Infrastructure.Persistence
                 _context.Categories.Add(fabricCat);
                 await _context.SaveChangesAsync();
             }
-
-            if (!_context.Customers.Any())
-            {
-                _context.Customers.Add(new Customer
-                {
-                    Name = "Walk-In Customer",
-                    Email = "guest@store.com",
-                    Address = "Counter Sale"
-                });
-                await _context.SaveChangesAsync();
-            }
         }
 
 

@@ -15,7 +15,7 @@
             "ajax": { "url": "/api/Category", "type": "GET", "dataSrc": "data" },
             "columns": [
                 { "data": "id", "width": "10%" },
-                { "data": "name", "width": "40%", "className": "fw-bold" },
+                { "data": "name", "width": "40%", "className": "fw-semibold" },
                 { "data": "code", "width": "30%", "className": "font-monospace" },
                 {
                     "data": "id", "width": "20%", "className": "text-end",

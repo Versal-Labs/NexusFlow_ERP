@@ -51,24 +51,40 @@ var importApp = (function () {
         reader.readAsText(file);
     }
 
+    function _parseCSVRow(str) {
+        var arr = [];
+        var quote = false;
+        var col = '';
+        for (var i = 0; i < str.length; i++) {
+            var cc = str[i], nc = str[i + 1];
+            if (cc === '"' && quote && nc === '"') { col += cc; i++; continue; } // Escaped quote
+            if (cc === '"') { quote = !quote; continue; } // Toggle quote state
+            if (cc === ',' && !quote) { arr.push(col); col = ''; continue; } // End of column
+            col += cc;
+        }
+        arr.push(col); // Push last column
+        return arr;
+    }
+
+    // --- Updated _parseCSV Function ---
     function _parseCSV(csvText) {
-        // Simple Parser (Assumes: Name,Brand,Category,Unit,Price)
-        const lines = csvText.split('\n');
-        const headers = lines[0].split(','); // Naive split
+        // Handle Windows (\r\n) and Linux (\n) line endings safely
+        const lines = csvText.replace(/\r/g, '').split('\n');
 
         _stagingData = [];
 
         for (let i = 1; i < lines.length; i++) {
-            if (!lines[i].trim()) continue;
-            const cols = lines[i].split(',');
+            if (!lines[i].trim()) continue; // Skip empty rows
 
-            // Map CSV columns to Object
+            // Use the robust parser instead of split(',')
+            const cols = _parseCSVRow(lines[i]);
+
             _stagingData.push({
-                id: i, // temp id
-                name: cols[0]?.trim(),
-                brand: cols[1]?.trim(),
-                category: cols[2]?.trim(),
-                unit: cols[3]?.trim(),
+                id: i,
+                name: cols[0]?.trim() || '',
+                brand: cols[1]?.trim() || '',
+                category: cols[2]?.trim() || '',
+                unit: cols[3]?.trim() || '',
                 price: parseFloat(cols[4]) || 0,
                 isValid: true,
                 errors: []
@@ -118,7 +134,7 @@ var importApp = (function () {
         tbody.empty();
 
         _stagingData.forEach((row, index) => {
-            const statusClass = row.isValid ? 'text-success' : 'text-danger fw-bold';
+            const statusClass = row.isValid ? 'text-success' : 'text-danger fw-semibold';
             const statusIcon = row.isValid ? '<i class="bi bi-check-circle"></i>' : '<i class="bi bi-exclamation-circle"></i>';
 
             // Editable Cells logic could be complex; here we use contenteditable for simplicity or prompts

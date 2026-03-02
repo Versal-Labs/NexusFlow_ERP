@@ -52,8 +52,8 @@ var lookupApp = (function () {
                     }
                 },
 
-                { data: "code", className: "font-monospace fw-bold" },
-                { data: "value", className: "fw-bold text-primary" },
+                { data: "code", className: "font-monospace fw-semibold" },
+                { data: "value", className: "fw-semibold text-primary" },
                 {
                     data: "isActive",
                     render: function (data) {
