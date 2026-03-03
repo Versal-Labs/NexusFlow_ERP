@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
+using NexusFlow.AppCore.DTOs.Master;
 using NexusFlow.AppCore.Interfaces;
 using NexusFlow.Shared.Wrapper;
 using System;
@@ -8,7 +9,6 @@ using System.Text;
 
 namespace NexusFlow.AppCore.Features.MasterData.Products.Queries
 {
-    public class WarehouseDto { public int Id { get; set; } public string Name { get; set; } }
 
     public class GetWarehousesQuery : IRequest<Result<List<WarehouseDto>>> { }
 

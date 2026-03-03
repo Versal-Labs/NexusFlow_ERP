@@ -23,10 +23,7 @@ namespace NexusFlow.Domain.Entities.Finance
         // Who is this transaction with?
         public int? CustomerId { get; set; }
         public int? SupplierId { get; set; }
-
-        // Optional: Link to specific document (Invoice ID or PO ID)
-        // For advanced ERPs, we use a separate "PaymentAllocation" table, 
-        // but for now, we will simply reference the Document Number string.
         public string? RelatedDocumentNo { get; set; }
+        public ICollection<PaymentAllocation> Allocations { get; set; } = new List<PaymentAllocation>();
     }
 }

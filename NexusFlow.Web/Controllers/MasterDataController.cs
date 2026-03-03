@@ -23,5 +23,7 @@ namespace NexusFlow.Web.Controllers
         {
             return View();
         }
+
+        public IActionResult Warehouses() => View();
     }
 }

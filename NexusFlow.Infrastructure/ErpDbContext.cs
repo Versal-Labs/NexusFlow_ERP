@@ -57,6 +57,7 @@ namespace NexusFlow.Infrastructure
         public DbSet<PaymentTransaction> PaymentTransactions { get; set; }
         public DbSet<NotificationItem> Notifications { get; set; }
         public DbSet<SystemLookup> SystemLookups { get; set; }
+        public DbSet<PaymentAllocation> PaymentAllocations { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

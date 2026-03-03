@@ -1,0 +1,114 @@
+﻿@{
+    ViewData["Title"] = "Customer Receipts";
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h4 class="mb-0">Customer Receipts</h4>
+            <small class="text-muted">Record payments received from customers.</small>
+        </div>
+        <button class="btn btn-primary btn-sm shadow-sm" onclick="receiptApp.openModal()">
+            <i class="fa-solid fa-hand-holding-dollar me-1"></i> Receive Payment
+        </button>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-3">
+            <table id="receiptsGrid" class="table table-hover table-sm w-100 fs-13 align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Receipt #</th>
+                        <th>Date</th>
+                        <th>Customer</th>
+                        <th>Method</th>
+                        <th>Ref Invoice</th>
+                        <th class="text-end">Amount</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="receiptModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title fs-6"><i class="fa-solid fa-money-bill-wave text-success me-2"></i>Record Receipt</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body fs-13 p-4">
+                <form id="receiptForm">
+                    <div class="row g-3">
+                        <div class="col-md-5">
+                            <label class="form-label fw-bold mb-1">Customer <span class="text-danger">*</span></label>
+                            <select class="form-select form-select-sm select2" id="CustomerId" required style="width: 100%;"></select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold mb-1">Deposit To <span class="text-danger">*</span></label>
+                            <select class="form-select form-select-sm" id="AccountId" required></select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold mb-1">Payment Date <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control form-control-sm" id="Date" required>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold mb-1">Payment Method</label>
+                            <select class="form-select form-select-sm" id="Method">
+                                <option value="1">Cash</option>
+                                <option value="2">Bank Transfer</option>
+                                <option value="3">Cheque</option>
+                            </select>
+                        </div>
+                        <div class="col-md-8">
+                            <label class="form-label fw-bold mb-1">Remarks / Ref No.</label>
+                            <input type="text" class="form-control form-control-sm" id="Remarks" placeholder="Cheque No or Bank Ref...">
+                        </div>
+
+                        <div class="col-12 mt-4">
+                            <h6 class="fw-bold text-primary border-bottom pb-2"><i class="fa-solid fa-file-invoice me-2"></i>Invoice Allocation</h6>
+                            <div class="table-responsive border rounded" style="max-height: 250px; overflow-y: auto;">
+                                <table class="table table-sm table-hover align-middle mb-0" id="allocationTable">
+                                    <thead class="table-light sticky-top">
+                                        <tr>
+                                            <th>Invoice #</th>
+                                            <th>Date</th>
+                                            <th>Due Date</th>
+                                            <th class="text-end">Invoice Total</th>
+                                            <th class="text-end">Open Balance</th>
+                                            <th class="text-end" style="width: 150px;">Payment Amount</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="allocationBody">
+                                        <tr><td colspan="6" class="text-center text-muted fst-italic py-3">Select a customer to view unpaid invoices.</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="col-12 mt-3 d-flex justify-content-end">
+                            <div class="bg-light border rounded p-3 text-end" style="min-width: 300px;">
+                                <span class="text-muted fw-bold d-block mb-1">Total Amount Received</span>
+                                <span class="fs-4 fw-bold text-success font-monospace" id="lblTotalReceived">Rs. 0.00</span>
+                                <input type="hidden" id="TotalAmount" value="0">
+                            </div>
+                        </div>
+
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer bg-light p-3 border-top">
+                <button type="button" class="btn btn-secondary btn-sm px-4" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success btn-sm px-4 shadow-sm fw-bold" onclick="receiptApp.save()">
+                    <i class="fa-solid fa-check me-1"></i> Confirm Receipt
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/treasury/receipts.js" asp-append-version="true"></script>
+}

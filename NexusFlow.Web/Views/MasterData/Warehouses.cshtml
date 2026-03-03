@@ -1,0 +1,111 @@
+﻿@{
+    ViewData["Title"] = "Warehouses & Subcontractors";
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h4 class="mb-0">Warehouses & Facilities</h4>
+            <small class="text-muted">Manage internal storage, transit locations, and 3rd-party subcontractors.</small>
+        </div>
+        <button class="btn btn-primary btn-sm shadow-sm" onclick="warehouseApp.openModal()">
+            <i class="fa-solid fa-plus me-1"></i> New Warehouse
+        </button>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-3">
+            <table id="warehouseGrid" class="table table-hover table-sm w-100 fs-13 align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Code</th>
+                        <th>Name</th>
+                        <th>Type</th>
+                        <th>Location / Manager</th>
+                        <th>Linked Vendor</th>
+                        <th class="text-center">Status</th>
+                        <th class="text-end pe-3">Actions</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="warehouseModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title fs-6" id="modalTitle">
+                    <i class="fa-solid fa-warehouse text-primary me-2"></i>Manage Warehouse
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body fs-13 p-4">
+                <form id="warehouseForm">
+                    <input type="hidden" id="Id" value="0">
+
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold mb-1">Code <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control form-control-sm text-uppercase font-monospace" id="Code" required placeholder="WH-MAIN">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold mb-1">Warehouse Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control form-control-sm" id="Name" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold mb-1">Facility Type <span class="text-danger">*</span></label>
+                            <select class="form-select form-select-sm" id="Type" required>
+                                <option value="0">Internal (Owned)</option>
+                                <option value="1">Subcontractor (3rd Party)</option>
+                                <option value="2">Transit (Virtual)</option>
+                            </select>
+                        </div>
+
+                        <div class="col-12" id="divLinkedSupplier" style="display: none;">
+                            <div class="p-3 bg-warning bg-opacity-10 border border-warning rounded">
+                                <label class="form-label fw-bold mb-1 text-dark"><i class="fa-solid fa-industry me-1"></i> Linked Subcontractor (Vendor) <span class="text-danger">*</span></label>
+                                <select class="form-select form-select-sm select2" id="LinkedSupplierId" style="width: 100%;"></select>
+                                <div class="form-text small text-dark mt-1">Stock movements to this warehouse will be treated as Out-Processing to this Vendor.</div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold mb-1">Location / Address</label>
+                            <input type="text" class="form-control form-control-sm" id="Location">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold mb-1">Manager / Contact</label>
+                            <input type="text" class="form-control form-control-sm" id="ManagerName">
+                        </div>
+
+                        <div class="col-12"><hr class="my-2"></div>
+
+                        <div class="col-md-12">
+                            <label class="form-label fw-bold mb-1">GL Account Override (Optional)</label>
+                            <select class="form-select form-select-sm select2" id="OverrideInventoryAccountId" style="width: 100%;"></select>
+                            <div class="form-text small">If set, stock in this warehouse will post to this Asset Account instead of the Product's default.</div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer bg-light p-3 border-top d-flex justify-content-between align-items-center">
+                <div class="form-check form-switch ms-2">
+                    <input class="form-check-input" type="checkbox" id="IsActive" checked>
+                    <label class="form-check-label fw-bold" for="IsActive">Active</label>
+                </div>
+                <div>
+                    <button type="button" class="btn btn-secondary btn-sm px-4 me-2" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary btn-sm px-4 shadow-sm" onclick="warehouseApp.save()">
+                        <i class="fa-solid fa-save me-1"></i> Save
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/master/warehouse.js" asp-append-version="true"></script>
+}

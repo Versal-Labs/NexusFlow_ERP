@@ -15,114 +15,107 @@ namespace NexusFlow.AppCore.Features.Treasury.Commands
     {
         private readonly IErpDbContext _context;
         private readonly IJournalService _journalService;
+        private readonly INumberSequenceService _sequenceService;
 
-        public RecordPaymentHandler(IErpDbContext context, IJournalService journalService)
+        public RecordPaymentHandler(IErpDbContext context, IJournalService journalService, INumberSequenceService sequenceService)
         {
             _context = context;
             _journalService = journalService;
+            _sequenceService = sequenceService;
         }
 
         public async Task<Result<int>> Handle(RecordPaymentCommand command, CancellationToken cancellationToken)
         {
-            // 1. Validation
-            if (command.Amount <= 0)
-                return Result<int>.Failure("Amount must be greater than zero.");
+            if (command.Amount <= 0) return Result<int>.Failure("Amount must be greater than zero.");
+            if (command.Type == PaymentType.CustomerReceipt && command.CustomerId == null) return Result<int>.Failure("Customer ID is required.");
 
-            if (command.Type == PaymentType.CustomerReceipt && command.CustomerId == null)
-                return Result<int>.Failure("Customer ID is required for Receipts.");
+            // Strict Validation: Total Allocations must match the receipt amount
+            decimal totalAllocated = command.Allocations.Sum(a => a.Amount);
+            if (totalAllocated > command.Amount)
+                return Result<int>.Failure("Allocated amount cannot exceed the total receipt amount.");
 
-            if (command.Type == PaymentType.SupplierPayment && command.SupplierId == null)
-                return Result<int>.Failure("Supplier ID is required for Payments.");
-
-            // 2. Generate Reference
-            int count = await _context.PaymentTransactions.CountAsync(cancellationToken) + 1;
-            string payRef = $"PAY-{DateTime.UtcNow.Year}-{count:D6}";
-
-            // 3. Save Transaction Record
-            var payment = new PaymentTransaction
+            using var transaction = await _context.BeginTransactionAsync(cancellationToken);
+            try
             {
-                ReferenceNo = payRef,
-                Date = command.Date,
-                Type = command.Type,
-                Method = command.Method,
-                Amount = command.Amount,
-                CustomerId = command.CustomerId,
-                SupplierId = command.SupplierId,
-                RelatedDocumentNo = command.RelatedDocumentNo,
-                Remarks = command.Remarks
-            };
+                string payRef = await _sequenceService.GenerateNextNumberAsync("Receipt", cancellationToken);
 
-            _context.PaymentTransactions.Add(payment);
-            await _context.SaveChangesAsync(cancellationToken);
+                var payment = new PaymentTransaction
+                {
+                    ReferenceNo = payRef,
+                    Date = command.Date,
+                    Type = command.Type,
+                    Method = command.Method,
+                    Amount = command.Amount,
+                    CustomerId = command.CustomerId,
+                    RelatedDocumentNo = command.RelatedDocumentNo,
+                    Remarks = command.Remarks
+                };
 
-            // =============================================================
-            // 4. POST TO GL (The Accounting Logic)
-            // =============================================================
+                _context.PaymentTransactions.Add(payment);
 
-            // A. Identify Bank/Cash Account
-            // In a real app, you select the specific Bank Account from a dropdown.
-            // Here, we look up default Cash (1010) or Bank (1020).
-            string bankCode = command.Method == PaymentMethod.Cash ? "1010" : "1020";
-            var bankAccount = await _context.Accounts.FirstOrDefaultAsync(a => a.Code == bankCode);
+                // --- THE ALLOCATION ENGINE ---
+                if (command.Type == PaymentType.CustomerReceipt && command.Allocations.Any())
+                {
+                    var invoiceIds = command.Allocations.Select(a => a.InvoiceId).ToList();
+                    var invoices = await _context.SalesInvoices
+                        .Where(i => invoiceIds.Contains(i.Id))
+                        .ToDictionaryAsync(i => i.Id, cancellationToken);
 
-            if (bankAccount == null) return Result<int>.Failure($"System Error: Bank Account {bankCode} not found.");
+                    foreach (var alloc in command.Allocations)
+                    {
+                        if (alloc.Amount <= 0) continue;
+                        if (!invoices.TryGetValue(alloc.InvoiceId, out var invoice)) continue;
 
-            // B. Identify Party Account (AR or AP)
-            int partyAccountId = 0;
-            string partyName = "";
+                        // Create the Allocation Link
+                        payment.Allocations.Add(new PaymentAllocation
+                        {
+                            SalesInvoiceId = invoice.Id,
+                            AmountAllocated = alloc.Amount
+                        });
 
-            // We need the config map again to find the Control Accounts
-            var configs = await _context.SystemConfigs.ToDictionaryAsync(k => k.Key, v => v.Value);
+                        // Update the Invoice Status
+                        invoice.AmountPaid += alloc.Amount;
 
-            if (command.Type == PaymentType.CustomerReceipt)
-            {
-                // We need "Accounts Receivable" (1040)
-                partyAccountId = int.Parse(configs["Account.Sales.Receivable"]);
-                partyName = $"Customer #{command.CustomerId}";
+                        if (invoice.AmountPaid >= invoice.GrandTotal)
+                            invoice.PaymentStatus = InvoicePaymentStatus.Paid;
+                        else
+                            invoice.PaymentStatus = InvoicePaymentStatus.Partial;
+                    }
+                }
+
+                await _context.SaveChangesAsync(cancellationToken);
+
+                // --- FINANCIAL ROUTING (GL POSTING) ---
+                var customer = await _context.Customers.FindAsync(new object[] { command.CustomerId }, cancellationToken);
+                if (customer == null || customer.DefaultReceivableAccountId == 0) throw new Exception("Customer AR Account mapping missing.");
+
+                var journalLines = new List<JournalLineRequest>
+                {
+                    // DEBIT: Bank/Cash
+                    new() { AccountId = command.AccountId, Debit = command.Amount, Credit = 0, Note = $"Deposit: {payRef}" },
+                    // CREDIT: Accounts Receivable
+                    new() { AccountId = customer.DefaultReceivableAccountId, Debit = 0, Credit = command.Amount, Note = $"Receipt from {customer.Name}" }
+                };
+
+                var journalResult = await _journalService.PostJournalAsync(new JournalEntryRequest
+                {
+                    Date = command.Date,
+                    Description = $"Customer Receipt: {payRef}",
+                    Module = "Treasury",
+                    ReferenceNo = payRef,
+                    Lines = journalLines
+                });
+
+                if (!journalResult.Succeeded) throw new Exception($"GL Failed: {journalResult.Message}");
+
+                await transaction.CommitAsync(cancellationToken);
+                return Result<int>.Success(payment.Id, "Receipt and Allocations recorded successfully.");
             }
-            else
+            catch (Exception ex)
             {
-                // We need "Accounts Payable" (2010)
-                // Ideally check Supplier.DefaultPayableAccountId, but falling back to config for brevity
-                partyAccountId = int.Parse(configs["Account.Liability.TradeCreditors"]);
-                partyName = $"Supplier #{command.SupplierId}";
+                await transaction.RollbackAsync(cancellationToken);
+                return Result<int>.Failure($"Payment failed: {ex.Message}");
             }
-
-            // C. Construct Journal Lines
-            var journalLines = new List<JournalLineRequest>();
-
-            if (command.Type == PaymentType.CustomerReceipt)
-            {
-                // LOGIC: Money In
-                // DEBIT: Bank/Cash (Asset Increases)
-                journalLines.Add(new() { AccountId = bankAccount.Id, Debit = command.Amount, Credit = 0 });
-
-                // CREDIT: Receivable (Asset Decreases - Customer owes less)
-                journalLines.Add(new() { AccountId = partyAccountId, Debit = 0, Credit = command.Amount, Note = partyName });
-            }
-            else
-            {
-                // LOGIC: Money Out
-                // DEBIT: Payable (Liability Decreases - We owe less)
-                journalLines.Add(new() { AccountId = partyAccountId, Debit = command.Amount, Credit = 0, Note = partyName });
-
-                // CREDIT: Bank/Cash (Asset Decreases)
-                journalLines.Add(new() { AccountId = bankAccount.Id, Debit = 0, Credit = command.Amount });
-            }
-
-            // D. Post
-            var journalResult = await _journalService.PostJournalAsync(new JournalEntryRequest
-            {
-                Date = command.Date,
-                Description = $"{command.Type}: {payRef} ({command.Remarks})",
-                Module = "Treasury",
-                ReferenceNo = payRef,
-                Lines = journalLines
-            });
-
-            if (!journalResult.Succeeded) return Result<int>.Failure($"Payment Saved, but GL Failed: {journalResult.Message}");
-
-            return Result<int>.Success(payment.Id, "Payment Recorded & Financials Updated.");
         }
     }
 }

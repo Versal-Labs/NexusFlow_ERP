@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NexusFlow.Infrastructure;
 
@@ -11,9 +12,11 @@ using NexusFlow.Infrastructure;
 namespace NexusFlow.Infrastructure.Migrations
 {
     [DbContext(typeof(ErpDbContext))]
-    partial class ErpDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260303173127_InvoiceAllocationEngine")]
+    partial class InvoiceAllocationEngine
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1068,17 +1071,13 @@ namespace NexusFlow.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Code")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("CreatedBy")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool>("IsActive")
+                    b.Property<bool>("IsSubcontractor")
                         .HasColumnType("bit");
 
                     b.Property<DateTime?>("LastModifiedAt")
@@ -1087,14 +1086,7 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.Property<string>("LastModifiedBy")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("LinkedSupplierId")
-                        .HasColumnType("int");
-
                     b.Property<string>("Location")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ManagerName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -1103,15 +1095,7 @@ namespace NexusFlow.Infrastructure.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<int?>("OverrideInventoryAccountId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Type")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("LinkedSupplierId");
 
                     b.ToTable("Warehouses", "Master");
                 });
@@ -2141,15 +2125,6 @@ namespace NexusFlow.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Product");
-                });
-
-            modelBuilder.Entity("NexusFlow.Domain.Entities.Master.Warehouse", b =>
-                {
-                    b.HasOne("NexusFlow.Domain.Entities.Purchasing.Supplier", "LinkedSupplier")
-                        .WithMany()
-                        .HasForeignKey("LinkedSupplierId");
-
-                    b.Navigation("LinkedSupplier");
                 });
 
             modelBuilder.Entity("NexusFlow.Domain.Entities.Purchasing.GRN", b =>

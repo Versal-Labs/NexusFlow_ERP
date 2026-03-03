@@ -98,10 +98,10 @@ namespace NexusFlow.IntegrationTests
             context.BomComponents.Add(new BomComponent { BillOfMaterial = bom, MaterialVariantId = 100, Quantity = 1.5m });
 
             // F. WAREHOUSES & SUPPLIER & CUSTOMER
-            context.Warehouses.AddRange(
-                new Warehouse { Id = 1, Name = "Main Store", IsSubcontractor = false },
-                new Warehouse { Id = 2, Name = "Factory", IsSubcontractor = true }
-            );
+            //context.Warehouses.AddRange(
+            //    new Warehouse { Id = 1, Name = "Main Store", IsSubcontractor = false },
+            //    new Warehouse { Id = 2, Name = "Factory", IsSubcontractor = true }
+            //);
 
             context.Suppliers.Add(new Domain.Entities.Purchasing.Supplier { Id = 1, Name = "Fabric Supplier Ltd", DefaultPayableAccountId = 2010 });
             context.Customers.Add(new Domain.Entities.Sales.Customer { Id = 1, Name = "Retail Shop" });

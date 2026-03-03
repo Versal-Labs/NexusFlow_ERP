@@ -5,12 +5,14 @@ using Microsoft.AspNetCore.Mvc;
 using NexusFlow.AppCore.Constants;
 using NexusFlow.AppCore.Features.MasterData.Products.Queries;
 using NexusFlow.AppCore.Features.Sales.Customers.Commands;
+using NexusFlow.Web.Filters;
 
 namespace NexusFlow.Web.Controllers.Api
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(AuthenticationSchemes = AuthConstants.IdentityScheme)]
+    [Authorize(Policy = AuthConstants.HybridPolicy)]
+    [HybridAuthorize]
     public class CustomerController : ControllerBase
     {
         private readonly IMediator _mediator;
