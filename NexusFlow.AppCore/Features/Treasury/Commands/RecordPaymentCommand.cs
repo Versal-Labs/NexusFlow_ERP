@@ -14,11 +14,19 @@ namespace NexusFlow.AppCore.Features.Treasury.Commands
         public PaymentMethod Method { get; set; }
         public decimal Amount { get; set; }
         public string Remarks { get; set; } = string.Empty;
+        public int AccountId { get; set; }
 
         // One of these must be provided
         public int? CustomerId { get; set; }
         public int? SupplierId { get; set; }
+        public List<PaymentAllocationRequest> Allocations { get; set; } = new();
 
         public string? RelatedDocumentNo { get; set; } // e.g. "INV-2024-001"
+    }
+
+    public class PaymentAllocationRequest
+    {
+        public int InvoiceId { get; set; }
+        public decimal Amount { get; set; }
     }
 }

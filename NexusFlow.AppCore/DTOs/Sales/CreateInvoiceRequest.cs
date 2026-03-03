@@ -6,12 +6,16 @@ namespace NexusFlow.AppCore.DTOs.Sales
 {
     public class CreateInvoiceRequest
     {
-        public int CustomerId { get; set; }
         public DateTime Date { get; set; }
         public DateTime DueDate { get; set; }
-
-        // Which warehouse are we selling from? (e.g., Showroom)
+        public int CustomerId { get; set; }
         public int WarehouseId { get; set; }
+        public int? SalesRepId { get; set; }
+        public string Notes { get; set; } = string.Empty;
+
+        public bool ApplyVat { get; set; }
+        public bool IsDraft { get; set; }
+        public decimal GlobalDiscountAmount { get; set; }
 
         public List<InvoiceLineDto> Items { get; set; } = new();
     }
@@ -20,7 +24,7 @@ namespace NexusFlow.AppCore.DTOs.Sales
     {
         public int ProductVariantId { get; set; }
         public decimal Quantity { get; set; }
-        public decimal UnitPrice { get; set; } // The user might override the standard price
-        public decimal Discount { get; set; }
+        public decimal UnitPrice { get; set; }
+        public decimal Discount { get; set; } // Absolute amount per line
     }
 }

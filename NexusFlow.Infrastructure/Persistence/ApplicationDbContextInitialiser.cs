@@ -302,16 +302,6 @@ namespace NexusFlow.Infrastructure.Persistence
                 await _context.SaveChangesAsync();
             }
 
-            // 1. SEED WAREHOUSES
-            if (!_context.Warehouses.Any())
-            {
-                _context.Warehouses.AddRange(
-                    new Warehouse { Name = "Main Warehouse", IsSubcontractor = false },
-                    new Warehouse { Name = "Factory: ABC Garments", IsSubcontractor = true } // The Subcontractor
-                );
-                await _context.SaveChangesAsync();
-            }
-
             // 2. SEED RAW MATERIAL CATEGORIES
             // (Ensure you have a category for raw materials)
             var fabricCat = await _context.Categories.FirstOrDefaultAsync(c => c.Code == "RM-FABRIC");

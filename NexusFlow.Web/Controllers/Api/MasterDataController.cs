@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NexusFlow.AppCore.Constants;
 using NexusFlow.AppCore.Features.MasterData.Products.Queries;
+using NexusFlow.AppCore.Features.MasterData.Warehouses.Commands;
+using NexusFlow.AppCore.Features.MasterData.Warehouses.Queries;
 using NexusFlow.Web.Filters;
 
 namespace NexusFlow.Web.Controllers.Api
@@ -36,7 +38,18 @@ namespace NexusFlow.Web.Controllers.Api
             => Ok(await _mediator.Send(new GetCustomersQuery()));
 
         [HttpGet("warehouses")]
-        public async Task<IActionResult> GetWarehouses()
-            => Ok(await _mediator.Send(new GetWarehousesQuery()));
+        public async Task<IActionResult> GetWarehouses() => Ok(await _mediator.Send(new AppCore.Features.MasterData.Warehouses.Queries.GetWarehousesQuery()));
+
+        [HttpGet("warehouses/{id}")]
+        public async Task<IActionResult> GetWarehouse(int id) => Ok(await _mediator.Send(new GetWarehouseByIdQuery { Id = id }));
+
+        [HttpPost("warehouses")]
+        [HttpPut("warehouses/{id}")]
+        public async Task<IActionResult> SaveWarehouse([FromBody] SaveWarehouseCommand command, int? id = null)
+        {
+            if (id.HasValue) command.Warehouse.Id = id.Value;
+            var result = await _mediator.Send(command);
+            return result.Succeeded ? Ok(result) : BadRequest(result);
+        }
     }
 }
