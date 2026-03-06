@@ -1,0 +1,106 @@
+﻿@{
+    ViewData["Title"] = "Goods Receipt Notes";
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h4 class="mb-0">Goods Receipt (GRN)</h4>
+            <small class="text-muted">Receive physical inventory and accrue unbilled liabilities.</small>
+        </div>
+        <button class="btn btn-primary btn-sm shadow-sm" onclick="grnApp.openModal()">
+            <i class="fa-solid fa-truck-loading me-1"></i> Receive Goods
+        </button>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-3">
+            <table id="grnGrid" class="table table-hover table-sm w-100 fs-13 align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>GRN #</th>
+                        <th>Date</th>
+                        <th>Supplier</th>
+                        <th>Destination Warehouse</th>
+                        <th>Supplier Ref</th>
+                        <th class="text-end">Total Value</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="grnModal" tabindex="-1">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title fs-6"><i class="fa-solid fa-boxes-packing text-primary me-2"></i>New Goods Receipt</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body fs-13 p-4">
+                <form id="grnForm">
+                    <div class="row g-3 mb-4 pb-4 border-bottom">
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold mb-1">Supplier <span class="text-danger">*</span></label>
+                            <select class="form-select form-select-sm select2" id="SupplierId" required style="width:100%"></select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold mb-1">Destination Warehouse <span class="text-danger">*</span></label>
+                            <select class="form-select form-select-sm" id="WarehouseId" required></select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label fw-bold mb-1">Receipt Date <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control form-control-sm" id="ReceiptDate" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold mb-1">Supplier Ref (Delivery Note)</label>
+                            <input type="text" class="form-control form-control-sm font-monospace" id="ReferenceNo">
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="text-primary mb-0"><i class="fa-solid fa-list me-2"></i>Items Received</h6>
+                        <button type="button" class="btn btn-sm btn-light border" onclick="grnApp.addLine()">
+                            <i class="fa-solid fa-plus text-success"></i> Add Item
+                        </button>
+                    </div>
+
+                    <div class="table-responsive mb-4 border rounded">
+                        <table class="table table-sm table-bordered align-middle mb-0" id="linesTable">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width: 45%">Product / Variant</th>
+                                    <th style="width: 15%">Qty Received</th>
+                                    <th style="width: 20%">Unit Cost (Rs)</th>
+                                    <th style="width: 15%" class="text-end">Line Total</th>
+                                    <th style="width: 5%"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="linesBody"></tbody>
+                        </table>
+                    </div>
+
+                    <div class="row justify-content-end">
+                        <div class="col-md-4">
+                            <div class="bg-light p-3 border rounded shadow-sm d-flex justify-content-between align-items-center">
+                                <span class="fw-bold text-muted">Total Stock Value:</span>
+                                <span class="fs-5 fw-bold text-dark font-monospace" id="lblGrandTotal">0.00</span>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer bg-light p-3 border-top">
+                <button type="button" class="btn btn-secondary btn-sm px-4" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary btn-sm px-4 shadow-sm fw-bold" onclick="grnApp.save()">
+                    <i class="fa-solid fa-check-double me-1"></i> Post to Ledger & Stock
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/purchasing/grn.js" asp-append-version="true"></script>
+}

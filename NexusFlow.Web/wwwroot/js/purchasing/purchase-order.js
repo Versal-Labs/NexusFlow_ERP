@@ -227,7 +227,7 @@ var poApp = (function () {
 
         var res = await api.post('/api/Purchasing', payload);
         if (res && res.succeeded) {
-            toastr.success(res.messages[0]);
+            toastr.success(res.message);
             drawer.hide();
             table.ajax.reload();
         }

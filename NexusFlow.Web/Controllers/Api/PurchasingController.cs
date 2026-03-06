@@ -8,6 +8,7 @@ using NexusFlow.AppCore.Constants;
 using NexusFlow.AppCore.Features.Purchasing.Commands;
 using NexusFlow.AppCore.Features.Purchasing.PurchaseOrders.Commands;
 using NexusFlow.AppCore.Features.Purchasing.PurchaseOrders.Queries;
+using NexusFlow.AppCore.Features.Purchasing.Queries;
 using NexusFlow.Web.Filters;
 
 namespace NexusFlow.Web.Controllers.Api
@@ -41,6 +42,9 @@ namespace NexusFlow.Web.Controllers.Api
 
 
         // POST api/purchasing/grn
+        [HttpGet("grns")]
+        public async Task<IActionResult> GetGrns() => Ok(await _mediator.Send(new GetGrnsQuery()));
+
         [HttpPost("grn")]
         public async Task<IActionResult> CreateGrn([FromBody] CreateGrnCommand command)
         {
