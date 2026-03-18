@@ -39,6 +39,7 @@ namespace NexusFlow.AppCore.Features.Purchasing.Commands
                     .Include(p => p.Items)
                         .ThenInclude(i => i.ProductVariant)
                             .ThenInclude(pv => pv.Product)
+                                .ThenInclude(p => p.Category)
                     .FirstOrDefaultAsync(p => p.Id == command.PurchaseOrderId, cancellationToken);
 
                 if (po == null) return Result<int>.Failure("Purchase Order not found.");
@@ -109,8 +110,8 @@ namespace NexusFlow.AppCore.Features.Purchasing.Commands
 
                     // D. Accumulate for GL (Warehouse Override -> Product Inventory -> Product COGS -> Fail)
                     int targetAccountId = warehouse.OverrideInventoryAccountId
-                                          ?? poLine.ProductVariant?.Product?.InventoryAccountId
-                                          ?? poLine.ProductVariant?.Product?.CogsAccountId
+                                          ?? poLine.ProductVariant?.Product?.Category?.InventoryAccountId
+                                          ?? poLine.ProductVariant?.Product?.Category?.CogsAccountId
                                           ?? 0;
 
                     if (targetAccountId == 0)

@@ -37,6 +37,7 @@ namespace NexusFlow.AppCore.Features.MasterData.Products.Commands
             // 1. Fetch Existing Product with Variants
             var product = await _context.Products
                 .Include(p => p.Variants)
+                .Include(c => c.Category)
                 .FirstOrDefaultAsync(p => p.Id == dto.Id, cancellationToken);
 
             if (product == null)
@@ -55,9 +56,9 @@ namespace NexusFlow.AppCore.Features.MasterData.Products.Commands
             product.UnitOfMeasureId = dto.UnitOfMeasureId;
 
             // Financials (Critical for Accounting Integrity)
-            product.SalesAccountId = dto.SalesAccountId;
-            product.CogsAccountId = dto.CogsAccountId;
-            product.InventoryAccountId = dto.InventoryAccountId;
+            product.Category.SalesAccountId = dto.SalesAccountId;
+            product.Category.CogsAccountId = dto.CogsAccountId;
+            product.Category.InventoryAccountId = dto.InventoryAccountId;
 
             // 3. Synchronize Variants (The "Graph Diff" Logic)
 

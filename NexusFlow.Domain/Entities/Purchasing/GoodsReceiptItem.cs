@@ -1,4 +1,5 @@
-﻿using NexusFlow.Domain.Entities.Master;
+﻿using NexusFlow.Domain.Common;
+using NexusFlow.Domain.Entities.Master;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -7,9 +8,8 @@ using System.Text;
 namespace NexusFlow.Domain.Entities.Purchasing
 {
     [Table("GoodsReceiptItems", Schema = "Purchasing")]
-    public class GoodsReceiptItem
+    public class GoodsReceiptItem : BaseEntity
     {
-        public int Id { get; set; }
         public int GoodsReceiptId { get; set; }
         public GoodsReceipt GoodsReceipt { get; set; } = null!;
 

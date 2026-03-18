@@ -1,15 +1,15 @@
 ﻿@{
-    ViewData["Title"] = "Goods Receipt Notes";
+    ViewData["Title"] = "Goods Receipt Notes (GRN)";
 }
 
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <div>
             <h4 class="mb-0">Goods Receipt (GRN)</h4>
-            <small class="text-muted">Receive physical inventory and accrue unbilled liabilities.</small>
+            <small class="text-muted">Receive physical inventory against approved Purchase Orders.</small>
         </div>
         <button class="btn btn-primary btn-sm shadow-sm" onclick="grnApp.openModal()">
-            <i class="fa-solid fa-truck-loading me-1"></i> Receive Goods
+            <i class="fa-solid fa-truck-ramp-box me-1"></i> Receive Goods
         </button>
     </div>
 
@@ -19,11 +19,11 @@
                 <thead class="table-light">
                     <tr>
                         <th>GRN #</th>
-                        <th>Date</th>
+                        <th>Receipt Date</th>
                         <th>Supplier</th>
-                        <th>Destination Warehouse</th>
+                        <th>Warehouse</th>
                         <th>Supplier Ref</th>
-                        <th class="text-end">Total Value</th>
+                        <th class="text-end pe-3">Total Value</th>
                     </tr>
                 </thead>
             </table>
@@ -42,8 +42,8 @@
                 <form id="grnForm">
                     <div class="row g-3 mb-4 pb-4 border-bottom">
                         <div class="col-md-4">
-                            <label class="form-label fw-bold mb-1">Supplier <span class="text-danger">*</span></label>
-                            <select class="form-select form-select-sm select2" id="SupplierId" required style="width:100%"></select>
+                            <label class="form-label fw-bold mb-1">Link to Purchase Order <span class="text-danger">*</span></label>
+                            <select class="form-select form-select-sm select2" id="PurchaseOrderId" required style="width:100%"></select>
                         </div>
                         <div class="col-md-3">
                             <label class="form-label fw-bold mb-1">Destination Warehouse <span class="text-danger">*</span></label>
@@ -51,41 +51,43 @@
                         </div>
                         <div class="col-md-2">
                             <label class="form-label fw-bold mb-1">Receipt Date <span class="text-danger">*</span></label>
-                            <input type="date" class="form-control form-control-sm" id="ReceiptDate" required>
+                            <input type="date" class="form-control form-control-sm" id="DateReceived" required>
                         </div>
                         <div class="col-md-3">
                             <label class="form-label fw-bold mb-1">Supplier Ref (Delivery Note)</label>
-                            <input type="text" class="form-control form-control-sm font-monospace" id="ReferenceNo">
+                            <input type="text" class="form-control form-control-sm font-monospace" id="SupplierInvoiceNo" placeholder="e.g. DEL-88901">
                         </div>
                     </div>
 
                     <div class="d-flex justify-content-between align-items-center mb-2">
-                        <h6 class="text-primary mb-0"><i class="fa-solid fa-list me-2"></i>Items Received</h6>
-                        <button type="button" class="btn btn-sm btn-light border" onclick="grnApp.addLine()">
-                            <i class="fa-solid fa-plus text-success"></i> Add Item
-                        </button>
+                        <h6 class="text-primary mb-0"><i class="fa-solid fa-list-check me-2"></i>Items to Receive</h6>
+                        <span class="badge bg-warning text-dark px-3 py-2" id="poStatusBadge" style="display:none;"></span>
                     </div>
 
                     <div class="table-responsive mb-4 border rounded">
                         <table class="table table-sm table-bordered align-middle mb-0" id="linesTable">
-                            <thead class="table-light">
+                            <thead class="table-light text-center">
                                 <tr>
-                                    <th style="width: 45%">Product / Variant</th>
-                                    <th style="width: 15%">Qty Received</th>
-                                    <th style="width: 20%">Unit Cost (Rs)</th>
+                                    <th style="width: 35%" class="text-start">Product / Variant</th>
+                                    <th style="width: 10%">Ordered</th>
+                                    <th style="width: 10%">Rcvd So Far</th>
+                                    <th style="width: 15%" class="bg-primary bg-opacity-10 border-primary">Receive Now <span class="text-danger">*</span></th>
+                                    <th style="width: 15%">Unit Cost</th>
                                     <th style="width: 15%" class="text-end">Line Total</th>
-                                    <th style="width: 5%"></th>
                                 </tr>
                             </thead>
-                            <tbody id="linesBody"></tbody>
+                            <tbody id="linesBody">
+                                <tr><td colspan="6" class="text-center text-muted fst-italic py-4">Select a Purchase Order to load items.</td></tr>
+                            </tbody>
                         </table>
                     </div>
 
                     <div class="row justify-content-end">
                         <div class="col-md-4">
                             <div class="bg-light p-3 border rounded shadow-sm d-flex justify-content-between align-items-center">
-                                <span class="fw-bold text-muted">Total Stock Value:</span>
-                                <span class="fs-5 fw-bold text-dark font-monospace" id="lblGrandTotal">0.00</span>
+                                <span class="fw-bold text-muted">Total Receipt Value:</span>
+                                <span class="fs-5 fw-bold text-dark font-monospace" id="lblGrandTotal">Rs. 0.00</span>
+                                <input type="hidden" id="TotalAmount" value="0">
                             </div>
                         </div>
                     </div>
@@ -94,7 +96,7 @@
             <div class="modal-footer bg-light p-3 border-top">
                 <button type="button" class="btn btn-secondary btn-sm px-4" data-bs-dismiss="modal">Cancel</button>
                 <button type="button" class="btn btn-primary btn-sm px-4 shadow-sm fw-bold" onclick="grnApp.save()">
-                    <i class="fa-solid fa-check-double me-1"></i> Post to Ledger & Stock
+                    <i class="fa-solid fa-check-double me-1"></i> Post GRN & Receive Stock
                 </button>
             </div>
         </div>

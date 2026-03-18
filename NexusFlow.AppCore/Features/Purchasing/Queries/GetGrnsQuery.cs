@@ -35,7 +35,7 @@ namespace NexusFlow.AppCore.Features.Purchasing.Queries
                        w.Name AS WarehouseName, g.ReferenceNo, g.TotalValue
                 FROM Purchasing.GoodsReceipts g
                 INNER JOIN Purchasing.Suppliers s ON g.SupplierId = s.Id
-                INNER JOIN MasterData.Warehouses w ON g.WarehouseId = w.Id
+                INNER JOIN Master.Warehouses w ON g.WarehouseId = w.Id
                 ORDER BY g.ReceiptDate DESC, g.Id DESC";
 
             var result = await connection.QueryAsync<GrnDto>(sql);

@@ -20,7 +20,12 @@ var poApp = (function () {
 
     var _initGrid = function () {
         table = $('#poGrid').DataTable({
-            ajax: { url: "/api/Purchasing", type: "GET", dataSrc: "data" },
+            ajax: {
+                url: "/api/purchasing/purchase-orders",
+                type: "GET",
+                dataSrc: function (json) { return json.data || json || []; },
+                headers: { "Authorization": "Bearer " + localStorage.getItem("jwtToken") }
+            },
             columns: [
                 { data: "poNumber", className: "font-monospace fw-semibold text-primary" },
                 {
@@ -44,14 +49,14 @@ var poApp = (function () {
                     render: function (data, type, row) {
                         let btns = '';
 
-                        // Only show Receive button if not closed
+                        // If PO is not closed, show the deep-link to the GRN module
                         if (row.status !== 'Closed') {
-                            btns += `<button class="btn btn-sm btn-success shadow-sm me-1" onclick="grnApp.openWizard(${row.id})">
-                        <i class="bi bi-box-seam me-1"></i> Receive
-                     </button>`;
+                            btns += `<a href="/Purchasing/GRN?poId=${row.id}" class="btn btn-sm btn-success shadow-sm me-1">
+                                        <i class="fa-solid fa-truck-ramp-box me-1"></i> Receive
+                                     </a>`;
                         }
 
-                        btns += `<button class="btn btn-sm btn-light border">View</button>`;
+                        btns += `<button class="btn btn-sm btn-light border shadow-sm"><i class="fa-solid fa-eye text-secondary"></i></button>`;
                         return btns;
                     }
                 }
@@ -225,7 +230,8 @@ var poApp = (function () {
             }))
         };
 
-        var res = await api.post('/api/Purchasing', payload);
+        // In the save function:
+        var res = await api.post('/api/purchasing/purchase-orders', payload);
         if (res && res.succeeded) {
             toastr.success(res.message);
             drawer.hide();

@@ -40,6 +40,11 @@ namespace NexusFlow.AppCore.Interfaces
         DbSet<PaymentTransaction> PaymentTransactions { get; set; }
         DbSet<NotificationItem> Notifications { get; set; }
         DbSet<SystemLookup> SystemLookups { get; set; }
+        DbSet<SupplierBill> SupplierBills { get; set; }
+        DbSet<SupplierBillItem> SupplierBillItems { get; set; }
+        DbSet<PaymentAllocation> PaymentAllocations { get; set; }
+        DbSet<GoodsReceipt> GoodsReceipts { get; set; }
+        DbSet<GoodsReceiptItem> GoodsReceiptItems { get; set; }
 
         Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 

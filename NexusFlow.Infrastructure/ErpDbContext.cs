@@ -60,6 +60,8 @@ namespace NexusFlow.Infrastructure
         public DbSet<PaymentAllocation> PaymentAllocations { get; set; }
         public DbSet<GoodsReceipt> GoodsReceipts { get; set; }
         public DbSet<GoodsReceiptItem> GoodsReceiptItems { get; set; }
+        public DbSet<SupplierBill> SupplierBills { get; set; }
+        public DbSet<SupplierBillItem> SupplierBillItems { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

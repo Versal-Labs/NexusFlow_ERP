@@ -4,9 +4,8 @@ using System.Text;
 
 namespace NexusFlow.Domain.Common
 {
-    public abstract class AuditableEntity
+    public abstract class AuditableEntity : BaseEntity
     {
-        public int Id { get; set; }
         public DateTime CreatedAt { get; set; }
         public string? CreatedBy { get; set; }
         public DateTime? LastModifiedAt { get; set; }

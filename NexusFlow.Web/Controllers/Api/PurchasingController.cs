@@ -26,38 +26,72 @@ namespace NexusFlow.Web.Controllers.Api
             _mediator = mediator;
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetAll()
+        // ==========================================
+        // 1. PURCHASE ORDERS
+        // ==========================================
+
+        [HttpGet("purchase-orders")]
+        public async Task<IActionResult> GetPurchaseOrders()
         {
             var result = await _mediator.Send(new GetPurchaseOrdersQuery());
             return Ok(result);
         }
 
-        [HttpPost]
-        public async Task<IActionResult> Create(CreatePurchaseOrderCommand command)
+        [HttpGet("purchase-orders/{id}")]
+        public async Task<IActionResult> GetPurchaseOrderById(int id)
+        {
+            var result = await _mediator.Send(new GetPurchaseOrderByIdQuery { Id = id });
+            return result.Succeeded ? Ok(result) : BadRequest(result);
+        }
+
+        [HttpPost("purchase-orders")]
+        public async Task<IActionResult> CreatePurchaseOrder([FromBody] CreatePurchaseOrderCommand command)
         {
             var result = await _mediator.Send(command);
             return result.Succeeded ? Ok(result) : BadRequest(result);
         }
 
+        // ==========================================
+        // 2. GOODS RECEIPT NOTES (GRN)
+        // ==========================================
 
-        // POST api/purchasing/grn
         [HttpGet("grns")]
-        public async Task<IActionResult> GetGrns() => Ok(await _mediator.Send(new GetGrnsQuery()));
+        public async Task<IActionResult> GetGrns()
+        {
+            var result = await _mediator.Send(new GetGrnsQuery());
+            return Ok(result);
+        }
 
-        [HttpPost("grn")]
+        [HttpPost("grns")]
         public async Task<IActionResult> CreateGrn([FromBody] CreateGrnCommand command)
         {
             var result = await _mediator.Send(command);
             return result.Succeeded ? Ok(result) : BadRequest(result);
         }
 
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(int id)
+        // ==========================================
+        // 3. SUPPLIER BILLS (AP INVOICES)
+        // ==========================================
+
+        [HttpGet("supplier-bills")]
+        public async Task<IActionResult> GetSupplierBills()
         {
-            var result = await _mediator.Send(new GetPurchaseOrderByIdQuery { Id = id });
+            var result = await _mediator.Send(new GetSupplierBillsQuery());
+            return Ok(result);
+        }
+
+        [HttpPost("supplier-bills")]
+        public async Task<IActionResult> CreateSupplierBill([FromBody] CreateSupplierBillCommand command)
+        {
+            var result = await _mediator.Send(command);
             return result.Succeeded ? Ok(result) : BadRequest(result);
         }
 
+        [HttpGet("suppliers/{supplierId}/unbilled-grns")]
+        public async Task<IActionResult> GetUnbilledGrns(int supplierId)
+        {
+            var result = await _mediator.Send(new GetUnbilledGrnsQuery { SupplierId = supplierId });
+            return Ok(result);
+        }
     }
 }

@@ -10,5 +10,6 @@ namespace NexusFlow.Web.Controllers
         }
 
         public IActionResult GRN() => View();
+        public IActionResult SupplierBills() => View();
     }
 }

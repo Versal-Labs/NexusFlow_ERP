@@ -1,0 +1,129 @@
+﻿@{
+    ViewData["Title"] = "Supplier Bills (AP)";
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h4 class="mb-0">Supplier Bills (Accounts Payable)</h4>
+            <small class="text-muted">Record vendor invoices, clear GRN liabilities, and post direct expenses.</small>
+        </div>
+        <button class="btn btn-primary btn-sm shadow-sm" onclick="billApp.openModal()">
+            <i class="fa-solid fa-file-invoice-dollar me-1"></i> Enter Bill
+        </button>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-3">
+            <table id="billGrid" class="table table-hover table-sm w-100 fs-13 align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Bill #</th>
+                        <th>Bill Date</th>
+                        <th>Due Date</th>
+                        <th>Supplier</th>
+                        <th>Vendor Ref</th>
+                        <th class="text-end">Grand Total</th>
+                        <th class="text-center">Status</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="billModal" tabindex="-1">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title fs-6"><i class="fa-solid fa-file-invoice-dollar text-primary me-2"></i>New Supplier Bill</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body fs-13 p-4">
+                <form id="billForm">
+                    <div class="row g-3 mb-4 pb-4 border-bottom">
+                        <div class="col-md-5">
+                            <label class="form-label fw-bold mb-1">Supplier <span class="text-danger">*</span></label>
+                            <select class="form-select form-select-sm select2" id="SupplierId" required style="width:100%"></select>
+                        </div>
+                        <div class="col-md-7">
+                            <label class="form-label fw-bold mb-1 text-primary"><i class="fa-solid fa-link me-1"></i>Link to Unbilled GRNs</label>
+                            <select class="form-select form-select-sm select2" id="LinkedGrnIds" multiple="multiple" style="width:100%"></select>
+                            <div class="form-text small text-muted">Select GRNs to auto-populate the bill. Only unbilled GRNs are shown.</div>
+                        </div>
+                        <div class="col-md-3 mt-3">
+                            <label class="form-label fw-bold mb-1">Vendor Invoice # <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control form-control-sm font-monospace" id="SupplierInvoiceNo" required>
+                        </div>
+                        <div class="col-md-3 mt-3">
+                            <label class="form-label fw-bold mb-1">Bill Date <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control form-control-sm" id="BillDate" required>
+                        </div>
+                        <div class="col-md-3 mt-3">
+                            <label class="form-label fw-bold mb-1">Due Date <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control form-control-sm" id="DueDate" required>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="text-primary mb-0"><i class="fa-solid fa-list me-2"></i>Bill Lines</h6>
+                        <button type="button" class="btn btn-sm btn-light border" onclick="billApp.addLine()">
+                            <i class="fa-solid fa-plus text-success"></i> Add Line
+                        </button>
+                    </div>
+
+                    <div class="table-responsive mb-4 border rounded" style="min-height: 200px;">
+                        <table class="table table-sm table-bordered align-middle mb-0" id="linesTable">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width: 15%">Line Type</th>
+                                    <th style="width: 35%">Item / Account</th>
+                                    <th style="width: 20%">Description</th>
+                                    <th style="width: 10%">Qty</th>
+                                    <th style="width: 10%">Unit Price</th>
+                                    <th style="width: 10%" class="text-end">Line Total</th>
+                                    <th style="width: 5%"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="linesBody"></tbody>
+                        </table>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-7">
+                            <label class="form-label fw-bold mb-1">Remarks</label>
+                            <textarea class="form-control form-control-sm mb-3" id="Remarks" rows="2"></textarea>
+                            <div class="form-check form-switch p-3 bg-light border rounded d-inline-block">
+                                <input class="form-check-input ms-0 me-2 mt-1 calc-trigger" type="checkbox" id="ApplyVat" checked style="cursor:pointer">
+                                <label class="form-check-label fw-bold" for="ApplyVat" style="cursor:pointer">Apply Input VAT (18%)</label>
+                            </div>
+                        </div>
+                        <div class="col-md-5">
+                            <div class="bg-light p-3 border rounded shadow-sm">
+                                <div class="d-flex justify-content-between mb-2"><span class="fw-bold text-muted">Sub Total:</span><span class="font-monospace" id="lblSubTotal">0.00</span></div>
+                                <div class="d-flex justify-content-between mb-2" id="vatRow"><span class="fw-bold text-muted">Input VAT:</span><span class="font-monospace text-danger" id="lblTax">+ 0.00</span></div>
+                                <hr class="my-2">
+                                <div class="d-flex justify-content-between fs-5 text-dark"><span class="fw-bold">Grand Total:</span><span class="font-monospace fw-bold text-primary" id="lblGrandTotal">0.00</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer bg-light p-3 border-top">
+                <button type="button" class="btn btn-secondary btn-sm px-4" data-bs-dismiss="modal">Cancel</button>
+                <div class="ms-auto">
+                    <button type="button" class="btn btn-warning btn-sm px-4 shadow-sm me-2 text-dark fw-bold" onclick="billApp.save(true)">
+                        <i class="fa-solid fa-file-pen me-1"></i> Save Draft
+                    </button>
+                    <button type="button" class="btn btn-primary btn-sm px-4 shadow-sm fw-bold" onclick="billApp.save(false)">
+                        <i class="fa-solid fa-check-double me-1"></i> Post to AP Ledger
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/purchasing/supplier-bills.js" asp-append-version="true"></script>
+}

@@ -12,18 +12,20 @@ namespace NexusFlow.Domain.Entities.Master
         public int ProductId { get; set; }
         public Product Product { get; set; }
 
-        // The Specifics
-        public string Name { get; set; } = string.Empty; // Auto-generated: "Oxford Shirt - L - Red"
-        public string SKU { get; set; } = string.Empty;  // Unique Barcode: "SHIRT-RED-L-001"
+        public string Name { get; set; } = string.Empty;
+        public string SKU { get; set; } = string.Empty;  // CSV: itemcode
+        public string? Barcode { get; set; }
 
-        public string Size { get; set; } = string.Empty; // "L", "XL", "42"
-        public string Color { get; set; } = string.Empty; // "Red", "Blue"
+        public string Size { get; set; } = string.Empty;  // CSV: msize / size
+        public string Color { get; set; } = string.Empty; // CSV: color
 
-        // Pricing (Standard)
-        public decimal CostPrice { get; set; }    // Standard Cost (Reference only, FIFO uses StockLayer)
-        public decimal SellingPrice { get; set; } // Wholesale Price
+        // Pricing & Valuation
+        public decimal CostPrice { get; set; }         // Standard/Last Purchase Cost
+        public decimal MovingAverageCost { get; set; } // The Client's Request (CSV: avar)
+        public decimal SellingPrice { get; set; }      // CSV: selprice
+        public decimal MinimumSellingPrice { get; set; } // CSV: minsellpri
 
-        // Re-Order Logic
-        public decimal ReorderLevel { get; set; } // Alert when stock < 10
+        public decimal ReorderLevel { get; set; }
+        public bool IsActive { get; set; } = true;
     }
 }

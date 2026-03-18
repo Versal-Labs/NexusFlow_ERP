@@ -18,6 +18,10 @@ namespace NexusFlow.Domain.Entities.Purchasing
         public int WarehouseId { get; set; } // Where did we store the fabric?
         public string SupplierInvoiceNo { get; set; } = string.Empty;
         public decimal TotalAmount { get; set; }
+        public bool IsBilled { get; set; } = false;
+
+        public int? SupplierBillId { get; set; }
+        public SupplierBill? SupplierBill { get; set; }
 
         public ICollection<GRNItem> Items { get; set; } = new List<GRNItem>();
     }
