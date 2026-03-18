@@ -17,7 +17,7 @@ namespace NexusFlow.AppCore.DTOs.Purchasing
 
         // --- 2. Categorization ---
         public int SupplierGroupId { get; set; } // Dropdown
-        public string SupplierGroupName { get; set; } // For Grid Display
+        public string? SupplierGroupName { get; set; } // For Grid Display
         public int? RatingId { get; set; }
 
         // --- 3. Contact ---

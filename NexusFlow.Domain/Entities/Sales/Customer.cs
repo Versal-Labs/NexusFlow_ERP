@@ -54,7 +54,7 @@ namespace NexusFlow.Domain.Entities.Sales
         public string City { get; set; } = string.Empty;
 
         [Required, MaxLength(50)]
-        public string Country { get; set; } = "LKR";
+        public string Country { get; set; } = "LK";
         #endregion
 
         #region 5. Financial Mappings

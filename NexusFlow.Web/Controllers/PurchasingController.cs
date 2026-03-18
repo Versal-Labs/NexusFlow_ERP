@@ -8,5 +8,8 @@ namespace NexusFlow.Web.Controllers
         {
             return View();
         }
+
+        public IActionResult GRN() => View();
+        public IActionResult SupplierBills() => View();
     }
 }

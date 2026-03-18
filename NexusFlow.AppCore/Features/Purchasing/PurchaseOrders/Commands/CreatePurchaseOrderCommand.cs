@@ -46,7 +46,8 @@ namespace NexusFlow.AppCore.Features.Purchasing.PurchaseOrders.Commands
                 // ExpectedDate = request.ExpectedDate, // Add property to Entity if missing
                 SupplierId = request.SupplierId,
                 Status = PurchaseOrderStatus.Draft,
-                Items = new List<PurchaseOrderItem>()
+                Items = new List<PurchaseOrderItem>(),
+                Note = request.Note
             };
 
             decimal grandTotal = 0;
