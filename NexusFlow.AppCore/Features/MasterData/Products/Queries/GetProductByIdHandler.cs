@@ -25,10 +25,6 @@ namespace NexusFlow.AppCore.Features.MasterData.Products.Queries
                 .Include(p => p.Brand)
                 .Include(p => p.Category)
                 .Include(p => p.UnitOfMeasure)
-                // Include Financials for Edit Form
-                .Include(p => p.SalesAccount)
-                .Include(p => p.CogsAccount)
-                .Include(p => p.InventoryAccount)
                 // Include Variants for Accordion/Edit Grid
                 .Include(p => p.Variants)
                 .FirstOrDefaultAsync(p => p.Id == request.Id, cancellationToken);
@@ -51,10 +47,6 @@ namespace NexusFlow.AppCore.Features.MasterData.Products.Queries
                 CategoryId = product.CategoryId,
                 UnitOfMeasureId = product.UnitOfMeasureId,
 
-                // Financial IDs
-                SalesAccountId = product.SalesAccountId,
-                CogsAccountId = product.CogsAccountId,
-                InventoryAccountId = product.InventoryAccountId,
 
                 // Display Names
                 BrandName = product.Brand.Name,

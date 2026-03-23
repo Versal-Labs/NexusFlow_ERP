@@ -31,4 +31,47 @@ namespace NexusFlow.Infrastructure.Persistence.Configurations
             builder.Property(x => x.TotalDiscount).HasColumnType("decimal(18,2)");
         }
     }
+
+    public class CommissionRuleConfiguration : IEntityTypeConfiguration<CommissionRule>
+    {
+        public void Configure(EntityTypeBuilder<CommissionRule> builder)
+        {
+            builder.HasKey(c => c.Id);
+
+            builder.Property(c => c.Name).HasMaxLength(150).IsRequired();
+            builder.Property(c => c.CommissionPercentage).HasPrecision(18, 4);
+
+            // Optional Category Link
+            builder.HasOne(c => c.Category)
+                   .WithMany()
+                   .HasForeignKey(c => c.CategoryId)
+                   .OnDelete(DeleteBehavior.Restrict);
+
+            // Optional Employee Link (The Rep Override)
+            builder.HasOne(c => c.Employee)
+                   .WithMany()
+                   .HasForeignKey(c => c.EmployeeId)
+                   .OnDelete(DeleteBehavior.Cascade); // Safe to delete a rule if the employee is purged
+        }
+    }
+
+    public class CommissionLedgerConfiguration : IEntityTypeConfiguration<CommissionLedger>
+    {
+        public void Configure(EntityTypeBuilder<CommissionLedger> builder)
+        {
+            builder.HasKey(c => c.Id);
+
+            builder.HasOne(c => c.SalesRep)
+                   .WithMany()
+                   .HasForeignKey(c => c.SalesRepId)
+                   .OnDelete(DeleteBehavior.Restrict); // Prevent deleting reps who are owed money
+
+            builder.HasOne(c => c.SalesInvoice)
+                   .WithMany()
+                   .HasForeignKey(c => c.SalesInvoiceId)
+                   .OnDelete(DeleteBehavior.Cascade); // If invoice is deleted/voided, erase unearned commission
+
+            builder.Property(c => c.CommissionAmount).HasPrecision(18, 4);
+        }
+    }
 }

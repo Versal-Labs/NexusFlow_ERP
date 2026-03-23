@@ -5,6 +5,7 @@ using NexusFlow.AppCore.Interfaces;
 using NexusFlow.Domain.Common;
 using NexusFlow.Domain.Entities.Config;
 using NexusFlow.Domain.Entities.Finance;
+using NexusFlow.Domain.Entities.HR;
 using NexusFlow.Domain.Entities.Inventory;
 using NexusFlow.Domain.Entities.Master;
 using NexusFlow.Domain.Entities.Purchasing;
@@ -62,6 +63,11 @@ namespace NexusFlow.Infrastructure
         public DbSet<GoodsReceiptItem> GoodsReceiptItems { get; set; }
         public DbSet<SupplierBill> SupplierBills { get; set; }
         public DbSet<SupplierBillItem> SupplierBillItems { get; set; }
+        public DbSet<Employee> Employees { get; set; }
+        public DbSet<SalesOrder> SalesOrders { get; set; }
+        public DbSet<SalesOrderItem> SalesOrderItems { get; set; }
+        public DbSet<CommissionRule> CommissionRules { get; set; }
+        public DbSet<CommissionLedger> CommissionLedgers { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

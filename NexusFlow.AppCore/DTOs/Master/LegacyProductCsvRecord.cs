@@ -19,5 +19,6 @@ namespace NexusFlow.AppCore.DTOs.Master
         [Name("avar")] public decimal AverageCost { get; set; }
         [Name("selprice")] public decimal SellingPrice { get; set; }
         [Name("minsellpri")] public decimal MinSellingPrice { get; set; }
+        [Name("totqty")] public decimal TotalQuantity { get; set; }
     }
 }

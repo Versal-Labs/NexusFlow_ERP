@@ -17,7 +17,7 @@ namespace NexusFlow.Infrastructure.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.1")
+                .HasAnnotation("ProductVersion", "10.0.5")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -983,6 +983,87 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.ToTable("TaxTypes", "Finance");
                 });
 
+            modelBuilder.Entity("NexusFlow.Domain.Entities.HR.Employee", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ApplicationUserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("BankAccountNo")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("BankName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("BasicSalary")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("EPF_No")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("EmployeeCode")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<bool>("IsSalesRep")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("LastModifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("NIC")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Phone")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ApplicationUserId");
+
+                    b.HasIndex("Email")
+                        .IsUnique();
+
+                    b.HasIndex("EmployeeCode")
+                        .IsUnique();
+
+                    b.ToTable("Employees", "HR");
+                });
+
             modelBuilder.Entity("NexusFlow.Domain.Entities.Inventory.StockLayer", b =>
                 {
                     b.Property<int>("Id")
@@ -1006,6 +1087,9 @@ namespace NexusFlow.Infrastructure.Migrations
 
                     b.Property<decimal>("InitialQty")
                         .HasColumnType("decimal(18,4)");
+
+                    b.Property<bool>("IsExhausted")
+                        .HasColumnType("bit");
 
                     b.Property<DateTime?>("LastModifiedAt")
                         .HasColumnType("datetime2");
@@ -1055,6 +1139,10 @@ namespace NexusFlow.Infrastructure.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("LastModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Notes")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("ProductVariantId")
@@ -1207,11 +1295,17 @@ namespace NexusFlow.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int?>("CogsAccountId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("CreatedBy")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("InventoryAccountId")
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("LastModifiedAt")
                         .HasColumnType("datetime2");
@@ -1223,7 +1317,21 @@ namespace NexusFlow.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int?>("ParentCategoryId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("SalesAccountId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("CogsAccountId");
+
+                    b.HasIndex("InventoryAccountId");
+
+                    b.HasIndex("ParentCategoryId");
+
+                    b.HasIndex("SalesAccountId");
 
                     b.ToTable("Categories", "Master");
                 });
@@ -1242,9 +1350,6 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.Property<int>("CategoryId")
                         .HasColumnType("int");
 
-                    b.Property<int>("CogsAccountId")
-                        .HasColumnType("int");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -1255,8 +1360,8 @@ namespace NexusFlow.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("InventoryAccountId")
-                        .HasColumnType("int");
+                    b.Property<string>("ImageUrl")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("LastModifiedAt")
                         .HasColumnType("datetime2");
@@ -1269,9 +1374,6 @@ namespace NexusFlow.Infrastructure.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
-                    b.Property<int>("SalesAccountId")
-                        .HasColumnType("int");
-
                     b.Property<int>("Type")
                         .HasColumnType("int");
 
@@ -1283,12 +1385,6 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.HasIndex("BrandId");
 
                     b.HasIndex("CategoryId");
-
-                    b.HasIndex("CogsAccountId");
-
-                    b.HasIndex("InventoryAccountId");
-
-                    b.HasIndex("SalesAccountId");
 
                     b.HasIndex("UnitOfMeasureId");
 
@@ -1303,6 +1399,9 @@ namespace NexusFlow.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("Barcode")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Color")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -1316,11 +1415,20 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.Property<string>("CreatedBy")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
                     b.Property<DateTime?>("LastModifiedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("LastModifiedBy")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("MinimumSellingPrice")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("MovingAverageCost")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -2003,6 +2111,104 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.ToTable("SupplierBillItems", "Purchasing");
                 });
 
+            modelBuilder.Entity("NexusFlow.Domain.Entities.Sales.CommissionLedger", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("CommissionAmount")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("LastModifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("SalesInvoiceId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SalesRepId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SalesInvoiceId");
+
+                    b.HasIndex("SalesRepId");
+
+                    b.ToTable("CommissionLedger", "Sales");
+                });
+
+            modelBuilder.Entity("NexusFlow.Domain.Entities.Sales.CommissionRule", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("CategoryId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("CommissionPercentage")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("EmployeeId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("LastModifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<int>("RuleType")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("ValidFrom")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("ValidTo")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CategoryId");
+
+                    b.HasIndex("EmployeeId");
+
+                    b.ToTable("CommissionRules", "Sales");
+                });
+
             modelBuilder.Entity("NexusFlow.Domain.Entities.Sales.Customer", b =>
                 {
                     b.Property<int>("Id")
@@ -2263,6 +2469,114 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.HasIndex("SalesInvoiceId");
 
                     b.ToTable("SalesInvoiceItems", "Sales");
+                });
+
+            modelBuilder.Entity("NexusFlow.Domain.Entities.Sales.SalesOrder", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("CustomerId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("LastModifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Notes")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("OrderDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("OrderNumber")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("SalesRepId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("TotalAmount")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CustomerId");
+
+                    b.HasIndex("OrderNumber")
+                        .IsUnique();
+
+                    b.HasIndex("SalesRepId");
+
+                    b.ToTable("SalesOrders", "Sales");
+                });
+
+            modelBuilder.Entity("NexusFlow.Domain.Entities.Sales.SalesOrderItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("Discount")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime?>("LastModifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("LineTotal")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("ProductVariantId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Quantity")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("decimal(18,4)");
+
+                    b.Property<int>("SalesOrderId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("UnitPrice")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductVariantId");
+
+                    b.HasIndex("SalesOrderId");
+
+                    b.ToTable("SalesOrderItems", "Sales");
                 });
 
             modelBuilder.Entity("NexusFlow.Domain.Entities.System.ApplicationUser", b =>
@@ -2547,6 +2861,16 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.Navigation("Account");
                 });
 
+            modelBuilder.Entity("NexusFlow.Domain.Entities.HR.Employee", b =>
+                {
+                    b.HasOne("NexusFlow.Domain.Entities.System.ApplicationUser", "ApplicationUser")
+                        .WithMany()
+                        .HasForeignKey("ApplicationUserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("ApplicationUser");
+                });
+
             modelBuilder.Entity("NexusFlow.Domain.Entities.Inventory.StockLayer", b =>
                 {
                     b.HasOne("NexusFlow.Domain.Entities.Master.ProductVariant", "ProductVariant")
@@ -2615,6 +2939,33 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.Navigation("MaterialVariant");
                 });
 
+            modelBuilder.Entity("NexusFlow.Domain.Entities.Master.Category", b =>
+                {
+                    b.HasOne("NexusFlow.Domain.Entities.Finance.Account", "CogsAccount")
+                        .WithMany()
+                        .HasForeignKey("CogsAccountId");
+
+                    b.HasOne("NexusFlow.Domain.Entities.Finance.Account", "InventoryAccount")
+                        .WithMany()
+                        .HasForeignKey("InventoryAccountId");
+
+                    b.HasOne("NexusFlow.Domain.Entities.Master.Category", "ParentCategory")
+                        .WithMany("SubCategories")
+                        .HasForeignKey("ParentCategoryId");
+
+                    b.HasOne("NexusFlow.Domain.Entities.Finance.Account", "SalesAccount")
+                        .WithMany()
+                        .HasForeignKey("SalesAccountId");
+
+                    b.Navigation("CogsAccount");
+
+                    b.Navigation("InventoryAccount");
+
+                    b.Navigation("ParentCategory");
+
+                    b.Navigation("SalesAccount");
+                });
+
             modelBuilder.Entity("NexusFlow.Domain.Entities.Master.Product", b =>
                 {
                     b.HasOne("NexusFlow.Domain.Entities.Master.Brand", "Brand")
@@ -2629,23 +2980,6 @@ namespace NexusFlow.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("NexusFlow.Domain.Entities.Finance.Account", "CogsAccount")
-                        .WithMany()
-                        .HasForeignKey("CogsAccountId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("NexusFlow.Domain.Entities.Finance.Account", "InventoryAccount")
-                        .WithMany()
-                        .HasForeignKey("InventoryAccountId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("NexusFlow.Domain.Entities.Finance.Account", "SalesAccount")
-                        .WithMany()
-                        .HasForeignKey("SalesAccountId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.HasOne("NexusFlow.Domain.Entities.Master.UnitOfMeasure", "UnitOfMeasure")
                         .WithMany()
                         .HasForeignKey("UnitOfMeasureId")
@@ -2655,12 +2989,6 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.Navigation("Brand");
 
                     b.Navigation("Category");
-
-                    b.Navigation("CogsAccount");
-
-                    b.Navigation("InventoryAccount");
-
-                    b.Navigation("SalesAccount");
 
                     b.Navigation("UnitOfMeasure");
                 });
@@ -2831,6 +3159,42 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.Navigation("SupplierBill");
                 });
 
+            modelBuilder.Entity("NexusFlow.Domain.Entities.Sales.CommissionLedger", b =>
+                {
+                    b.HasOne("NexusFlow.Domain.Entities.Sales.SalesInvoice", "SalesInvoice")
+                        .WithMany()
+                        .HasForeignKey("SalesInvoiceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("NexusFlow.Domain.Entities.HR.Employee", "SalesRep")
+                        .WithMany()
+                        .HasForeignKey("SalesRepId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("SalesInvoice");
+
+                    b.Navigation("SalesRep");
+                });
+
+            modelBuilder.Entity("NexusFlow.Domain.Entities.Sales.CommissionRule", b =>
+                {
+                    b.HasOne("NexusFlow.Domain.Entities.Master.Category", "Category")
+                        .WithMany()
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("NexusFlow.Domain.Entities.HR.Employee", "Employee")
+                        .WithMany()
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("Category");
+
+                    b.Navigation("Employee");
+                });
+
             modelBuilder.Entity("NexusFlow.Domain.Entities.Sales.SalesInvoice", b =>
                 {
                     b.HasOne("NexusFlow.Domain.Entities.Sales.Customer", "Customer")
@@ -2861,6 +3225,44 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.Navigation("SalesInvoice");
                 });
 
+            modelBuilder.Entity("NexusFlow.Domain.Entities.Sales.SalesOrder", b =>
+                {
+                    b.HasOne("NexusFlow.Domain.Entities.Sales.Customer", "Customer")
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("NexusFlow.Domain.Entities.HR.Employee", "SalesRep")
+                        .WithMany()
+                        .HasForeignKey("SalesRepId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Customer");
+
+                    b.Navigation("SalesRep");
+                });
+
+            modelBuilder.Entity("NexusFlow.Domain.Entities.Sales.SalesOrderItem", b =>
+                {
+                    b.HasOne("NexusFlow.Domain.Entities.Master.ProductVariant", "ProductVariant")
+                        .WithMany()
+                        .HasForeignKey("ProductVariantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("NexusFlow.Domain.Entities.Sales.SalesOrder", "SalesOrder")
+                        .WithMany("Items")
+                        .HasForeignKey("SalesOrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ProductVariant");
+
+                    b.Navigation("SalesOrder");
+                });
+
             modelBuilder.Entity("NexusFlow.Domain.Entities.Finance.Account", b =>
                 {
                     b.Navigation("ChildAccounts");
@@ -2884,6 +3286,11 @@ namespace NexusFlow.Infrastructure.Migrations
             modelBuilder.Entity("NexusFlow.Domain.Entities.Master.BillOfMaterial", b =>
                 {
                     b.Navigation("Components");
+                });
+
+            modelBuilder.Entity("NexusFlow.Domain.Entities.Master.Category", b =>
+                {
+                    b.Navigation("SubCategories");
                 });
 
             modelBuilder.Entity("NexusFlow.Domain.Entities.Master.Product", b =>
@@ -2917,6 +3324,11 @@ namespace NexusFlow.Infrastructure.Migrations
                 {
                     b.Navigation("Allocations");
 
+                    b.Navigation("Items");
+                });
+
+            modelBuilder.Entity("NexusFlow.Domain.Entities.Sales.SalesOrder", b =>
+                {
                     b.Navigation("Items");
                 });
 #pragma warning restore 612, 618

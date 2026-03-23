@@ -19,16 +19,15 @@ namespace NexusFlow.Domain.Entities.Inventory
         public int WarehouseId { get; set; }
         public Warehouse Warehouse { get; set; }
 
-        // Logic: In, Out, Transfer
         public StockTransactionType Type { get; set; }
 
         public decimal Qty { get; set; }
-
-        // The Cost Value of this specific movement (calculated via FIFO)
         public decimal UnitCost { get; set; }
         public decimal TotalValue { get; set; }
 
-        // Traceability: "GRN-1001" or "INV-500" or "TRF-200"
         public string ReferenceDocNo { get; set; } = string.Empty;
+
+        // ARCHITECTURAL ADDITION: Critical for Auditing manual adjustments and cutovers
+        public string Notes { get; set; } = string.Empty;
     }
 }

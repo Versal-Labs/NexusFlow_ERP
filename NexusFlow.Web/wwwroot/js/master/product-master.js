@@ -22,16 +22,7 @@
     },
 
     _registerEvents: function () {
-        // Toggle Inventory Account based on Stock vs Service
-        $('#Type').on('change', function () {
-            var typeVal = $(this).val();
-            if (typeVal == "2") { // Service
-                $('#divInventoryAccount').slideUp();
-                $('#InventoryAccountId').val(null).trigger('change');
-            } else {
-                $('#divInventoryAccount').slideDown();
-            }
-        });
+        // Removed the Inventory Account toggle logic because accounts are now hidden
 
         // Accordion (Child Row) Logic for Variants
         const self = this;
@@ -73,7 +64,7 @@
                 {
                     data: "type",
                     render: function (d) {
-                        return (d === 'Service' || d == 2)
+                        return (d === 'Service' || d == 3)
                             ? '<span class="badge bg-info bg-opacity-10 text-info border border-info">Service</span>'
                             : '<span class="badge bg-success bg-opacity-10 text-success border border-success">Stock Item</span>';
                     }
@@ -139,23 +130,16 @@
 
     _loadMasterData: async function () {
         try {
-            const [brandRes, catRes, unitRes, accRes] = await Promise.all([
+            // Removed the Finance API call entirely
+            const [brandRes, catRes, unitRes] = await Promise.all([
                 api.get('/api/Brand'),
                 api.get('/api/Category'),
-                api.get('/api/UnitOfMeasure'),
-                api.get('/api/Finance/accounts')
+                api.get('/api/UnitOfMeasure')
             ]);
 
             this._populateSelect('BrandId', brandRes.data || brandRes);
             this._populateSelect('CategoryId', catRes.data || catRes);
             this._populateSelect('UnitOfMeasureId', unitRes.data || unitRes);
-
-            const accounts = accRes.data || accRes;
-            if (accounts && accounts.length > 0) {
-                this._populateSelect('SalesAccountId', accounts.filter(a => a.type === 'Revenue' || a.type === '4' || a.type === 'Income'));
-                this._populateSelect('CogsAccountId', accounts.filter(a => a.type === 'Expense' || a.type === '5' || a.type === 'CostOfGoodsSold'));
-                this._populateSelect('InventoryAccountId', accounts.filter(a => a.type === 'Asset' || a.type === '1' || a.type === 'Inventory'));
-            }
         } catch (e) {
             console.error("[ProductApp] Master data load failed", e);
         }
@@ -182,7 +166,6 @@
         $('#variantList').empty();
 
         this.addVariantRow(); // Add one blank variant row by default
-        $('#divInventoryAccount').show();
 
         if (this._modal) this._modal.show();
     },
@@ -202,12 +185,7 @@
             $('#CategoryId').val(data.categoryId);
             $('#UnitOfMeasureId').val(data.unitOfMeasureId);
 
-            $('#SalesAccountId').val(data.salesAccountId);
-            $('#CogsAccountId').val(data.cogsAccountId);
-
-            if (data.inventoryAccountId) {
-                $('#InventoryAccountId').val(data.inventoryAccountId);
-            }
+            // Removed mapping of Account IDs
 
             $('#variantList').empty();
             if (data.variants && data.variants.length > 0) {
@@ -222,8 +200,10 @@
 
     addVariantRow: function (v = null) {
         const id = Date.now() + Math.floor(Math.random() * 1000);
+        // CRITICAL FIX: Added hidden .v-id so updates map correctly to DB instead of duplicating
         const html = `
             <tr id="row_${id}">
+                <input type="hidden" class="v-id" value="${v ? (v.id || 0) : 0}">
                 <td><input type="text" class="form-control form-control-sm v-size" value="${v ? (v.size || '') : ''}" placeholder="Size"></td>
                 <td><input type="text" class="form-control form-control-sm v-color" value="${v ? (v.color || '') : ''}" placeholder="Color"></td>
                 <td><input type="text" class="form-control form-control-sm v-sku font-monospace" value="${v ? (v.sku || '') : ''}" placeholder="SKU"></td>
@@ -248,6 +228,7 @@
         const id = parseInt($('#hdnProductId').val()) || 0;
         const typeVal = $('#Type').val();
 
+        // Removed GL Account mappings entirely
         const productDto = {
             Id: id,
             Name: $('#Name').val(),
@@ -256,9 +237,6 @@
             BrandId: parseInt($('#BrandId').val()),
             CategoryId: parseInt($('#CategoryId').val()),
             UnitOfMeasureId: parseInt($('#UnitOfMeasureId').val()),
-            SalesAccountId: parseInt($('#SalesAccountId').val()),
-            CogsAccountId: parseInt($('#CogsAccountId').val()),
-            InventoryAccountId: (typeVal != "2") ? parseInt($('#InventoryAccountId').val()) : null,
             Variants: []
         };
 
@@ -267,6 +245,7 @@
             const skuVal = row.find('.v-sku').val();
             if (skuVal && skuVal.trim() !== '') {
                 productDto.Variants.push({
+                    Id: parseInt(row.find('.v-id').val()) || 0,
                     Size: row.find('.v-size').val(),
                     Color: row.find('.v-color').val(),
                     SKU: skuVal,
@@ -285,15 +264,22 @@
         const commandPayload = { Product: productDto };
         let res;
 
-        if (id === 0) {
-            res = await api.post(this.API_URL, commandPayload);
-        } else {
-            res = await api.put(`${this.API_URL}/${id}`, commandPayload);
-        }
+        try {
+            if (id === 0) {
+                res = await api.post(this.API_URL, commandPayload);
+            } else {
+                res = await api.put(`${this.API_URL}/${id}`, commandPayload);
+            }
 
-        if (res && (res.succeeded || res.id)) {
-            if (this._modal) this._modal.hide();
-            if (this._table) this._table.ajax.reload(null, false);
+            if (res && (res.succeeded || res.id)) {
+                toastr.success(res.message || "Product saved successfully.");
+                if (this._modal) this._modal.hide();
+                if (this._table) this._table.ajax.reload(null, false);
+            } else if (res && res.message) {
+                toastr.error(res.message); // This will display the backend error if Category lacks Accounts
+            }
+        } catch(e) {
+            console.error(e);
         }
     }
 };

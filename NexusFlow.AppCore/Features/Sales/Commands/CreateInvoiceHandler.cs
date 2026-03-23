@@ -82,9 +82,10 @@ namespace NexusFlow.AppCore.Features.Sales.Commands
                     // Fetch Product Variant to know its Type (Stock vs Service) and Financial Bindings
                     var variant = await _context.ProductVariants
                         .Include(v => v.Product)
+                            .ThenInclude(p => p.Category)
                         .FirstOrDefaultAsync(v => v.Id == item.ProductVariantId, cancellationToken);
 
-                    if (variant == null) throw new Exception($"Product Variant {item.ProductVariantId} not found.");
+                    if (variant == null) throw new InvalidOperationException($"Product Variant {item.ProductVariantId} not found.");
 
                     // Financials: Line Total reduces by Line Discount
                     decimal lineTotal = (item.Quantity * item.UnitPrice) - item.Discount;
@@ -105,7 +106,7 @@ namespace NexusFlow.AppCore.Features.Sales.Commands
                     if (!dto.IsDraft)
                     {
                         // Group Revenue based on Product's defined Sales Account
-                        int revAccountId = variant.Product.SalesAccountId;
+                        int revAccountId = variant.Product?.Category?.SalesAccountId ?? 0;
                         if (revAccountId == 0) throw new Exception($"Product '{variant.Product.Name}' is missing a Revenue Account.");
 
                         if (!revenueGroup.ContainsKey(revAccountId)) revenueGroup[revAccountId] = 0;
@@ -127,8 +128,8 @@ namespace NexusFlow.AppCore.Features.Sales.Commands
                             decimal actualCogs = stockResult.Data; // The actual FIFO cost computed by the engine
 
                             // Group COGS and Inventory Asset reductions
-                            int cogsAcc = variant.Product?.CogsAccountId ?? 0;
-                            int invAcc = variant.Product?.InventoryAccountId ?? 0;
+                            int cogsAcc = variant.Product?.Category?.CogsAccountId ?? 0;
+                            int invAcc = variant.Product?.Category?.InventoryAccountId ?? 0;
 
                             if (cogsAcc == 0 || invAcc == 0)
                                 throw new Exception($"Product '{variant.Product?.Name}' is missing COGS or Inventory Asset Accounts.");
