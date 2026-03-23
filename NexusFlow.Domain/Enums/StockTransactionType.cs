@@ -12,6 +12,8 @@ namespace NexusFlow.Domain.Enums
         TransferOut = 4,   // Sending to Factory (Reduces Main)
         TransferIn = 5,    // Receiving at Factory (Increases Factory)
         ProductionOut = 6, // Consumed raw material
-        ProductionIn = 7   // Finished good created
+        ProductionIn = 7,   // Finished good created
+        OpeningBalance = 8,
+        Receipt = 9
     }
 }

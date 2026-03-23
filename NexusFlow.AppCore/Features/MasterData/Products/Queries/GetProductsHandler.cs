@@ -31,10 +31,6 @@ namespace NexusFlow.AppCore.Features.MasterData.Products.Queries
                 .Include(p => p.Category)
                 .Include(p => p.UnitOfMeasure)
                 .Include(p => p.Variants)
-                // 3. Include Financial Accounts (For the "Account Info" column)
-                .Include(p => p.SalesAccount)
-                .Include(p => p.CogsAccount)
-                .Include(p => p.InventoryAccount)
                 .OrderBy(p => p.Name);
 
             // 4. Project to DTO (Flattening relations for DataTables)
@@ -49,21 +45,12 @@ namespace NexusFlow.AppCore.Features.MasterData.Products.Queries
                 BrandId = p.BrandId,
                 CategoryId = p.CategoryId,
                 UnitOfMeasureId = p.UnitOfMeasureId,
-                SalesAccountId = p.SalesAccountId,
-                CogsAccountId = p.CogsAccountId,
-                InventoryAccountId = p.InventoryAccountId,
 
                 // --- Names (Required for DataGrid Display) ---
                 // This fixes "unknown parameter 'categoryName'"
                 CategoryName = p.Category.Name,
                 BrandName = p.Brand.Name,
                 UnitName = p.UnitOfMeasure.Symbol,
-
-                // --- Financial Names ---
-                SalesAccountName = p.SalesAccount.Name,
-                CogsAccountName = p.CogsAccount.Name,
-                // Handle Nullable Inventory Account (Services don't have one)
-                InventoryAccountName = p.InventoryAccount != null ? p.InventoryAccount.Name : "-",
 
                 Variants = p.Variants.Select(v => new ProductVariantDto
                 {

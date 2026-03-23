@@ -26,6 +26,8 @@ namespace NexusFlow.Domain.Entities.Master
 
         public ProductType Type { get; set; }
 
+        public string? ImageUrl { get; set; }
+
         // Removed GL Accounts from here. They are inherited from Category.
 
         public ICollection<ProductVariant> Variants { get; set; } = new List<ProductVariant>();

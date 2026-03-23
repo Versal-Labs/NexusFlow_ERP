@@ -37,7 +37,6 @@ namespace NexusFlow.AppCore.Features.MasterData.Products.Commands
             // 1. Fetch Existing Product with Variants
             var product = await _context.Products
                 .Include(p => p.Variants)
-                .Include(c => c.Category)
                 .FirstOrDefaultAsync(p => p.Id == dto.Id, cancellationToken);
 
             if (product == null)
@@ -45,77 +44,75 @@ namespace NexusFlow.AppCore.Features.MasterData.Products.Commands
                 return Result<int>.Failure($"Product with ID {dto.Id} not found.");
             }
 
-            // 2. Update Header Fields
+            // 2. Fetch Category for validation (Arch Correction)
+            var category = await _context.Categories
+                .FirstOrDefaultAsync(c => c.Id == dto.CategoryId, cancellationToken);
+
+            if (category == null) return Result<int>.Failure("The selected Category does not exist.");
+
+            if (dto.Type != Domain.Enums.ProductType.Service)
+            {
+                if (!category.InventoryAccountId.HasValue) return Result<int>.Failure($"Category '{category.Name}' is missing an Inventory Asset Account.");
+                if (!category.CogsAccountId.HasValue) return Result<int>.Failure($"Category '{category.Name}' is missing a COGS Account.");
+            }
+            if (!category.SalesAccountId.HasValue) return Result<int>.Failure($"Category '{category.Name}' is missing a Sales Revenue Account.");
+
+            // 3. Update Header Fields
             product.Name = dto.Name;
             product.Description = dto.Description;
             product.Type = dto.Type;
-
-            // Classification
             product.BrandId = dto.BrandId;
             product.CategoryId = dto.CategoryId;
             product.UnitOfMeasureId = dto.UnitOfMeasureId;
+            product.ImageUrl = dto.ImageUrl;
+            // NOTE: Account IDs are completely removed from here.
 
-            // Financials (Critical for Accounting Integrity)
-            product.Category.SalesAccountId = dto.SalesAccountId;
-            product.Category.CogsAccountId = dto.CogsAccountId;
-            product.Category.InventoryAccountId = dto.InventoryAccountId;
-
-            // 3. Synchronize Variants (The "Graph Diff" Logic)
-
-            // A. Update Existing & Add New
+            // 4. Synchronize Variants
             if (dto.Variants != null)
             {
                 foreach (var vDto in dto.Variants)
                 {
                     if (vDto.Id > 0)
                     {
-                        // Update Existing Variant
                         var existingVariant = product.Variants.FirstOrDefault(v => v.Id == vDto.Id);
                         if (existingVariant != null)
                         {
-                            existingVariant.Size = vDto.Size;
-                            existingVariant.Color = vDto.Color;
+                            existingVariant.Size = string.IsNullOrWhiteSpace(vDto.Size) ? "N/A" : vDto.Size;
+                            existingVariant.Color = string.IsNullOrWhiteSpace(vDto.Color) ? "N/A" : vDto.Color;
                             existingVariant.SKU = vDto.SKU;
                             existingVariant.CostPrice = vDto.CostPrice;
                             existingVariant.SellingPrice = vDto.SellingPrice;
                             existingVariant.ReorderLevel = vDto.ReorderLevel;
-                            existingVariant.Name = $"{dto.Name} ({vDto.Size}/{vDto.Color})";
+                            existingVariant.Name = $"{dto.Name} ({existingVariant.Size}/{existingVariant.Color})";
                         }
                     }
                     else
                     {
-                        // Add New Variant
                         product.Variants.Add(new ProductVariant
                         {
-                            Size = vDto.Size,
-                            Color = vDto.Color,
+                            Size = string.IsNullOrWhiteSpace(vDto.Size) ? "N/A" : vDto.Size,
+                            Color = string.IsNullOrWhiteSpace(vDto.Color) ? "N/A" : vDto.Color,
                             SKU = vDto.SKU,
                             CostPrice = vDto.CostPrice,
+                            MovingAverageCost = vDto.CostPrice,
                             SellingPrice = vDto.SellingPrice,
                             ReorderLevel = vDto.ReorderLevel,
-                            Name = $"{dto.Name} ({vDto.Size}/{vDto.Color})"
+                            Name = $"{dto.Name} ({vDto.Size}/{vDto.Color})",
+                            IsActive = true
                         });
                     }
                 }
 
-                // B. Handle Deletions (Variants in DB but NOT in DTO)
-                // We map IDs from the incoming DTO list
                 var incomingIds = dto.Variants.Where(v => v.Id > 0).Select(v => v.Id).ToList();
-
-                // Identify variants in DB that are missing from incoming list
                 var variantsToDelete = product.Variants.Where(v => !incomingIds.Contains(v.Id)).ToList();
 
                 foreach (var variantToDelete in variantsToDelete)
                 {
-                    // Optional: Check if used in transactions before deleting? 
-                    // For now, we allow deletion (Standard Soft Delete pattern typically handled by AuditableEntity if implemented)
                     _context.ProductVariants.Remove(variantToDelete);
                 }
             }
 
-            // 4. Save Changes
             await _context.SaveChangesAsync(cancellationToken);
-
             return Result<int>.Success(product.Id, "Product updated successfully.");
         }
     }

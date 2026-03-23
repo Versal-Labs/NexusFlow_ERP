@@ -31,7 +31,7 @@ namespace NexusFlow.Web.Controllers.Api
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, UpdateCategoryCommand command)
         {
-            if (id != command.Id) return BadRequest();
+            if (id != command.Category.Id) return BadRequest();
             var result = await _mediator.Send(command);
             return result.Succeeded ? Ok(result) : BadRequest(result);
         }

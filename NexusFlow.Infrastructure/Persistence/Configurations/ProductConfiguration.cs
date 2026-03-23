@@ -19,20 +19,6 @@ namespace NexusFlow.Infrastructure.Persistence.Configurations
             builder.HasOne(x => x.Category).WithMany().HasForeignKey(x => x.CategoryId).OnDelete(DeleteBehavior.Restrict);
             builder.HasOne(x => x.UnitOfMeasure).WithMany().HasForeignKey(x => x.UnitOfMeasureId).OnDelete(DeleteBehavior.Restrict);
 
-            builder.HasOne(x => x.SalesAccount)
-                   .WithMany()
-                   .HasForeignKey(x => x.SalesAccountId)
-                   .OnDelete(DeleteBehavior.Restrict); // CRITICAL FIX
-
-            builder.HasOne(x => x.CogsAccount)
-                   .WithMany()
-                   .HasForeignKey(x => x.CogsAccountId)
-                   .OnDelete(DeleteBehavior.Restrict); // CRITICAL FIX
-
-            builder.HasOne(x => x.InventoryAccount)
-                   .WithMany()
-                   .HasForeignKey(x => x.InventoryAccountId)
-                   .OnDelete(DeleteBehavior.Restrict); // CRITICAL FIX
         }
     }
 

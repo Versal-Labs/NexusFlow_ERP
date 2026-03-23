@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore.Storage;
 using NexusFlow.Domain.Entities.Config;
 using NexusFlow.Domain.Entities.Finance;
+using NexusFlow.Domain.Entities.HR;
 using NexusFlow.Domain.Entities.Inventory;
 using NexusFlow.Domain.Entities.Master;
 using NexusFlow.Domain.Entities.Purchasing;
@@ -45,6 +46,11 @@ namespace NexusFlow.AppCore.Interfaces
         DbSet<PaymentAllocation> PaymentAllocations { get; set; }
         DbSet<GoodsReceipt> GoodsReceipts { get; set; }
         DbSet<GoodsReceiptItem> GoodsReceiptItems { get; set; }
+        DbSet<Employee> Employees { get; set; }
+        DbSet<SalesOrder> SalesOrders { get; set; }
+        DbSet<SalesOrderItem> SalesOrderItems { get; set; }
+        DbSet<CommissionRule> CommissionRules { get; set; }
+        DbSet<CommissionLedger> CommissionLedgers { get; set; }
 
         Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 
