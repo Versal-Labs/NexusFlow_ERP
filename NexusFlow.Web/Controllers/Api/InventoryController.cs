@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NexusFlow.AppCore.Constants;
 using NexusFlow.AppCore.Features.Inventory.Commands;
+using NexusFlow.AppCore.Features.Inventory.Queries;
 using NexusFlow.Web.Filters;
 
 namespace NexusFlow.Web.Controllers.Api
@@ -44,6 +45,17 @@ namespace NexusFlow.Web.Controllers.Api
         {
             var query = new NexusFlow.AppCore.Features.Inventory.Queries.GetStockLevelsQuery { WarehouseId = warehouseId };
             var result = await _mediator.Send(query);
+            return Ok(result);
+        }
+
+        [HttpGet("stock/available")]
+        public async Task<IActionResult> GetAvailableStock([FromQuery] int variantId, [FromQuery] int warehouseId)
+        {
+            var result = await _mediator.Send(new GetAvailableStockQuery
+            {
+                ProductVariantId = variantId,
+                WarehouseId = warehouseId
+            });
             return Ok(result);
         }
     }

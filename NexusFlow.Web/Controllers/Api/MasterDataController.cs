@@ -8,6 +8,7 @@ using NexusFlow.AppCore.Constants;
 using NexusFlow.AppCore.Features.MasterData.Products.Queries;
 using NexusFlow.AppCore.Features.MasterData.Warehouses.Commands;
 using NexusFlow.AppCore.Features.MasterData.Warehouses.Queries;
+using NexusFlow.AppCore.Features.Sales.Customers.Queries;
 using NexusFlow.Web.Filters;
 
 namespace NexusFlow.Web.Controllers.Api

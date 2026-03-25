@@ -154,9 +154,26 @@ namespace NexusFlow.Infrastructure
                 if (entry.Entity is AuditLog || entry.State == EntityState.Detached || entry.State == EntityState.Unchanged)
                     continue;
 
-                var auditEntry = new AuditEntry(entry) { TableName = entry.Entity.GetType().Name, UserId = userId };
+                // 1. Initialize the Audit Entry
+                var auditEntry = new AuditEntry(entry)
+                {
+                    // Use Metadata.GetTableName() to avoid weird EF Proxy class names
+                    TableName = entry.Metadata.GetTableName() ?? entry.Entity.GetType().Name,
+                    UserId = userId
+                };
+
+                // 2. ARCHITECTURAL FIX: Set AuditType ONCE per entity, outside the property loop!
+                auditEntry.AuditType = entry.State switch
+                {
+                    EntityState.Added => "Create",
+                    EntityState.Deleted => "Delete",
+                    EntityState.Modified => "Update",
+                    _ => "Unknown"
+                };
+
                 auditEntries.Add(auditEntry);
 
+                // 3. Process the Properties
                 foreach (var property in entry.Properties)
                 {
                     if (property.IsTemporary)
@@ -176,19 +193,16 @@ namespace NexusFlow.Infrastructure
                     switch (entry.State)
                     {
                         case EntityState.Added:
-                            auditEntry.AuditType = "Create";
                             auditEntry.NewValues[propertyName] = property.CurrentValue;
                             break;
 
                         case EntityState.Deleted:
-                            auditEntry.AuditType = "Delete";
                             auditEntry.OldValues[propertyName] = property.OriginalValue;
                             break;
 
                         case EntityState.Modified:
                             if (property.IsModified)
                             {
-                                auditEntry.AuditType = "Update";
                                 auditEntry.OldValues[propertyName] = property.OriginalValue;
                                 auditEntry.NewValues[propertyName] = property.CurrentValue;
                                 auditEntry.ChangedColumns.Add(propertyName);
@@ -197,7 +211,10 @@ namespace NexusFlow.Infrastructure
                     }
                 }
             }
-            return auditEntries;
+
+            // 4. DATABASE OPTIMIZATION
+            // If it's an "Update" but no actual columns changed, don't write a useless blank log to the DB.
+            return auditEntries.Where(a => a.AuditType != "Update" || a.ChangedColumns.Count > 0).ToList();
         }
 
         private async Task OnAfterSaveChanges(List<AuditEntry> auditEntries)

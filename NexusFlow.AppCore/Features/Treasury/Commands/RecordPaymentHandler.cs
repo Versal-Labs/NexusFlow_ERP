@@ -57,9 +57,16 @@ namespace NexusFlow.AppCore.Features.Treasury.Commands
                 if (command.Type == PaymentType.CustomerReceipt && command.Allocations.Any())
                 {
                     var invoiceIds = command.Allocations.Select(a => a.InvoiceId).ToList();
+
+                    // Include CommissionLedgers in the query so we can flip them
                     var invoices = await _context.SalesInvoices
                         .Where(i => invoiceIds.Contains(i.Id))
                         .ToDictionaryAsync(i => i.Id, cancellationToken);
+
+                    // Fetch associated unearned commissions in bulk to avoid N+1 queries
+                    var unearnedCommissions = await _context.CommissionLedgers
+                        .Where(c => invoiceIds.Contains(c.SalesInvoiceId) && c.Status == CommissionStatus.Unearned)
+                        .ToListAsync(cancellationToken);
 
                     foreach (var alloc in command.Allocations)
                     {
@@ -67,19 +74,40 @@ namespace NexusFlow.AppCore.Features.Treasury.Commands
                         if (!invoices.TryGetValue(alloc.InvoiceId, out var invoice)) continue;
 
                         // Create the Allocation Link
-                        payment.Allocations.Add(new PaymentAllocation
+                        var allocation = new PaymentAllocation
                         {
                             SalesInvoiceId = invoice.Id,
                             AmountAllocated = alloc.Amount
-                        });
+                        };
+
+                        // EF Core 8 requires adding to the context if the parent isn't tracked the same way, 
+                        // but since PaymentTransaction is added, this is fine:
+                        payment.Allocations.Add(allocation);
 
                         // Update the Invoice Status
                         invoice.AmountPaid += alloc.Amount;
 
+                        // ========================================================
+                        // THE COMMISSION RELEASE TRIGGER (UPDATED FOR CHEQUES)
+                        // ========================================================
                         if (invoice.AmountPaid >= invoice.GrandTotal)
+                        {
                             invoice.PaymentStatus = InvoicePaymentStatus.Paid;
+
+                            // Determine if we hold or release based on the payment method
+                            // (Assuming your PaymentMethod enum has a 'Cheque' value, adjust if named differently)
+                            bool isUnclearedCheque = command.Method == PaymentMethod.Cheque;
+
+                            var invoiceCommissions = unearnedCommissions.Where(c => c.SalesInvoiceId == invoice.Id);
+                            foreach (var comm in invoiceCommissions)
+                            {
+                                comm.Status = isUnclearedCheque ? CommissionStatus.PendingClearance : CommissionStatus.ReadyToPay;
+                            }
+                        }
                         else
+                        {
                             invoice.PaymentStatus = InvoicePaymentStatus.Partial;
+                        }
                     }
                 }
 

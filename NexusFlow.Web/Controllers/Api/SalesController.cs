@@ -33,9 +33,9 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpPost("invoices")]
-        public async Task<IActionResult> CreateInvoice([FromBody] CreateInvoiceRequest request)
+        // ARCHITECTURAL FIX: Bind directly to the Command, not the Request DTO
+        public async Task<IActionResult> CreateInvoice([FromBody] CreateInvoiceCommand command)
         {
-            var command = new CreateInvoiceCommand { Invoice = request };
             var result = await _mediator.Send(command);
             return result.Succeeded ? Ok(result) : BadRequest(result);
         }

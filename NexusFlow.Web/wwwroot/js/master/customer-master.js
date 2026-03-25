@@ -69,15 +69,17 @@
         console.log("[CustomerApp] 4. DataTables built.");
     },
 
-    _loadLookups: async function () {
+    _loadLookups: async function() {
         console.log("[CustomerApp] 5. Fetching Lookups (Parallel)...");
         try {
             // Execute all API calls concurrently for maximum performance
-            const [cgRes, plRes, ptRes, accRes] = await Promise.all([
+            // ADDED: The /api/employee endpoint to fetch the staff directory
+            const [cgRes, plRes, ptRes, accRes, empRes] = await Promise.all([
                 api.get('/api/config/lookups?type=CustomerGroup'),
                 api.get('/api/config/lookups?type=PriceLevel'),
                 api.get('/api/config/lookups?type=PaymentTerm'),
-                api.get('/api/finance/accounts')
+                api.get('/api/finance/accounts'),
+                api.get('/api/employee') 
             ]);
 
             // Safely parse Result<T> wrappers
@@ -85,6 +87,7 @@
             const priceLevels = Array.isArray(plRes) ? plRes : (plRes?.data || []);
             const paymentTerms = Array.isArray(ptRes) ? ptRes : (ptRes?.data || []);
             const accounts = Array.isArray(accRes) ? accRes : (accRes?.data || []);
+            const employees = Array.isArray(empRes) ? empRes : (empRes?.data || []);
 
             // 1. Populate System Lookups
             if (customerGroups.length > 0) this._populateDropdown('#CustomerGroupId', customerGroups);
@@ -98,6 +101,20 @@
 
                 this._populateDropdown('#DefaultReceivableAccountId', arAccounts, 'id', 'name', 'code');
                 this._populateDropdown('#DefaultRevenueAccountId', revAccounts, 'id', 'name', 'code');
+            }
+
+            // 3. Populate Sales Reps (Filtering the Employee Master Data)
+            if (employees.length > 0) {
+                var salesReps = employees
+                    .filter(e => e.isSalesRep === true)
+                    .map(e => ({
+                        id: e.id,
+                        fullName: `${e.firstName} ${e.lastName}`, // Combine names
+                        code: e.employeeCode
+                    }));
+
+                // Your _populateDropdown method leaves the first "-- No Rep Assigned --" option intact!
+                this._populateDropdown('#SalesRepId', salesReps, 'id', 'fullName', 'code');
             }
 
             console.log("[CustomerApp] 6. Lookups loaded.");
