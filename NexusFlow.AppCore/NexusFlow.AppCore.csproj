@@ -25,6 +25,7 @@
 
   <ItemGroup>
     <Folder Include="Common\" />
+    <Folder Include="Features\Sales\Commissions\NewFolder\" />
   </ItemGroup>
 
 </Project>

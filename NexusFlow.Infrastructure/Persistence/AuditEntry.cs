@@ -29,13 +29,13 @@ namespace NexusFlow.Infrastructure.Persistence
             var audit = new AuditLog
             {
                 UserId = UserId,
-                Type = AuditType,
                 TableName = TableName,
                 DateTime = DateTime.UtcNow,
                 PrimaryKey = JsonConvert.SerializeObject(KeyValues),
                 OldValues = OldValues.Count == 0 ? null : JsonConvert.SerializeObject(OldValues),
                 NewValues = NewValues.Count == 0 ? null : JsonConvert.SerializeObject(NewValues),
-                AffectedColumns = ChangedColumns.Count == 0 ? null : JsonConvert.SerializeObject(ChangedColumns)
+                AffectedColumns = ChangedColumns.Count == 0 ? null : JsonConvert.SerializeObject(ChangedColumns),
+                Type = AuditType.ToString()
             };
             return audit;
         }

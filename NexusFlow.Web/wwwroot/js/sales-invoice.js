@@ -55,21 +55,38 @@
         });
     },
 
-    _loadMasterData: async function () {
+    _loadMasterData: async function() {
         try {
-            const [custRes, whRes, prodRes] = await Promise.all([
+            // 1. THE DESTRUCTURING FIX: Ensure 'empRes' is declared here to match the 4 API calls
+            const [custRes, whRes, prodRes, empRes] = await Promise.all([
                 api.get('/api/customer'),
-                api.get('/api/masterdata/warehouses'), // Assuming you have this
-                api.get('/api/product')
+                api.get('/api/masterdata/warehouses'), 
+                api.get('/api/product'),
+                api.get('/api/employee') // <-- The 4th API Call
             ]);
 
-            const customers = custRes.data || custRes;
-            const warehouses = whRes.data || whRes;
-            this._products = prodRes.data || prodRes; // Cache products for dropdowns
+            // 2. THE SAFE EXTRACTION FIX: Prevents null crashes
+            const customers = Array.isArray(custRes) ? custRes : (custRes?.data || []);
+            const warehouses = Array.isArray(whRes) ? whRes : (whRes?.data || []);
+            this._products = Array.isArray(prodRes) ? prodRes : (prodRes?.data || []);
+            const employees = Array.isArray(empRes) ? empRes : (empRes?.data || []);
 
+            // 3. POPULATE DROPDOWNS
             this._populateSelect('CustomerId', customers, 'id', 'name');
             this._populateSelect('WarehouseId', warehouses, 'id', 'name');
 
+            if (employees.length > 0) {
+                var salesReps = employees
+                    .filter(e => e.isSalesRep === true)
+                    .map(e => ({
+                        id: e.id,
+                        displayName: `[${e.employeeCode}] ${e.firstName} ${e.lastName}`
+                    }));
+
+                this._populateSelect('SalesRepId', salesReps, 'id', 'displayName');
+            }
+
+            // 4. INITIALIZE SELECT2
             if ($('#CustomerId').hasClass('select2-hidden-accessible')) {
                 $('#CustomerId').select2('destroy');
             }
@@ -97,7 +114,7 @@
         if (this._modal) this._modal.show();
     },
 
-    addLine: function () {
+    addLine: function() {
         const id = Date.now();
         let productOptions = '<option value="">-- Select Item --</option>';
         this._products.forEach(p => {
@@ -106,21 +123,24 @@
                 p.variants.forEach(v => {
                     let desc = v.sku;
                     if (v.size || v.color) desc += ` (${v.size || ''} ${v.color || ''})`;
-                    productOptions += `<option value="${v.id}" data-price="${v.sellingPrice}">${desc}</option>`;
+                    // We also embed the Product Type to bypass stock checks on Services
+                    productOptions += `<option value="${v.id}" data-price="${v.sellingPrice}" data-type="${p.type}">${desc}</option>`;
                 });
                 productOptions += `</optgroup>`;
             }
         });
 
-        // Notice the input-group for Line Discount ($ vs %)
         const html = `
-            <tr id="row_${id}" data-absolute-discount="0">
+            <tr id="row_${id}" data-absolute-discount="0" data-stock="999999">
                 <td>
                     <select class="form-select form-select-sm line-variant" onchange="invoiceApp.onVariantSelect(this)">
                         ${productOptions}
                     </select>
                 </td>
-                <td><input type="number" class="form-control form-control-sm text-center line-qty calc-trigger" value="1" min="1"></td>
+                <td>
+                    <input type="number" class="form-control form-control-sm text-center line-qty calc-trigger" value="1" min="1">
+                    <div class="stock-label text-center text-muted mt-1 fw-bold" style="font-size: 10px;">-</div>
+                </td>
                 <td><input type="number" class="form-control form-control-sm text-end line-price calc-trigger" value="0.00" step="0.01"></td>
                 <td>
                     <div class="input-group input-group-sm">
@@ -141,53 +161,116 @@
         $('#linesBody').append(html);
     },
 
-    onVariantSelect: function (selectEl) {
+    onWarehouseChange: function() {
+        var linesCount = $('#linesBody tr').length;
+        if (linesCount > 0) {
+            toastr.info("Warehouse changed. All line items have been reset to re-evaluate available stock.");
+            $('#linesBody').empty();
+            this.addLine();
+            this.calculateTotals();
+        }
+    },
+
+    onVariantSelect: async function(selectEl) {
         const selectedOption = $(selectEl).find('option:selected');
         const price = selectedOption.data('price') || 0;
+        const pType = selectedOption.data('type'); // 1 = Standard, 2 = Service
+        const varId = $(selectEl).val();
         const row = $(selectEl).closest('tr');
+        const stockLabel = row.find('.stock-label');
+        const qtyInput = row.find('.line-qty');
+
         row.find('.line-price').val(parseFloat(price).toFixed(2));
+
+        if (varId) {
+            const warehouseId = $('#WarehouseId').val();
+            if (!warehouseId) {
+                toastr.warning("Please select a Dispatch Warehouse first.");
+                $(selectEl).val('');
+                return;
+            }
+
+            // If it is a "Service" (Enum value 2), bypass stock check
+            if (pType == 2 || pType === "Service") {
+                row.attr('data-stock', 999999);
+                stockLabel.html('<span class="text-primary">Service (No Stock)</span>');
+                qtyInput.attr('max', 999999);
+            } 
+            else {
+                // It is a physical good, fetch real-time stock
+                stockLabel.html('<i class="spinner-border spinner-border-sm text-secondary" style="width: 10px; height: 10px;"></i>');
+                
+                try {
+                    const res = await api.get(`/api/inventory/stock/available?variantId=${varId}&warehouseId=${warehouseId}`);
+                    const available = res.data !== undefined ? res.data : (res || 0);
+
+                    row.attr('data-stock', available);
+                    
+                    if (available <= 0) {
+                        stockLabel.html('<span class="text-danger"><i class="fa-solid fa-triangle-exclamation"></i> Out of Stock</span>');
+                        qtyInput.val(0);
+                    } else {
+                        stockLabel.html(`<span class="text-success"><i class="fa-solid fa-box"></i> Avail: ${available}</span>`);
+                        qtyInput.attr('max', available);
+                        if (qtyInput.val() == 0) qtyInput.val(1);
+                    }
+                } catch (e) {
+                    console.error("Stock fetch error", e);
+                    stockLabel.html('<span class="text-danger">Error</span>');
+                }
+            }
+        } else {
+            row.attr('data-stock', 999999);
+            stockLabel.html('-');
+        }
+
         this.calculateTotals();
     },
 
-    calculateTotals: function () {
+    calculateTotals: function() {
         let subTotal = 0;
 
-        // 1. Calculate Lines
-        $('#linesBody tr').each(function () {
-            const qty = parseFloat($(this).find('.line-qty').val()) || 0;
+        $('#linesBody tr').each(function() {
+            const qtyInput = $(this).find('.line-qty');
+            let qty = parseFloat(qtyInput.val()) || 0;
+            const availableStock = parseFloat($(this).attr('data-stock')) || 0;
+
+            // ENTERPRISE GUARD: Enforce maximum quantity based on physical stock
+            if (qty > availableStock) {
+                toastr.warning(`Quantity exceeds available physical stock (${availableStock}).`);
+                qty = availableStock;
+                qtyInput.val(qty); // Auto-correct their mistake
+            }
+
             const price = parseFloat($(this).find('.line-price').val()) || 0;
             const discVal = parseFloat($(this).find('.line-discount-val').val()) || 0;
             const discType = $(this).find('.line-discount-type').val();
 
             let lineGross = qty * price;
-            // Convert % to absolute Amount
             let lineDiscAmount = discType === '%' ? (lineGross * (discVal / 100)) : discVal;
 
-            // Prevent discount exceeding price
             if (lineDiscAmount > lineGross) lineDiscAmount = lineGross;
 
             let lineNet = lineGross - lineDiscAmount;
 
             $(this).find('.line-total').text(lineNet.toFixed(2));
-            $(this).attr('data-absolute-discount', lineDiscAmount); // Store absolute value for the backend
+            $(this).attr('data-absolute-discount', lineDiscAmount); 
 
             subTotal += lineNet;
         });
 
-        // 2. Calculate Global Discount
+        // ... (Rest of your existing calculateTotals code remains exactly the same) ...
         const globDiscVal = parseFloat($('#GlobalDiscountVal').val()) || 0;
         const globDiscType = $('#GlobalDiscountType').val();
         let globDiscAmount = globDiscType === '%' ? (subTotal * (globDiscVal / 100)) : globDiscVal;
         if (globDiscAmount > subTotal) globDiscAmount = subTotal;
 
-        // 3. Tax & Grand Total
         let taxableAmount = subTotal - globDiscAmount;
         let applyVat = $('#ApplyVat').is(':checked');
 
-        let tax = applyVat ? (taxableAmount * 0.18) : 0; // 18% Estimate
+        let tax = applyVat ? (taxableAmount * 0.18) : 0; 
         let grandTotal = taxableAmount + tax;
 
-        // Update UI
         if (applyVat) {
             $('#vatRow').show();
         } else {
@@ -198,24 +281,43 @@
         $('#lblTax').text('+ ' + tax.toLocaleString(undefined, { minimumFractionDigits: 2 }));
         $('#lblGrandTotal').text(grandTotal.toLocaleString(undefined, { minimumFractionDigits: 2 }));
 
-        // Store calculated global discount for backend
         $('#invoiceForm').data('calculated-global-discount', globDiscAmount);
     },
 
-    saveInvoice: async function (isDraft) {
+    saveInvoice: async function(isDraft) {
         var form = document.getElementById('invoiceForm');
+        
+        // 1. SAFE PARSING: Extract values safely from Select2
+        var customerId = parseInt($('#CustomerId').val()) || 0;
+        var warehouseId = parseInt($('#WarehouseId').val()) || 0;
+        var salesRepId = parseInt($('#SalesRepId').val()) || null;
+
+        // 2. EXPLICIT VALIDATION: Catch empty dropdowns before the browser does
+        if (customerId === 0) {
+            toastr.warning("Please select a Customer.");
+            $('#CustomerId').select2('open'); // Auto-open the dropdown for them
+            return;
+        }
+        if (warehouseId === 0) {
+            toastr.warning("Please select a Dispatch Warehouse.");
+            $('#WarehouseId').focus();
+            return;
+        }
+
+        // 3. NATIVE VALIDATION: For textboxes and dates
         if (!form.checkValidity()) {
             form.reportValidity();
             return;
         }
 
+        // 4. PAYLOAD CONSTRUCTION
         const payload = {
             Invoice: {
                 Date: $('#Date').val(),
                 DueDate: $('#DueDate').val(),
-                CustomerId: parseInt($('#CustomerId').val()),
-                WarehouseId: parseInt($('#WarehouseId').val()),
-                SalesRepId: parseInt($('#SalesRepId').val()) || null,
+                CustomerId: customerId,
+                WarehouseId: warehouseId,
+                SalesRepId: salesRepId,
                 Notes: $('#Notes').val(),
                 ApplyVat: $('#ApplyVat').is(':checked'),
                 IsDraft: isDraft,
@@ -224,14 +326,14 @@
             }
         };
 
-        $('#linesBody tr').each(function () {
+        $('#linesBody tr').each(function() {
             const varId = $(this).find('.line-variant').val();
             if (varId) {
                 payload.Invoice.Items.push({
                     ProductVariantId: parseInt(varId),
                     Quantity: parseFloat($(this).find('.line-qty').val()) || 0,
                     UnitPrice: parseFloat($(this).find('.line-price').val()) || 0,
-                    Discount: parseFloat($(this).attr('data-absolute-discount')) || 0 // Fetch absolute computed discount
+                    Discount: parseFloat($(this).attr('data-absolute-discount')) || 0
                 });
             }
         });
@@ -241,12 +343,23 @@
             return;
         }
 
-        const res = await api.post('/api/sales/invoices', payload);
+        // Disable button to prevent double-submits
+        var $btn = $(event.currentTarget);
+        var originalText = $btn.html();
+        $btn.prop('disabled', true).html('<i class="spinner-border spinner-border-sm me-2"></i>Processing...');
 
-        if (res && res.succeeded) {
-            toastr.success(res.messages ? res.messages[0] : "Saved successfully.");
-            this._modal.hide();
-            this._table.ajax.reload(null, false);
+        try {
+            const res = await api.post('/api/sales/invoices', payload);
+
+            if (res && res.succeeded) {
+                toastr.success(res.message || "Invoice saved successfully.");
+                this._modal.hide();
+                this._table.ajax.reload(null, false);
+            }
+        } catch (e) {
+            console.error("Save Invoice Error:", e);
+        } finally {
+            $btn.prop('disabled', false).html(originalText);
         }
     }
 };

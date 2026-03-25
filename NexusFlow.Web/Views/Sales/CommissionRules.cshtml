@@ -1,0 +1,114 @@
+﻿@{
+    ViewData["Title"] = "Commission Rules Matrix";
+}
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="mb-0 text-dark fw-bold"><i class="fa-solid fa-percent text-primary me-2"></i>Commission Matrix</h4>
+            <p class="text-muted mb-0 fs-14">Configure sales incentives, target overrides, and promotional rates.</p>
+        </div>
+        <button class="btn btn-primary shadow-sm" onclick="commissionApp.openCreateModal()">
+            <i class="fa-solid fa-plus me-2"></i>New Rule
+        </button>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+            <table id="rulesGrid" class="table table-hover table-striped align-middle mb-0 w-100 fs-13">
+                <thead class="table-light text-secondary">
+                    <tr>
+                        <th class="ps-4">Rule Name</th>
+                        <th>Type / Scope</th>
+                        <th>Target Rep</th>
+                        <th>Rate (%)</th>
+                        <th>Validity</th>
+                        <th>Status</th>
+                        <th class="text-end pe-4">Actions</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="commissionModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-light border-bottom">
+                <h5 class="modal-title fw-bold" id="modalTitle"><i class="fa-solid fa-sliders text-primary me-2"></i>Manage Commission Rule</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            
+            <div class="modal-body p-4 bg-white fs-13">
+                <form id="commissionForm" class="needs-validation" novalidate>
+                    <input type="hidden" id="Id" value="0" />
+                    
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-8">
+                            <label class="form-label fw-bold mb-1">Rule Name / Description <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control form-control-sm" id="Name" placeholder="e.g., John's 10% Denim Override" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold mb-1">Commission Rate (%) <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control form-control-sm fw-bold text-success" id="CommissionPercentage" step="0.01" min="0" max="100" required>
+                        </div>
+                    </div>
+
+                    <h6 class="text-primary border-bottom pb-2 mb-3 fw-bold"><i class="fa-solid fa-crosshairs me-2"></i>1. The "What" & "Who" Dimension</h6>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold mb-1">Rule Type (Scope) <span class="text-danger">*</span></label>
+                            <select class="form-select form-select-sm" id="RuleType" onchange="commissionApp.onRuleTypeChange()" required>
+                                <option value="1">Global Flat Rate (Entire Invoice)</option>
+                                <option value="2">Category Based (Specific Items)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold mb-1">Specific Category</label>
+                            <select class="form-select form-select-sm" id="CategoryId" disabled>
+                                <option value="">-- Applies to everything --</option>
+                            </select>
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label fw-bold mb-1">Target Sales Rep (Override)</label>
+                            <select class="form-select form-select-sm" id="EmployeeId">
+                                <option value="">-- Apply to ALL Sales Reps --</option>
+                            </select>
+                            <div class="form-text mt-1">Leave blank to create a company-wide base rate.</div>
+                        </div>
+                    </div>
+
+                    <h6 class="text-primary border-bottom pb-2 mb-3 fw-bold"><i class="fa-regular fa-calendar-days me-2"></i>2. The "When" Dimension (Optional)</h6>
+                    <div class="row g-3">
+                        <div class="col-md-5">
+                            <label class="form-label fw-bold mb-1">Valid From</label>
+                            <input type="date" class="form-control form-control-sm" id="ValidFrom">
+                        </div>
+                        <div class="col-md-5">
+                            <label class="form-label fw-bold mb-1">Valid To</label>
+                            <input type="date" class="form-control form-control-sm" id="ValidTo">
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end">
+                            <div class="form-check form-switch mb-1">
+                                <input class="form-check-input" type="checkbox" id="IsActive" checked>
+                                <label class="form-check-label fw-bold" for="IsActive">Active</label>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="modal-footer bg-light border-top p-3">
+                <button type="button" class="btn btn-secondary btn-sm px-4" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary btn-sm px-4 shadow-sm" onclick="commissionApp.save()">
+                    <i class="fa-solid fa-save me-2"></i>Save Rule
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/commission-rules.js" asp-append-version="true"></script>
+}

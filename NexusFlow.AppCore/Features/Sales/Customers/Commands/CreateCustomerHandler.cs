@@ -23,8 +23,8 @@ namespace NexusFlow.AppCore.Features.Sales.Customers.Commands
         public async Task<Result<int>> Handle(CreateCustomerCommand request, CancellationToken cancellationToken)
         {
             var exists = await _context.Customers.AnyAsync(
-                c => string.Equals(c.Name, request.Name, StringComparison.OrdinalIgnoreCase),
-                cancellationToken);
+                        c => c.Name == request.Name,    
+                        cancellationToken);
             if (exists) return Result<int>.Failure($"Customer with name '{request.Name}' already exists.");
 
             var customer = new Customer

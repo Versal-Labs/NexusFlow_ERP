@@ -30,21 +30,4 @@ namespace NexusFlow.AppCore.Features.MasterData.Products.Queries
             return Result<List<PartyDto>>.Success(data);
         }
     }
-
-    // 2. Get Customers
-    public class GetCustomersQuery : IRequest<Result<List<PartyDto>>> { }
-
-    public class GetCustomersHandler : IRequestHandler<GetCustomersQuery, Result<List<PartyDto>>>
-    {
-        private readonly IErpDbContext _context;
-        public GetCustomersHandler(IErpDbContext context) => _context = context;
-
-        public async Task<Result<List<PartyDto>>> Handle(GetCustomersQuery request, CancellationToken ct)
-        {
-            var data = await _context.Customers.AsNoTracking()
-                .Select(c => new PartyDto { Id = c.Id, Name = c.Name })
-                .ToListAsync(ct);
-            return Result<List<PartyDto>>.Success(data);
-        }
-    }
 }

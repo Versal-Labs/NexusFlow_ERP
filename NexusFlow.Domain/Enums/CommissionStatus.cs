@@ -6,8 +6,9 @@ namespace NexusFlow.Domain.Enums
 {
     public enum CommissionStatus
     {
-        Unearned = 1,    // Invoice created, but customer hasn't paid yet
-        ReadyToPay = 2,  // Customer paid, waiting for Payroll sweep
-        Paid = 3         // Included in a finalized Payroll run
+        Unearned = 1,          // Invoice created, cash not received
+        PendingClearance = 2,  // Paid via Cheque, waiting for bank clearance
+        ReadyToPay = 3,        // Cash received / Cheque cleared. Ready for Payroll.
+        Paid = 4               // Processed in Payroll
     }
 }
