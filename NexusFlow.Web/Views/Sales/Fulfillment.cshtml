@@ -1,0 +1,92 @@
+﻿@{
+    ViewData["Title"] = "Order Fulfillment";
+}
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="mb-0 text-dark fw-bold"><i class="fa-solid fa-boxes-packing text-primary me-2"></i>Order Fulfillment Board</h4>
+            <p class="text-muted mb-0 fs-14">Review submitted sales orders, allocate physical stock, and convert to Invoices.</p>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-0">
+            <table id="fulfillmentGrid" class="table table-hover table-striped align-middle mb-0 w-100 fs-13">
+                <thead class="table-light text-secondary">
+                    <tr>
+                        <th class="ps-4">Order #</th>
+                        <th>Date</th>
+                        <th>Customer</th>
+                        <th>Sales Rep</th>
+                        <th class="text-end">Total Value</th>
+                        <th class="text-center">Status</th>
+                        <th class="text-end pe-4">Fulfill</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="conversionModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title fw-bold"><i class="fa-solid fa-file-export me-2"></i>Convert to Sales Invoice</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            
+            <div class="modal-body p-4 bg-light">
+                <form id="conversionForm">
+                    <input type="hidden" id="ConvertOrderId" value="0" />
+                    
+                    <div class="alert alert-info border-info shadow-sm mb-3">
+                        <h6 class="fw-bold mb-1">Order: <span id="lblConvertOrderNo" class="font-monospace text-dark"></span></h6>
+                        <p class="mb-0 fs-12">Converting this order will permanently deduct strict FIFO inventory, recognize Revenue & COGS in the General Ledger, and accrue Sales Commissions.</p>
+                    </div>
+
+                    <h6 class="fw-bold text-dark mb-2">Order Contents</h6>
+                    <div class="table-responsive border rounded bg-white shadow-sm mb-4">
+                        <table class="table table-sm table-hover align-middle mb-0" id="orderItemsTable">
+                            <thead class="table-light text-secondary">
+                                <tr>
+                                    <th>Item Description</th>
+                                    <th class="text-center" style="width: 10%">Qty</th>
+                                    <th class="text-end" style="width: 20%">Unit Price</th>
+                                    <th class="text-end" style="width: 15%">Discount</th>
+                                    <th class="text-end" style="width: 20%">Line Total</th>
+                                </tr>
+                            </thead>
+                            <tbody id="orderItemsBody">
+                            </tbody>
+                            <tfoot class="table-light">
+                                <tr>
+                                    <td colspan="4" class="text-end fw-bold text-dark">Grand Total:</td>
+                                    <td class="text-end fw-bold text-primary font-monospace" id="lblOrderGrandTotal">0.00</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+
+                    <div class="mb-2">
+                        <label class="form-label fw-bold mb-1">Dispatch From Warehouse <span class="text-danger">*</span></label>
+                        <select class="form-select form-select-lg shadow-sm border-primary" id="DispatchWarehouseId" required></select>
+                        <div class="form-text mt-2"><i class="fa-solid fa-triangle-exclamation text-warning me-1"></i> Ensure the selected warehouse has sufficient stock, or the atomic transaction will safely roll back and fail.</div>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="modal-footer bg-white border-top p-3 d-flex justify-content-between">
+                <button type="button" class="btn btn-light border btn-sm px-4" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success btn-lg px-4 shadow-sm fw-bold" onclick="fulfillmentApp.executeConversion()">
+                    <i class="fa-solid fa-check-double me-2"></i> Post Invoice
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/sales/fulfillment.js" asp-append-version="true"></script>
+}

@@ -51,6 +51,10 @@ namespace NexusFlow.AppCore.Interfaces
         DbSet<SalesOrderItem> SalesOrderItems { get; set; }
         DbSet<CommissionRule> CommissionRules { get; set; }
         DbSet<CommissionLedger> CommissionLedgers { get; set; }
+        DbSet<CreditNote> CreditNotes { get; set; }
+        DbSet<CreditNoteItem> CreditNoteItems { get; set; }
+        DbSet<StockTake> StockTakes { get; set; }
+        DbSet<StockTakeItem> StockTakeItems { get; set; }
 
         Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 

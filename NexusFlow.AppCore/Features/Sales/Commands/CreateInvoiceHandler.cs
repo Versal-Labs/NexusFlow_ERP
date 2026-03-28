@@ -18,19 +18,22 @@ namespace NexusFlow.AppCore.Features.Sales.Commands
         private readonly ITaxService _taxService;
         private readonly IJournalService _journalService;
         private readonly INumberSequenceService _sequenceService;
+        private readonly IFinancialAccountResolver _accountResolver;
 
         public CreateInvoiceHandler(
             IErpDbContext context,
             IStockService stockService,
             ITaxService taxService,
             IJournalService journalService,
-            INumberSequenceService sequenceService)
+            INumberSequenceService sequenceService,
+            IFinancialAccountResolver accountResolver)
         {
             _context = context;
             _stockService = stockService;
             _taxService = taxService;
             _journalService = journalService;
             _sequenceService = sequenceService;
+            _accountResolver = accountResolver;
         }
 
         public async Task<Result<int>> Handle(CreateInvoiceCommand request, CancellationToken cancellationToken)
@@ -189,12 +192,11 @@ namespace NexusFlow.AppCore.Features.Sales.Commands
                     // C. CREDIT: Tax Payable
                     if (invoice.TotalTax > 0)
                     {
-                        var taxConfig = await _context.SystemConfigs.FirstOrDefaultAsync(c => c.Key == "Account.Tax.VATPayable", cancellationToken);
-                        if (taxConfig == null) throw new Exception("Global Tax Payable account is not configured.");
+                        int taxPayableAccountId = await _accountResolver.ResolveAccountIdAsync("Account.Tax.VATPayable", cancellationToken);
 
                         journalLines.Add(new JournalLineRequest
                         {
-                            AccountId = int.Parse(taxConfig.Value),
+                            AccountId = taxPayableAccountId,
                             Debit = 0,
                             Credit = invoice.TotalTax,
                             Note = $"VAT - {invoiceNo}"

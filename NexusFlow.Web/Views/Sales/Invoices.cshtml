@@ -52,6 +52,7 @@
                         <th>Customer</th>
                         <th class="text-end">Grand Total</th>
                         <th class="text-center">Status</th>
+                        <th class="text-end pe-3">Actions</th>
                     </tr>
                 </thead>
             </table>
@@ -172,6 +173,68 @@
                         <i class="fa-solid fa-check-double me-1"></i> Post Invoice
                     </button>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="rmaModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title fs-6 fw-bold"><i class="fa-solid fa-arrow-rotate-left me-2"></i>Process Sales Return (RMA)</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body fs-13 p-4 bg-light">
+                <form id="rmaForm">
+                    <input type="hidden" id="RmaInvoiceId" value="0" />
+                    
+                    <div class="alert alert-warning border-warning shadow-sm pb-2 pt-3 px-3 mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h6 class="fw-bold mb-0 text-dark">Original Invoice: <span id="lblRmaInvoiceNo" class="font-monospace text-primary"></span></h6>
+                        </div>
+                        <p class="mb-0 fs-12 text-dark">Processing a return will permanently reverse the associated Revenue, restore inventory to the selected warehouse, and execute a negative commission clawback on the Sales Rep.</p>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold mb-1">Return To Warehouse (Quarantine) <span class="text-danger">*</span></label>
+                            <select class="form-select form-select-sm" id="RmaWarehouseId" required></select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold mb-1">Reason for Return <span class="text-danger">*</span></label>
+                            <select class="form-select form-select-sm" id="RmaReason" required>
+                                <option value="">-- Select Reason --</option>
+                                <option value="Defective / Damaged">Defective / Damaged</option>
+                                <option value="Wrong Item Shipped">Wrong Item Shipped</option>
+                                <option value="Customer Dissatisfied">Customer Dissatisfied</option>
+                                <option value="Transit Damage">Transit Damage</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <h6 class="fw-bold text-dark mt-4 mb-2">Return Quantities</h6>
+                    <div class="table-responsive border rounded bg-white shadow-sm">
+                        <table class="table table-sm table-hover align-middle mb-0" id="rmaTable">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Item Description</th>
+                                    <th class="text-center" style="width: 15%">Invoiced Qty</th>
+                                    <th class="text-end" style="width: 20%">Unit Price</th>
+                                    <th class="text-center" style="width: 20%">Return Qty</th>
+                                </tr>
+                            </thead>
+                            <tbody id="rmaBody">
+                            </tbody>
+                        </table>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer bg-white p-3 border-top">
+                <button type="button" class="btn btn-secondary btn-sm px-4" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger btn-sm px-4 shadow-sm fw-bold" onclick="invoiceApp.submitReturn()">
+                    <i class="fa-solid fa-triangle-exclamation me-2"></i> Execute RMA
+                </button>
             </div>
         </div>
     </div>

@@ -1,9 +1,9 @@
 @{
-    ViewData["Title"] = "Inventory Import Wizard";
+    ViewData["Title"] = "Import Legacy Inventory";
 }
 
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <h1 class="h2">Inventory Import Wizard</h1>
+    <h1 class="h2">Import Legacy Inventory</h1>
     <div class="btn-toolbar mb-2 mb-md-0">
         <button type="button" class="btn btn-sm btn-outline-secondary">
             <i class="fas fa-question-circle"></i> Help
@@ -11,126 +11,44 @@
     </div>
 </div>
 
-<!-- Wizard Progress Steps -->
 <div class="row mb-4">
-    <div class="col-12">
-        <div class="position-relative m-4">
-            <div class="progress" style="height: 2px;">
-                <div class="progress-bar" role="progressbar" style="width: 0%;" id="wizardProgress"></div>
-            </div>
-            <button type="button" class="position-absolute top-0 start-0 translate-middle btn btn-sm btn-primary rounded-pill" style="width: 2rem; height:2rem;">1</button>
-            <button type="button" class="position-absolute top-0 start-33 translate-middle btn btn-sm btn-secondary rounded-pill step-indicator" style="width: 2rem; height:2rem; left: 33%;">2</button>
-            <button type="button" class="position-absolute top-0 start-66 translate-middle btn btn-sm btn-secondary rounded-pill step-indicator" style="width: 2rem; height:2rem; left: 66%;">3</button>
-            <button type="button" class="position-absolute top-0 start-100 translate-middle btn btn-sm btn-secondary rounded-pill step-indicator" style="width: 2rem; height:2rem;">4</button>
-        </div>
-        <div class="d-flex justify-content-between px-2">
-            <small>Upload</small>
-            <small style="margin-right: -20px;">Map Columns</small>
-            <small style="margin-right: -30px;">Validate & Edit</small>
-            <small>Commit</small>
-        </div>
-    </div>
-</div>
-
-<!-- STEP 1: UPLOAD -->
-<div id="step1" class="wizard-step">
-    <div class="card shadow-sm">
-        <div class="card-body text-center p-5">
-            <div id="dropzone" class="border border-2 border-dashed rounded p-5 bg-light" style="cursor: pointer;">
-                <i class="fas fa-cloud-upload-alt fa-3x text-primary mb-3"></i>
-                <h5>Drag and drop your Inventory CSV/Excel here</h5>
-                <p class="text-muted">or click to browse files</p>
-                <input type="file" id="fileInput" class="d-none" accept=".csv, .xlsx">
-            </div>
-            
-            <div class="mt-4 text-start" id="uploadPreview" style="display:none;">
-                <h6><i class="fas fa-file-csv text-success"></i> <span id="fileName">file.csv</span> <span class="badge bg-info">Ready to Process</span></h6>
-            </div>
-
-            <div class="mt-4 d-flex justify-content-end">
-                <button class="btn btn-primary px-4" id="btnToStep2" disabled>Next: Map Columns <i class="fas fa-arrow-right"></i></button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- STEP 2: MAP COLUMNS -->
-<div id="step2" class="wizard-step" style="display:none;">
-    <div class="card shadow-sm">
-        <div class="card-header bg-white">
-            <h5 class="mb-0">Map Source Columns to System Fields</h5>
-        </div>
-        <div class="card-body">
-            <div class="alert alert-info">
-                <i class="fas fa-info-circle"></i> Map your file headers (Left) to the System Fields (Right). We've auto-matched what we can.
-            </div>
-            <table class="table table-bordered table-hover" id="mappingTable">
-                <thead class="table-light">
-                    <tr>
-                        <th style="width: 40%;">Source Header (From File)</th>
-                        <th style="width: 10%;" class="text-center"><i class="fas fa-arrow-right"></i></th>
-                        <th style="width: 50%;">Target Field (System)</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- Populated via JS -->
-                </tbody>
-            </table>
-            
-            <div class="d-flex justify-content-between mt-4">
-                <button class="btn btn-outline-secondary" onclick="showStep(1)"><i class="fas fa-arrow-left"></i> Back</button>
-                <button class="btn btn-primary px-4" id="btnToStep3">Next: Validate Data <i class="fas fa-arrow-right"></i></button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- STEP 3: SANITIZATION WORKBENCH (AG GRID) -->
-<div id="step3" class="wizard-step" style="display:none;">
-    <div class="card shadow-sm">
-        <div class="card-header bg-white d-flex justify-content-between align-items-center">
-            <h5 class="mb-0">Data Sanitization Workbench</h5>
-            <div>
-                <span class="badge bg-danger me-2" id="errorCountBadge">0 Errors</span>
-                <span class="badge bg-success" id="validCountBadge">0 Valid</span>
-            </div>
-        </div>
-        <div class="card-body p-0">
-            <!-- AG Grid Container -->
-            <div id="myGrid" class="ag-theme-alpine" style="height: 500px; width: 100%;"></div>
-        </div>
-        <div class="card-footer bg-white d-flex justify-content-between">
-            <button class="btn btn-outline-secondary" onclick="showStep(2)"><i class="fas fa-arrow-left"></i> Back</button>
-            <button class="btn btn-success px-4" id="btnCommit">Commit Import <i class="fas fa-check"></i></button>
-        </div>
-    </div>
-</div>
-
-<!-- STEP 4: SUCCESS/PROGRESS -->
-<div id="step4" class="wizard-step" style="display:none;">
-    <div class="card shadow-sm">
-        <div class="card-body text-center p-5">
-            <div id="processingState">
-                <div class="spinner-border text-primary mb-3" role="status" style="width: 3rem; height: 3rem;"></div>
-                <h4>Importing Data...</h4>
-                <p class="text-muted">This may take a few moments. Do not close this window.</p>
-                <div class="progress mt-3">
-                    <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 100%"></div>
+    <div class="col-12 col-lg-8 offset-lg-2">
+        <div class="card shadow-sm mt-4">
+            <div class="card-body text-center p-5">
+                
+                <div id="dropzone" class="border border-2 border-dashed rounded p-5 bg-light transition-all" style="cursor: pointer;">
+                    <i class="fas fa-cloud-upload-alt fa-3x text-primary mb-3"></i>
+                    <h5>Drag and drop your Legacy Inventory CSV here</h5>
+                    <p class="text-muted mb-0">or click to browse files</p>
+                    <small class="text-danger mt-2 d-block">Note: Only .csv files are supported. If using Excel, save as CSV first.</small>
+                    <input type="file" id="fileInput" class="d-none" accept=".csv">
                 </div>
-            </div>
+                
+                <div id="processingState" style="display:none;" class="py-4">
+                    <div class="spinner-border text-primary mb-3" role="status" style="width: 4rem; height: 4rem;"></div>
+                    <h4>Importing Legacy Data...</h4>
+                    <p class="text-muted">This may take a few moments depending on the file size. Please do not close or refresh this window.</p>
+                    <div class="progress mt-4" style="height: 10px;">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated w-100" role="progressbar"></div>
+                    </div>
+                </div>
 
-            <div id="successState" style="display:none;">
-                <i class="fas fa-check-circle fa-5x text-success mb-3"></i>
-                <h4 class="text-success">Import Successful!</h4>
-                <p>Your inventory has been updated.</p>
-                <a href="/" class="btn btn-primary mt-3">Return to Dashboard</a>
+                <div id="successState" style="display:none;" class="py-4">
+                    <i class="fas fa-check-circle fa-5x text-success mb-3"></i>
+                    <h4 class="text-success">Import Successful!</h4>
+                    <p class="fs-5 mt-3 text-secondary">Your inventory has been updated.</p>
+                    
+                    <div class="mt-4">
+                        <a href="/" class="btn btn-primary px-4 me-2">Return to Dashboard</a>
+                        <button class="btn btn-outline-secondary px-4" onclick="location.reload()">Import Another File</button>
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>
 </div>
 
 @section Scripts {
-    <!-- AG Grid -->
-    <script src="https://cdn.jsdelivr.net/npm/ag-grid-community/dist/ag-grid-community.min.js"></script>
     <script src="~/js/inventory-import.js" asp-append-version="true"></script>
 }

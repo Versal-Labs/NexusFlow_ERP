@@ -32,6 +32,9 @@ builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddNotifications();
 
 builder.Services.AddSignalR();
+
+// Add this at the very beginning of your Program.cs
+Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense("Ngo9BigBOggjHTQxAR8/V1JHaF5cWWdCf1FpRmJGdld5fUVHYVZUTXxaS00DNHVRdkdlWXxcdXRdRmdZV0Z0XURWYEo=");
 // -----------------------------------
 
 // =================================================================

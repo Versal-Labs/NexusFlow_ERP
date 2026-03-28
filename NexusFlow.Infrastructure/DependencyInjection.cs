@@ -38,6 +38,7 @@ namespace NexusFlow.Infrastructure
             services.AddScoped<IJournalService, JournalService>();
             services.AddScoped<INotificationService, NotificationService>();
             services.AddScoped<INumberSequenceService, NumberSequenceService>();
+            services.AddScoped<IFinancialAccountResolver, FinancialAccountResolver>();
 
             services.AddSingleton<IUserIdProvider, NameUserIdProvider>();
 
