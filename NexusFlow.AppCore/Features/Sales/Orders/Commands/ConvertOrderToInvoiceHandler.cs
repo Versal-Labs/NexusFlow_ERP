@@ -18,19 +18,22 @@ namespace NexusFlow.AppCore.Features.Sales.Orders.Commands
         private readonly ITaxService _taxService;
         private readonly IJournalService _journalService;
         private readonly INumberSequenceService _sequenceService;
+        private readonly IFinancialAccountResolver _accountResolver;
 
         public ConvertOrderToInvoiceHandler(
             IErpDbContext context,
             IStockService stockService,
             ITaxService taxService,
             IJournalService journalService,
-            INumberSequenceService sequenceService)
+            INumberSequenceService sequenceService,
+            IFinancialAccountResolver accountResolver)
         {
             _context = context;
             _stockService = stockService;
             _taxService = taxService;
             _journalService = journalService;
             _sequenceService = sequenceService;
+            _accountResolver = accountResolver;
         }
 
         public async Task<Result<int>> Handle(ConvertOrderToInvoiceCommand request, CancellationToken cancellationToken)

@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 using NexusFlow.AppCore.Constants;
 using NexusFlow.AppCore.Features.Inventory.Commands;
 using NexusFlow.AppCore.Features.Inventory.Queries;
+using NexusFlow.AppCore.Features.Inventory.StockTakes.Commands;
+using NexusFlow.AppCore.Features.Inventory.StockTakes.Queries;
 using NexusFlow.Web.Filters;
 
 namespace NexusFlow.Web.Controllers.Api
@@ -57,6 +59,37 @@ namespace NexusFlow.Web.Controllers.Api
                 WarehouseId = warehouseId
             });
             return Ok(result);
+        }
+
+        [HttpGet("stocktakes")]
+        public async Task<IActionResult> GetStockTakes() => Ok(await _mediator.Send(new GetStockTakesQuery()));
+
+        [HttpGet("stocktakes/{id}")]
+        public async Task<IActionResult> GetStockTakeById(int id)
+        {
+            var res = await _mediator.Send(new GetStockTakeByIdQuery { Id = id });
+            return res.Succeeded ? Ok(res) : NotFound(res.Message);
+        }
+
+        [HttpPost("stocktakes/initiate")]
+        public async Task<IActionResult> Initiate([FromBody] InitiateStockTakeCommand command)
+        {
+            var res = await _mediator.Send(command);
+            return res.Succeeded ? Ok(res) : BadRequest(res);
+        }
+
+        [HttpPost("stocktakes/count")]
+        public async Task<IActionResult> SubmitCount([FromBody] SubmitBlindCountCommand command)
+        {
+            var res = await _mediator.Send(command);
+            return res.Succeeded ? Ok(res) : BadRequest(res);
+        }
+
+        [HttpPost("stocktakes/{id}/approve")]
+        public async Task<IActionResult> Approve(int id)
+        {
+            var res = await _mediator.Send(new ApproveStockTakeCommand { StockTakeId = id, ApproverName = User.Identity?.Name ?? "System" });
+            return res.Succeeded ? Ok(res) : BadRequest(res);
         }
     }
 }

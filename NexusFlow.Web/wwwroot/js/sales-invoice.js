@@ -1,6 +1,7 @@
 ﻿window.invoiceApp = {
     _table: null,
     _modal: null,
+    _rmaModal: null,
     _products: [],
 
     init: function () {
@@ -47,6 +48,19 @@
                     data: 'isPosted',
                     className: 'text-center',
                     render: d => d ? '<span class="badge bg-success">Posted</span>' : '<span class="badge bg-secondary">Draft</span>'
+                },
+                {
+                    data: null,
+                    className: 'text-end pe-3',
+                    orderable: false,
+                    render: function (data, type, row) {
+                        if (row.isPosted) {
+                            return `<button class="btn btn-sm btn-outline-danger shadow-sm" title="Process Return" onclick="invoiceApp.openReturnModal(${row.id}, '${row.invoiceNumber}')">
+                                        <i class="fa-solid fa-arrow-rotate-left"></i> RMA
+                                    </button>`;
+                        }
+                        return ''; 
+                    }
                 }
             ],
             order: [[0, 'desc']],
@@ -55,38 +69,34 @@
         });
     },
 
-    _loadMasterData: async function() {
+    _loadMasterData: async function () {
         try {
-            // 1. THE DESTRUCTURING FIX: Ensure 'empRes' is declared here to match the 4 API calls
             const [custRes, whRes, prodRes, empRes] = await Promise.all([
                 api.get('/api/customer'),
                 api.get('/api/masterdata/warehouses'), 
                 api.get('/api/product'),
-                api.get('/api/employee') // <-- The 4th API Call
+                api.get('/api/employee')
             ]);
 
-            // 2. THE SAFE EXTRACTION FIX: Prevents null crashes
+            // Safe extraction guarantees UI won't break if one API fails
             const customers = Array.isArray(custRes) ? custRes : (custRes?.data || []);
             const warehouses = Array.isArray(whRes) ? whRes : (whRes?.data || []);
             this._products = Array.isArray(prodRes) ? prodRes : (prodRes?.data || []);
             const employees = Array.isArray(empRes) ? empRes : (empRes?.data || []);
 
-            // 3. POPULATE DROPDOWNS
             this._populateSelect('CustomerId', customers, 'id', 'name');
             this._populateSelect('WarehouseId', warehouses, 'id', 'name');
 
-            if (employees.length > 0) {
+            if (employees && employees.length > 0) {
                 var salesReps = employees
                     .filter(e => e.isSalesRep === true)
                     .map(e => ({
                         id: e.id,
                         displayName: `[${e.employeeCode}] ${e.firstName} ${e.lastName}`
                     }));
-
                 this._populateSelect('SalesRepId', salesReps, 'id', 'displayName');
             }
 
-            // 4. INITIALIZE SELECT2
             if ($('#CustomerId').hasClass('select2-hidden-accessible')) {
                 $('#CustomerId').select2('destroy');
             }
@@ -109,12 +119,12 @@
         document.getElementById('invoiceForm').reset();
         $('#linesBody').empty();
         $('#CustomerId').val('').trigger('change');
-        this.addLine(); // Add first empty line
+        this.addLine(); 
         this.calculateTotals();
         if (this._modal) this._modal.show();
     },
 
-    addLine: function() {
+    addLine: function () {
         const id = Date.now();
         let productOptions = '<option value="">-- Select Item --</option>';
         this._products.forEach(p => {
@@ -123,7 +133,6 @@
                 p.variants.forEach(v => {
                     let desc = v.sku;
                     if (v.size || v.color) desc += ` (${v.size || ''} ${v.color || ''})`;
-                    // We also embed the Product Type to bypass stock checks on Services
                     productOptions += `<option value="${v.id}" data-price="${v.sellingPrice}" data-type="${p.type}">${desc}</option>`;
                 });
                 productOptions += `</optgroup>`;
@@ -171,10 +180,10 @@
         }
     },
 
-    onVariantSelect: async function(selectEl) {
+    onVariantSelect: async function (selectEl) {
         const selectedOption = $(selectEl).find('option:selected');
         const price = selectedOption.data('price') || 0;
-        const pType = selectedOption.data('type'); // 1 = Standard, 2 = Service
+        const pType = selectedOption.data('type'); 
         const varId = $(selectEl).val();
         const row = $(selectEl).closest('tr');
         const stockLabel = row.find('.stock-label');
@@ -190,16 +199,13 @@
                 return;
             }
 
-            // If it is a "Service" (Enum value 2), bypass stock check
             if (pType == 2 || pType === "Service") {
                 row.attr('data-stock', 999999);
                 stockLabel.html('<span class="text-primary">Service (No Stock)</span>');
                 qtyInput.attr('max', 999999);
             } 
             else {
-                // It is a physical good, fetch real-time stock
                 stockLabel.html('<i class="spinner-border spinner-border-sm text-secondary" style="width: 10px; height: 10px;"></i>');
-                
                 try {
                     const res = await api.get(`/api/inventory/stock/available?variantId=${varId}&warehouseId=${warehouseId}`);
                     const available = res.data !== undefined ? res.data : (res || 0);
@@ -214,7 +220,7 @@
                         qtyInput.attr('max', available);
                         if (qtyInput.val() == 0) qtyInput.val(1);
                     }
-                } catch (e) {
+                } catch(e) {
                     console.error("Stock fetch error", e);
                     stockLabel.html('<span class="text-danger">Error</span>');
                 }
@@ -227,19 +233,18 @@
         this.calculateTotals();
     },
 
-    calculateTotals: function() {
+    calculateTotals: function () {
         let subTotal = 0;
 
-        $('#linesBody tr').each(function() {
+        $('#linesBody tr').each(function () {
             const qtyInput = $(this).find('.line-qty');
             let qty = parseFloat(qtyInput.val()) || 0;
             const availableStock = parseFloat($(this).attr('data-stock')) || 0;
 
-            // ENTERPRISE GUARD: Enforce maximum quantity based on physical stock
             if (qty > availableStock) {
                 toastr.warning(`Quantity exceeds available physical stock (${availableStock}).`);
                 qty = availableStock;
-                qtyInput.val(qty); // Auto-correct their mistake
+                qtyInput.val(qty); 
             }
 
             const price = parseFloat($(this).find('.line-price').val()) || 0;
@@ -259,7 +264,6 @@
             subTotal += lineNet;
         });
 
-        // ... (Rest of your existing calculateTotals code remains exactly the same) ...
         const globDiscVal = parseFloat($('#GlobalDiscountVal').val()) || 0;
         const globDiscType = $('#GlobalDiscountType').val();
         let globDiscAmount = globDiscType === '%' ? (subTotal * (globDiscVal / 100)) : globDiscVal;
@@ -271,11 +275,8 @@
         let tax = applyVat ? (taxableAmount * 0.18) : 0; 
         let grandTotal = taxableAmount + tax;
 
-        if (applyVat) {
-            $('#vatRow').show();
-        } else {
-            $('#vatRow').hide();
-        }
+        if (applyVat) $('#vatRow').show();
+        else $('#vatRow').hide();
 
         $('#lblSubTotal').text(subTotal.toLocaleString(undefined, { minimumFractionDigits: 2 }));
         $('#lblTax').text('+ ' + tax.toLocaleString(undefined, { minimumFractionDigits: 2 }));
@@ -284,18 +285,16 @@
         $('#invoiceForm').data('calculated-global-discount', globDiscAmount);
     },
 
-    saveInvoice: async function(isDraft) {
+    saveInvoice: async function (isDraft) {
         var form = document.getElementById('invoiceForm');
         
-        // 1. SAFE PARSING: Extract values safely from Select2
         var customerId = parseInt($('#CustomerId').val()) || 0;
         var warehouseId = parseInt($('#WarehouseId').val()) || 0;
         var salesRepId = parseInt($('#SalesRepId').val()) || null;
 
-        // 2. EXPLICIT VALIDATION: Catch empty dropdowns before the browser does
         if (customerId === 0) {
             toastr.warning("Please select a Customer.");
-            $('#CustomerId').select2('open'); // Auto-open the dropdown for them
+            $('#CustomerId').select2('open'); 
             return;
         }
         if (warehouseId === 0) {
@@ -304,13 +303,11 @@
             return;
         }
 
-        // 3. NATIVE VALIDATION: For textboxes and dates
         if (!form.checkValidity()) {
             form.reportValidity();
             return;
         }
 
-        // 4. PAYLOAD CONSTRUCTION
         const payload = {
             Invoice: {
                 Date: $('#Date').val(),
@@ -326,7 +323,7 @@
             }
         };
 
-        $('#linesBody tr').each(function() {
+        $('#linesBody tr').each(function () {
             const varId = $(this).find('.line-variant').val();
             if (varId) {
                 payload.Invoice.Items.push({
@@ -343,7 +340,6 @@
             return;
         }
 
-        // Disable button to prevent double-submits
         var $btn = $(event.currentTarget);
         var originalText = $btn.html();
         $btn.prop('disabled', true).html('<i class="spinner-border spinner-border-sm me-2"></i>Processing...');
@@ -358,6 +354,97 @@
             }
         } catch (e) {
             console.error("Save Invoice Error:", e);
+        } finally {
+            $btn.prop('disabled', false).html(originalText);
+        }
+    }, // <-- Note the critical comma here!
+
+    // ==========================================
+    // RMA / RETURN LOGIC
+    // ==========================================
+    openReturnModal: async function (invoiceId, invoiceNumber) {
+        try {
+            const res = await api.get(`/api/sales/invoices/${invoiceId}`);
+            const invoice = res.data || res;
+
+            $('#RmaInvoiceId').val(invoice.id);
+            $('#lblRmaInvoiceNo').text(invoiceNumber);
+            $('#RmaReason').val('');
+            
+            $('#RmaWarehouseId').html($('#WarehouseId').html());
+            $('#RmaWarehouseId').val('');
+
+            let $tbody = $('#rmaBody');
+            $tbody.empty();
+
+            invoice.items.forEach(item => {
+                $tbody.append(`
+                    <tr data-vid="${item.productVariantId}">
+                        <td class="fw-bold text-dark">${item.description}</td>
+                        <td class="text-center font-monospace">${item.invoicedQuantity}</td>
+                        <td class="text-end text-muted">${item.unitPrice.toFixed(2)}</td>
+                        <td>
+                            <input type="number" class="form-control form-control-sm text-center border-danger fw-bold rma-qty" value="0" min="0" max="${item.invoicedQuantity}" step="0.01">
+                        </td>
+                    </tr>
+                `);
+            });
+
+            if (!this._rmaModal) {
+                this._rmaModal = new bootstrap.Modal(document.getElementById('rmaModal'));
+            }
+            this._rmaModal.show();
+        } catch (e) {
+            console.error("Failed to load invoice details for RMA", e);
+            toastr.error("Could not load invoice details.");
+        }
+    },
+
+    submitReturn: async function () {
+        var form = document.getElementById('rmaForm');
+        if (!form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
+
+        let returnedItems = {};
+        let totalReturnQty = 0;
+
+        $('#rmaBody tr').each(function () {
+            let vid = parseInt($(this).data('vid'));
+            let qty = parseFloat($(this).find('.rma-qty').val()) || 0;
+            if (qty > 0) {
+                returnedItems[vid] = qty;
+                totalReturnQty += qty;
+            }
+        });
+
+        if (totalReturnQty <= 0) {
+            toastr.warning("You must enter a return quantity greater than 0 for at least one item.");
+            return;
+        }
+
+        const payload = {
+            Payload: {
+                SalesInvoiceId: parseInt($('#RmaInvoiceId').val()),
+                ReturnWarehouseId: parseInt($('#RmaWarehouseId').val()),
+                Reason: $('#RmaReason').val(),
+                ReturnedItems: returnedItems
+            }
+        };
+
+        var $btn = $(event.currentTarget);
+        var originalText = $btn.html();
+        $btn.prop('disabled', true).html('<i class="spinner-border spinner-border-sm me-2"></i>Processing...');
+
+        try {
+            const res = await api.post('/api/sales/credit-notes', payload);
+            if (res && res.succeeded) {
+                toastr.success(res.message || "RMA processed successfully.");
+                this._rmaModal.hide();
+            }
+        } catch (e) {
+            console.error("RMA Submission Error:", e);
         } finally {
             $btn.prop('disabled', false).html(originalText);
         }

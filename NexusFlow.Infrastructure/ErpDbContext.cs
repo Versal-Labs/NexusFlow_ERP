@@ -68,6 +68,10 @@ namespace NexusFlow.Infrastructure
         public DbSet<SalesOrderItem> SalesOrderItems { get; set; }
         public DbSet<CommissionRule> CommissionRules { get; set; }
         public DbSet<CommissionLedger> CommissionLedgers { get; set; }
+        public DbSet<CreditNote> CreditNotes { get; set; }
+        public DbSet<CreditNoteItem> CreditNoteItems { get; set; }
+        public DbSet<StockTake> StockTakes { get; set; }
+        public DbSet<StockTakeItem> StockTakeItems { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

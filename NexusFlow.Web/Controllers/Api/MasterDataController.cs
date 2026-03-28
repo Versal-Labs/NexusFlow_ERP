@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NexusFlow.AppCore.Constants;
+using NexusFlow.AppCore.Features.MasterData.Boms.Commands;
+using NexusFlow.AppCore.Features.MasterData.Boms.Queries;
 using NexusFlow.AppCore.Features.MasterData.Products.Queries;
 using NexusFlow.AppCore.Features.MasterData.Warehouses.Commands;
 using NexusFlow.AppCore.Features.MasterData.Warehouses.Queries;
@@ -49,6 +51,16 @@ namespace NexusFlow.Web.Controllers.Api
         public async Task<IActionResult> SaveWarehouse([FromBody] SaveWarehouseCommand command, int? id = null)
         {
             if (id.HasValue) command.Warehouse.Id = id.Value;
+            var result = await _mediator.Send(command);
+            return result.Succeeded ? Ok(result) : BadRequest(result);
+        }
+
+        [HttpGet("boms")]
+        public async Task<IActionResult> GetBoms() => Ok(await _mediator.Send(new GetBomsQuery()));
+
+        [HttpPost("boms")]
+        public async Task<IActionResult> SaveBom([FromBody] SaveBomCommand command)
+        {
             var result = await _mediator.Send(command);
             return result.Succeeded ? Ok(result) : BadRequest(result);
         }

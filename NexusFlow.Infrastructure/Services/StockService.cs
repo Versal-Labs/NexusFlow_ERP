@@ -207,5 +207,47 @@ namespace NexusFlow.Infrastructure.Services
             // Return the Total Value consumed (e.g., $4500 worth of fabric)
             return Result<decimal>.Success(totalCostConsumed);
         }
+
+        public async Task<Result<int>> RestoreStockAsync(int variantId, int warehouseId, decimal qty, decimal originalTotalCogs, string referenceNo, string reason)
+        {
+            // Prevent divide-by-zero if qty is somehow 0
+            decimal unitCost = qty > 0 ? (originalTotalCogs / qty) : 0;
+
+            // 1. Create the Stock Layer (Aligned exactly to your StockLayer entity)
+            var layer = new StockLayer
+            {
+                ProductVariantId = variantId,
+                WarehouseId = warehouseId,
+                BatchNo = referenceNo, // Storing the Credit Note # here for FIFO traceability
+                DateReceived = DateTime.UtcNow,
+                UnitCost = unitCost,
+                InitialQty = qty,
+                RemainingQty = qty,
+                IsExhausted = false
+            };
+
+            _context.StockLayers.Add(layer);
+
+            // 2. Create the Stock Transaction (Aligned exactly to your StockTransaction entity)
+            var transaction = new StockTransaction
+            {
+                Date = DateTime.UtcNow,
+                ProductVariantId = variantId,
+                WarehouseId = warehouseId,
+                Type = StockTransactionType.Receipt, // Using Receipt (9) from your exact enum
+                Qty = qty,
+                UnitCost = unitCost,
+                TotalValue = originalTotalCogs,
+                ReferenceDocNo = referenceNo,
+                Notes = reason
+            };
+
+            _context.StockTransactions.Add(transaction);
+
+            // Save both the Layer and Transaction atomically
+            await _context.SaveChangesAsync(CancellationToken.None);
+
+            return Result<int>.Success(layer.Id);
+        }
     }
 }
