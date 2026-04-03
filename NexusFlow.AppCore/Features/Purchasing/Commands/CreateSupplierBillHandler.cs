@@ -22,13 +22,15 @@ namespace NexusFlow.AppCore.Features.Purchasing.Commands
         private readonly IJournalService _journalService;
         private readonly INumberSequenceService _sequenceService;
         private readonly ITaxService _taxService;
+        private readonly IFinancialAccountResolver _financialAccountResolver;
 
-        public CreateSupplierBillHandler(IErpDbContext context, IJournalService journalService, INumberSequenceService sequenceService, ITaxService taxService)
+        public CreateSupplierBillHandler(IFinancialAccountResolver financialAccountResolver, IErpDbContext context, IJournalService journalService, INumberSequenceService sequenceService, ITaxService taxService)
         {
             _context = context;
             _journalService = journalService;
             _sequenceService = sequenceService;
             _taxService = taxService;
+            _financialAccountResolver = financialAccountResolver;
         }
 
         public async Task<Result<int>> Handle(CreateSupplierBillCommand request, CancellationToken cancellationToken)
@@ -57,15 +59,16 @@ namespace NexusFlow.AppCore.Features.Purchasing.Commands
                     IsPosted = !dto.IsDraft,
                     SubTotal = 0,
                     TaxAmount = 0,
-                    GrandTotal = 0
+                    GrandTotal = 0,
                 };
 
                 decimal vatRate = dto.ApplyVat ? await _taxService.GetTaxRateAsync("VAT", dto.BillDate) : 0m;
                 var debitGrouping = new Dictionary<int, decimal>();
 
-                // Fetch Unbilled Receipts Account (For Product lines coming from GRN)
-                var unbilledConfig = await _context.SystemConfigs.FirstOrDefaultAsync(c => c.Key == "Account.Purchasing.UnbilledReceipts", cancellationToken);
-                int unbilledAccountId = unbilledConfig != null ? int.Parse(unbilledConfig.Value) : 0;
+                int unbilledAccountId = await _financialAccountResolver.ResolveAccountIdAsync("Account.Purchasing.UnbilledReceipts", cancellationToken);
+
+                if (unbilledAccountId == null)
+                    throw new Exception("Global 'Unbilled Receipts' (GRN Clearing) liability account is not configured in SystemConfigs.");
 
                 foreach (var item in dto.Items)
                 {
@@ -148,10 +151,10 @@ namespace NexusFlow.AppCore.Features.Purchasing.Commands
                     // DEBIT: Input Tax Receivable
                     if (bill.TaxAmount > 0)
                     {
-                        var taxConfig = await _context.SystemConfigs.FirstOrDefaultAsync(c => c.Key == "Account.Tax.VATReceivable", cancellationToken);
-                        if (taxConfig == null) throw new Exception("Input VAT (Receivable) account is not configured in System Configs.");
+                        var taxId = await _financialAccountResolver.ResolveAccountIdAsync("Account.Tax.VATReceivable", cancellationToken);
+                        if (taxId == null) throw new Exception("Input VAT (Receivable) account is not configured in System Configs.");
 
-                        journalLines.Add(new JournalLineRequest { AccountId = int.Parse(taxConfig.Value), Debit = bill.TaxAmount, Credit = 0, Note = $"Input VAT - {billNo}" });
+                        journalLines.Add(new JournalLineRequest { AccountId = taxId, Debit = bill.TaxAmount, Credit = 0, Note = $"Input VAT - {billNo}" });
                     }
 
                     var journalResult = await _journalService.PostJournalAsync(new JournalEntryRequest

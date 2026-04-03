@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using NexusFlow.Shared.Wrapper;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Text;
 
 namespace NexusFlow.AppCore.Features.Purchasing.Queries
@@ -29,14 +30,26 @@ namespace NexusFlow.AppCore.Features.Purchasing.Queries
 
         public async Task<Result<List<GrnDto>>> Handle(GetGrnsQuery request, CancellationToken ct)
         {
-            using var connection = new SqlConnection(_conn);
+            using IDbConnection connection = new SqlConnection(_conn);
+
+            // ARCHITECT FIX: 
+            // 1. Querying the correct table: Purchasing.GRNs
+            // 2. Joining PurchaseOrders to resolve the Supplier details
+            // 3. Mapping property names correctly (ReceivedDate, TotalAmount, SupplierInvoiceNo)
             var sql = @"
-                SELECT g.Id, g.GrnNumber, g.ReceiptDate, s.Name AS SupplierName, 
-                       w.Name AS WarehouseName, g.ReferenceNo, g.TotalValue
-                FROM Purchasing.GoodsReceipts g
-                INNER JOIN Purchasing.Suppliers s ON g.SupplierId = s.Id
-                INNER JOIN Master.Warehouses w ON g.WarehouseId = w.Id
-                ORDER BY g.ReceiptDate DESC, g.Id DESC";
+            SELECT 
+                g.Id, 
+                g.GrnNumber, 
+                g.ReceivedDate AS ReceiptDate, 
+                s.Name AS SupplierName,
+                w.Name AS WarehouseName, 
+                g.SupplierInvoiceNo AS ReferenceNo, 
+                g.TotalAmount AS TotalValue
+            FROM Purchasing.GRNs g
+            INNER JOIN Purchasing.PurchaseOrders po ON g.PurchaseOrderId = po.Id
+            INNER JOIN Purchasing.Suppliers s ON po.SupplierId = s.Id
+            INNER JOIN Master.Warehouses w ON g.WarehouseId = w.Id
+            ORDER BY g.ReceivedDate DESC, g.Id DESC";
 
             var result = await connection.QueryAsync<GrnDto>(sql);
             return Result<List<GrnDto>>.Success(result.ToList());

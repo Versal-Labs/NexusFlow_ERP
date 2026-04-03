@@ -249,5 +249,69 @@ namespace NexusFlow.Infrastructure.Services
 
             return Result<int>.Success(layer.Id);
         }
+
+        public async Task<decimal> IssueStockAsync(int productVariantId, int warehouseId, decimal qty, string referenceDoc, string notes = "")
+        {
+            if (qty <= 0) throw new Exception("Issue quantity must be greater than zero.");
+
+            // 1. STRICT FIFO: Get Active Layers, Oldest First
+            var layers = await _context.StockLayers
+                .Where(x => x.ProductVariantId == productVariantId && x.WarehouseId == warehouseId && !x.IsExhausted)
+                .OrderBy(x => x.DateReceived)
+                .ThenBy(x => x.Id)
+                .ToListAsync();
+
+            if (layers.Sum(x => x.RemainingQty) < qty)
+            {
+                throw new Exception($"Insufficient stock! Need {qty} to process return, but only have {layers.Sum(x => x.RemainingQty)} in warehouse.");
+            }
+
+            decimal qtyNeeded = qty;
+            decimal totalCostConsumed = 0;
+
+            foreach (var layer in layers)
+            {
+                if (qtyNeeded <= 0) break;
+
+                decimal qtyToTake = Math.Min(layer.RemainingQty, qtyNeeded);
+
+                // A. Deduct Physical Stock
+                layer.RemainingQty -= qtyToTake;
+
+                // ARCHITECTURAL UPGRADE: Flag layer as exhausted
+                if (layer.RemainingQty == 0)
+                {
+                    layer.IsExhausted = true;
+                }
+
+                // B. Calculate Exact Cost (FIFO)
+                decimal costForChunk = qtyToTake * layer.UnitCost;
+                totalCostConsumed += costForChunk;
+
+                // C. Log Transaction
+                _context.StockTransactions.Add(new StockTransaction
+                {
+                    Date = DateTime.UtcNow,
+                    ProductVariantId = productVariantId,
+                    WarehouseId = warehouseId,
+                    // Note: Using TransferOut or a generic Outbound type from your enum
+                    Type = StockTransactionType.TransferOut,
+                    Qty = qtyToTake,
+                    UnitCost = layer.UnitCost,
+                    TotalValue = costForChunk,
+                    ReferenceDocNo = referenceDoc,
+                    Notes = string.IsNullOrWhiteSpace(notes) ? "Stock Issued/Returned" : notes
+                });
+
+                qtyNeeded -= qtyToTake;
+            }
+
+            // We save the layers and transactions immediately. 
+            // The calling Handler wraps this inside its own BeginTransactionAsync() for GL safety!
+            await _context.SaveChangesAsync(CancellationToken.None);
+
+            // Return the exact raw monetary value consumed so the GL can balance the Purchase Variance
+            return totalCostConsumed;
+        }
     }
 }

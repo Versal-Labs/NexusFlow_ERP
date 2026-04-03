@@ -30,13 +30,15 @@ namespace NexusFlow.AppCore.Features.Sales.CreditNotes.Commands
         private readonly IStockService _stockService;
         private readonly IJournalService _journalService;
         private readonly INumberSequenceService _sequenceService;
+        private readonly IFinancialAccountResolver _accountResolver;
 
-        public CreateCreditNoteHandler(IErpDbContext context, IStockService stockService, IJournalService journalService, INumberSequenceService sequenceService)
+        public CreateCreditNoteHandler(IFinancialAccountResolver accountResolver, IErpDbContext context, IStockService stockService, IJournalService journalService, INumberSequenceService sequenceService)
         {
             _context = context;
             _stockService = stockService;
             _journalService = journalService;
             _sequenceService = sequenceService;
+            _accountResolver = accountResolver;
         }
 
         public async Task<Result<int>> Handle(CreateCreditNoteCommand request, CancellationToken cancellationToken)
@@ -46,7 +48,6 @@ namespace NexusFlow.AppCore.Features.Sales.CreditNotes.Commands
 
             try
             {
-                // 1. FETCH ORIGINAL INVOICE DEEP GRAPH
                 var invoice = await _context.SalesInvoices
                     .Include(i => i.Customer)
                     .Include(i => i.Items)
@@ -77,7 +78,6 @@ namespace NexusFlow.AppCore.Features.Sales.CreditNotes.Commands
                 var cogsGroup = new Dictionary<int, decimal>();
                 var inventoryAssetGroup = new Dictionary<int, decimal>();
 
-                // 2. PROCESS RETURNS
                 foreach (var returnedItem in req.ReturnedItems)
                 {
                     int variantId = returnedItem.Key;
@@ -89,16 +89,11 @@ namespace NexusFlow.AppCore.Features.Sales.CreditNotes.Commands
                     if (originalLine == null) throw new Exception("Returned item was not on the original invoice.");
                     if (returnQty > originalLine.Quantity) throw new Exception($"Cannot return more than originally invoiced for {originalLine.Description}.");
 
-                    // Compute exact reversed pricing based on original line
                     decimal originalNetUnitPrice = originalLine.LineTotal / originalLine.Quantity;
                     decimal reversedLineTotal = originalNetUnitPrice * returnQty;
 
-                    // Compute exact reversed COGS
-                    // In a real Tier-1 system, we'd lookup the exact StockTransactions linked to the invoice to get the exact historical COGS. 
-                    // For performance, we approximate the reversed COGS based on current moving average or original category logic.
-                    // For this architecture, we will safely calculate a proportional reversal.
                     var category = originalLine.ProductVariant.Product.Category;
-                    decimal estimatedReversedCogs = 0; // We must fetch the original COGS from the Journal or Stock Transactions for perfection.
+                    decimal estimatedReversedCogs = 0;
 
                     var cnItem = new CreditNoteItem
                     {
@@ -112,15 +107,12 @@ namespace NexusFlow.AppCore.Features.Sales.CreditNotes.Commands
                     creditNote.Items.Add(cnItem);
                     creditNote.SubTotal += reversedLineTotal;
 
-                    // Group Revenue for Reversal
                     int revAcc = category.SalesAccountId ?? 0;
                     if (!revenueGroup.ContainsKey(revAcc)) revenueGroup[revAcc] = 0;
                     revenueGroup[revAcc] += reversedLineTotal;
 
-                    // Restore Stock to Quarantine Warehouse
                     if (originalLine.ProductVariant.Product.Type != ProductType.Service)
                     {
-                        // We use a safe fallback of 0 COGS if we can't determine it, avoiding inflating assets.
                         await _stockService.RestoreStockAsync(variantId, req.ReturnWarehouseId, returnQty, estimatedReversedCogs, cnNo, req.Reason);
 
                         int cogsAcc = category.CogsAccountId ?? 0;
@@ -133,30 +125,28 @@ namespace NexusFlow.AppCore.Features.Sales.CreditNotes.Commands
                     }
                 }
 
-                // 3. TAX & TOTAL MATH
-                if (invoice.TotalTax > 0)
+                if (invoice.TotalTax > 0 && invoice.SubTotal > 0)
                 {
                     decimal taxRatio = invoice.TotalTax / invoice.SubTotal;
                     creditNote.TotalTax = creditNote.SubTotal * taxRatio;
                 }
                 creditNote.GrandTotal = creditNote.SubTotal + creditNote.TotalTax;
 
-                // FIX 1: Use the DbSet directly instead of .Set<T>()
                 _context.CreditNotes.Add(creditNote);
 
                 // =====================================================================
-                // 4. THE TIER-1 FEATURE: COMMISSION CLAWBACK
+                // TIER-1 FEATURE: SAFE PROPORTIONAL COMMISSION CLAWBACK
                 // =====================================================================
-                if (invoice.SalesRepId.HasValue)
+                if (invoice.SalesRepId.HasValue && invoice.SubTotal > 0) // DIVIDE-BY-ZERO GUARD
                 {
-                    // Find the original unearned or earned commission for this invoice
                     var originalCommission = await _context.CommissionLedgers
                         .Where(c => c.SalesInvoiceId == invoice.Id)
                         .SumAsync(c => c.CommissionAmount, cancellationToken);
 
                     if (originalCommission > 0)
                     {
-                        // Calculate proportional clawback
+                        // Because this is a ratio, it perfectly claws back the mathematically exact amount
+                        // regardless of whether the original commission was %-based or Value-based.
                         decimal returnRatio = creditNote.SubTotal / invoice.SubTotal;
                         decimal clawbackAmount = originalCommission * returnRatio;
 
@@ -164,9 +154,8 @@ namespace NexusFlow.AppCore.Features.Sales.CreditNotes.Commands
                         {
                             SalesRepId = invoice.SalesRepId.Value,
                             SalesInvoiceId = invoice.Id,
-                            CommissionAmount = -clawbackAmount, // Negative amount deducts from their payroll!
-                            Status = CommissionStatus.ReadyToPay // Instantly active to offset their next paycheck
-                            // FIX 2: Removed the hallucinated 'Notes' property
+                            CommissionAmount = -clawbackAmount,
+                            Status = CommissionStatus.ReadyToPay
                         });
                     }
                 }
@@ -176,31 +165,22 @@ namespace NexusFlow.AppCore.Features.Sales.CreditNotes.Commands
                 // =====================================================================
                 // 5. DOUBLE ENTRY GL REVERSAL
                 // =====================================================================
-                var journalLines = new List<JournalLineRequest>();
+                var journalLines = new List<JournalLineRequest>
+                {
+                    new JournalLineRequest { AccountId = invoice.Customer.DefaultReceivableAccountId, Debit = 0, Credit = creditNote.GrandTotal, Note = $"RMA Reversal AR - {cnNo}" }
+                };
 
-                // CREDIT: Accounts Receivable (Reducing the customer's debt)
-                journalLines.Add(new JournalLineRequest { AccountId = invoice.Customer.DefaultReceivableAccountId, Debit = 0, Credit = creditNote.GrandTotal, Note = $"RMA Reversal AR - {cnNo}" });
+                foreach (var rev in revenueGroup) journalLines.Add(new JournalLineRequest { AccountId = rev.Key, Debit = rev.Value, Credit = 0, Note = $"RMA Reversal Rev - {cnNo}" });
 
-                // DEBIT: Revenue (Reducing our Sales Income)
-                foreach (var rev in revenueGroup)
-                    journalLines.Add(new JournalLineRequest { AccountId = rev.Key, Debit = rev.Value, Credit = 0, Note = $"RMA Reversal Rev - {cnNo}" });
-
-                // DEBIT: Tax Payable (Reducing our liability to the government)
                 if (creditNote.TotalTax > 0)
                 {
-                    var taxConfig = await _context.SystemConfigs.FirstOrDefaultAsync(c => c.Key == "Account.Tax.VATPayable", cancellationToken);
-                    if (taxConfig != null)
-                    {
-                        journalLines.Add(new JournalLineRequest { AccountId = int.Parse(taxConfig.Value), Debit = creditNote.TotalTax, Credit = 0, Note = $"RMA Reversal VAT - {cnNo}" });
-                    }
+                    var taxId = await _accountResolver.ResolveAccountIdAsync("Account.Tax.VATPayable", cancellationToken);
+                    if (taxId == null) throw new InvalidOperationException("Global Tax Payable account is not configured.");
+                    journalLines.Add(new JournalLineRequest { AccountId = taxId, Debit = creditNote.TotalTax, Credit = 0, Note = $"RMA Reversal VAT - {cnNo}" });
                 }
 
-                // COGS/INVENTORY REVERSAL
-                foreach (var cogs in cogsGroup)
-                    journalLines.Add(new JournalLineRequest { AccountId = cogs.Key, Debit = 0, Credit = cogs.Value, Note = $"RMA Reversal COGS - {cnNo}" });
-
-                foreach (var inv in inventoryAssetGroup)
-                    journalLines.Add(new JournalLineRequest { AccountId = inv.Key, Debit = inv.Value, Credit = 0, Note = $"RMA Stock Restore - {cnNo}" });
+                foreach (var cogs in cogsGroup) journalLines.Add(new JournalLineRequest { AccountId = cogs.Key, Debit = 0, Credit = cogs.Value, Note = $"RMA Reversal COGS - {cnNo}" });
+                foreach (var inv in inventoryAssetGroup) journalLines.Add(new JournalLineRequest { AccountId = inv.Key, Debit = inv.Value, Credit = 0, Note = $"RMA Stock Restore - {cnNo}" });
 
                 var jResult = await _journalService.PostJournalAsync(new JournalEntryRequest
                 {

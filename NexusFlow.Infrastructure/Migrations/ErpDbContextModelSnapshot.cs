@@ -683,6 +683,195 @@ namespace NexusFlow.Infrastructure.Migrations
                         });
                 });
 
+            modelBuilder.Entity("NexusFlow.Domain.Entities.Finance.Bank", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("BankCode")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("LastModifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SwiftCode")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Banks", "Finance");
+                });
+
+            modelBuilder.Entity("NexusFlow.Domain.Entities.Finance.BankBranch", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("BankId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("BranchCode")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("BranchName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("LastModifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BankId");
+
+                    b.ToTable("BankBranches", "Finance");
+                });
+
+            modelBuilder.Entity("NexusFlow.Domain.Entities.Finance.BankReconciliation", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("BankAccountId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsFinalized")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("LastModifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("StatementDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("StatementEndingBalance")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BankAccountId");
+
+                    b.ToTable("BankReconciliations", "Finance");
+                });
+
+            modelBuilder.Entity("NexusFlow.Domain.Entities.Finance.ChequeRegister", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("BankBranchId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("BounceReason")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("ChequeDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ChequeNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("CustomerId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("DepositedBankAccountId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("EndorsedPaymentId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("LastModifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("OriginalReceiptId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BankBranchId");
+
+                    b.HasIndex("CustomerId");
+
+                    b.HasIndex("DepositedBankAccountId");
+
+                    b.HasIndex("EndorsedPaymentId");
+
+                    b.HasIndex("OriginalReceiptId");
+
+                    b.ToTable("ChequeRegister", "Finance");
+                });
+
             modelBuilder.Entity("NexusFlow.Domain.Entities.Finance.FinancialPeriod", b =>
                 {
                     b.Property<int>("Id")
@@ -781,6 +970,9 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.Property<int>("AccountId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("BankReconciliationId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -796,6 +988,9 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<bool>("IsCleared")
+                        .HasColumnType("bit");
+
                     b.Property<int>("JournalEntryId")
                         .HasColumnType("int");
 
@@ -808,6 +1003,8 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("AccountId");
+
+                    b.HasIndex("BankReconciliationId");
 
                     b.HasIndex("JournalEntryId");
 
@@ -840,7 +1037,10 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.Property<int>("PaymentTransactionId")
                         .HasColumnType("int");
 
-                    b.Property<int>("SalesInvoiceId")
+                    b.Property<int?>("SalesInvoiceId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("SupplierBillId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -848,6 +1048,8 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.HasIndex("PaymentTransactionId");
 
                     b.HasIndex("SalesInvoiceId");
+
+                    b.HasIndex("SupplierBillId");
 
                     b.ToTable("PaymentAllocations", "Finance");
                 });
@@ -875,6 +1077,9 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.Property<DateTime>("Date")
                         .HasColumnType("datetime2");
 
+                    b.Property<bool>("IsVoided")
+                        .HasColumnType("bit");
+
                     b.Property<DateTime?>("LastModifiedAt")
                         .HasColumnType("datetime2");
 
@@ -901,6 +1106,10 @@ namespace NexusFlow.Infrastructure.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CustomerId");
+
+                    b.HasIndex("SupplierId");
 
                     b.ToTable("PaymentTransactions", "Finance");
                 });
@@ -2271,6 +2480,9 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
+                    b.Property<bool>("IsPercentage")
+                        .HasColumnType("bit");
+
                     b.Property<DateTime?>("LastModifiedAt")
                         .HasColumnType("datetime2");
 
@@ -2988,6 +3200,67 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.Navigation("ParentAccount");
                 });
 
+            modelBuilder.Entity("NexusFlow.Domain.Entities.Finance.BankBranch", b =>
+                {
+                    b.HasOne("NexusFlow.Domain.Entities.Finance.Bank", "Bank")
+                        .WithMany("Branches")
+                        .HasForeignKey("BankId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Bank");
+                });
+
+            modelBuilder.Entity("NexusFlow.Domain.Entities.Finance.BankReconciliation", b =>
+                {
+                    b.HasOne("NexusFlow.Domain.Entities.Finance.Account", "BankAccount")
+                        .WithMany()
+                        .HasForeignKey("BankAccountId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("BankAccount");
+                });
+
+            modelBuilder.Entity("NexusFlow.Domain.Entities.Finance.ChequeRegister", b =>
+                {
+                    b.HasOne("NexusFlow.Domain.Entities.Finance.BankBranch", "BankBranch")
+                        .WithMany()
+                        .HasForeignKey("BankBranchId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("NexusFlow.Domain.Entities.Sales.Customer", "Customer")
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("NexusFlow.Domain.Entities.Finance.Account", "DepositedBankAccount")
+                        .WithMany()
+                        .HasForeignKey("DepositedBankAccountId");
+
+                    b.HasOne("NexusFlow.Domain.Entities.Finance.PaymentTransaction", "EndorsedPayment")
+                        .WithMany()
+                        .HasForeignKey("EndorsedPaymentId");
+
+                    b.HasOne("NexusFlow.Domain.Entities.Finance.PaymentTransaction", "OriginalReceipt")
+                        .WithMany()
+                        .HasForeignKey("OriginalReceiptId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("BankBranch");
+
+                    b.Navigation("Customer");
+
+                    b.Navigation("DepositedBankAccount");
+
+                    b.Navigation("EndorsedPayment");
+
+                    b.Navigation("OriginalReceipt");
+                });
+
             modelBuilder.Entity("NexusFlow.Domain.Entities.Finance.JournalLine", b =>
                 {
                     b.HasOne("NexusFlow.Domain.Entities.Finance.Account", "Account")
@@ -2996,6 +3269,10 @@ namespace NexusFlow.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("NexusFlow.Domain.Entities.Finance.BankReconciliation", "BankReconciliation")
+                        .WithMany("ClearedLines")
+                        .HasForeignKey("BankReconciliationId");
+
                     b.HasOne("NexusFlow.Domain.Entities.Finance.JournalEntry", "JournalEntry")
                         .WithMany("Lines")
                         .HasForeignKey("JournalEntryId")
@@ -3003,6 +3280,8 @@ namespace NexusFlow.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Account");
+
+                    b.Navigation("BankReconciliation");
 
                     b.Navigation("JournalEntry");
                 });
@@ -3017,13 +3296,32 @@ namespace NexusFlow.Infrastructure.Migrations
 
                     b.HasOne("NexusFlow.Domain.Entities.Sales.SalesInvoice", "SalesInvoice")
                         .WithMany("Allocations")
-                        .HasForeignKey("SalesInvoiceId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("SalesInvoiceId");
+
+                    b.HasOne("NexusFlow.Domain.Entities.Purchasing.SupplierBill", "SupplierBill")
+                        .WithMany()
+                        .HasForeignKey("SupplierBillId");
 
                     b.Navigation("PaymentTransaction");
 
                     b.Navigation("SalesInvoice");
+
+                    b.Navigation("SupplierBill");
+                });
+
+            modelBuilder.Entity("NexusFlow.Domain.Entities.Finance.PaymentTransaction", b =>
+                {
+                    b.HasOne("NexusFlow.Domain.Entities.Sales.Customer", "Customer")
+                        .WithMany()
+                        .HasForeignKey("CustomerId");
+
+                    b.HasOne("NexusFlow.Domain.Entities.Purchasing.Supplier", "Supplier")
+                        .WithMany()
+                        .HasForeignKey("SupplierId");
+
+                    b.Navigation("Customer");
+
+                    b.Navigation("Supplier");
                 });
 
             modelBuilder.Entity("NexusFlow.Domain.Entities.Finance.TaxRate", b =>
@@ -3521,6 +3819,16 @@ namespace NexusFlow.Infrastructure.Migrations
             modelBuilder.Entity("NexusFlow.Domain.Entities.Finance.Account", b =>
                 {
                     b.Navigation("ChildAccounts");
+                });
+
+            modelBuilder.Entity("NexusFlow.Domain.Entities.Finance.Bank", b =>
+                {
+                    b.Navigation("Branches");
+                });
+
+            modelBuilder.Entity("NexusFlow.Domain.Entities.Finance.BankReconciliation", b =>
+                {
+                    b.Navigation("ClearedLines");
                 });
 
             modelBuilder.Entity("NexusFlow.Domain.Entities.Finance.JournalEntry", b =>

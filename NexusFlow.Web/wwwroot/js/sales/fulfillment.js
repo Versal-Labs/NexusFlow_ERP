@@ -6,17 +6,68 @@
         var modalEl = document.getElementById('conversionModal');
         if (modalEl) this._modal = new bootstrap.Modal(modalEl);
 
+        this._initFilters();
         this._initGrid();
         this._loadLookups();
     },
 
+    // ==========================================
+    // FILTERS
+    // ==========================================
+    _initFilters: function () {
+        // Load Customers for dropdown
+        api.get('/api/customer').then(res => {
+            const customers = res.data || res || [];
+            let $cust = $('#filterCustomer').empty().append('<option value="">-- All Customers --</option>');
+            customers.forEach(c => $cust.append($('<option></option>').val(c.name).text(c.name)));
+        });
+
+        // Setup Custom DataTables Filter Logic
+        $.fn.dataTable.ext.search.push((settings, data, dataIndex) => {
+            if (settings.nTable.id !== 'fulfillmentGrid') return true;
+
+            const filterCust = $('#filterCustomer').val().toLowerCase();
+            const filterStart = $('#filterStartDate').val();
+            const filterEnd = $('#filterEndDate').val();
+
+            const rowDateStr = data[1]; // Date is in column index 1
+            const rowCust = data[2].toLowerCase(); // Customer is in column index 2
+
+            // Customer Check
+            if (filterCust && !rowCust.includes(filterCust)) return false;
+
+            // Date Check
+            if (filterStart || filterEnd) {
+                const rowDate = new Date(rowDateStr);
+                if (filterStart && rowDate < new Date(filterStart)) return false;
+                if (filterEnd && rowDate > new Date(filterEnd)) return false;
+            }
+
+            return true;
+        });
+    },
+
+    applyFilters: function() {
+        this._table.draw(); // Triggers the custom search extension above
+    },
+
+    resetFilters: function() {
+        $('#filterCustomer').val('');
+        $('#filterStartDate').val('');
+        $('#filterEndDate').val('');
+        this._table.draw();
+    },
+
+    // ==========================================
+    // GRID
+    // ==========================================
     _initGrid: function() {
         this._table = $('#fulfillmentGrid').DataTable({
             ajax: {
                 url: '/api/sales/orders',
                 dataSrc: function(json) { 
                     const data = json.data || json || [];
-                    // ARCHITECTURAL FILTER: Only show 'Submitted' orders to the Back-Office
+                    // ARCHITECTURAL FILTER: Only show 'Submitted' orders
                     return data.filter(o => o.statusText === 'Submitted');
                 }
             },
@@ -41,12 +92,12 @@
                     orderable: false,
                     render: function(data, type, row) {
                         return `<button class="btn btn-sm btn-primary shadow-sm fw-bold" onclick="fulfillmentApp.openConversionModal(${row.id}, '${row.orderNumber}')">
-                                    Convert <i class="fa-solid fa-arrow-right ms-1"></i>
+                                    Fulfill <i class="fa-solid fa-boxes-stacked ms-1"></i>
                                 </button>`;
                     }
                 }
             ],
-            order: [[0, 'asc']], // Oldest submitted orders first!
+            order: [[1, 'asc']], // Oldest submitted orders first!
             dom: '<"d-flex justify-content-between align-items-center mb-3"f>rt<"d-flex justify-content-between align-items-center mt-3"ip>'
         });
     },
@@ -63,22 +114,24 @@
         }
     },
 
+    // ==========================================
+    // MODAL & STOCK VALIDATION
+    // ==========================================
     openConversionModal: async function(orderId, orderNo) {
         $('#conversionForm')[0].reset();
         $('#conversionForm').removeClass('was-validated');
         $('#ConvertOrderId').val(orderId);
         $('#lblConvertOrderNo').text(orderNo);
+        $('#btnExecuteConversion').prop('disabled', true); // Disabled until warehouse selected
+        $('#stockWarningAlert').addClass('d-none');
 
-        // Render loading state
-        $('#orderItemsBody').html('<tr><td colspan="5" class="text-center text-muted py-3"><i class="spinner-border spinner-border-sm me-2"></i>Fetching items...</td></tr>');
+        $('#orderItemsBody').html('<tr><td colspan="6" class="text-center text-muted py-4"><i class="spinner-border spinner-border-sm me-2"></i>Fetching order details...</td></tr>');
         $('#lblOrderGrandTotal').text('0.00');
 
-        // Pop the modal immediately while data fetches
         this._modal.show();
 
         try {
-            // Fetch the exact lines via the API we just created
-            const res = await api.get(`/api/sales/orders/${orderId}`);
+            const res = await api.get(`/api/sales/orders/${orderId}/document`);
             const order = res.data || res;
 
             let $tbody = $('#orderItemsBody');
@@ -86,10 +139,14 @@
 
             if (order && order.items && order.items.length > 0) {
                 order.items.forEach(item => {
+                    // Injecting variant ID and required qty as data attributes for the stock validator
                     $tbody.append(`
-                        <tr>
-                            <td class="fw-bold text-dark">${item.description}</td>
-                            <td class="text-center font-monospace">${item.quantity}</td>
+                        <tr data-vid="${item.productVariantId}" data-qty="${item.quantity}">
+                            <td class="fw-bold text-dark">${item.productDescription}</td>
+                            <td class="text-center font-monospace fw-bold">${item.quantity}</td>
+                            
+                            <td class="text-center bg-warning bg-opacity-10 stock-cell text-muted">- Select WH -</td>
+                            
                             <td class="text-end text-muted">${item.unitPrice.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
                             <td class="text-end text-danger">${item.discount > 0 ? '-' + item.discount.toLocaleString(undefined, { minimumFractionDigits: 2 }) : '-'}</td>
                             <td class="text-end fw-bold">${item.lineTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
@@ -99,12 +156,63 @@
                 
                 $('#lblOrderGrandTotal').text(order.totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2 }));
             } else {
-                $tbody.html('<tr><td colspan="5" class="text-center text-danger py-3">No line items found for this order.</td></tr>');
+                $tbody.html('<tr><td colspan="6" class="text-center text-danger py-3">No line items found for this order.</td></tr>');
             }
         } catch (e) {
             console.error("Failed to load order details", e);
-            $('#orderItemsBody').html('<tr><td colspan="5" class="text-center text-danger py-3">Failed to load order details.</td></tr>');
-            toastr.error("Could not fetch order line items.");
+            $('#orderItemsBody').html('<tr><td colspan="6" class="text-center text-danger py-3">Failed to load order details.</td></tr>');
+        }
+    },
+
+    validateStock: async function() {
+        const warehouseId = $('#DispatchWarehouseId').val();
+        let allStockAvailable = true;
+        
+        if (!warehouseId) {
+            $('#orderItemsBody tr').each(function() { $(this).find('.stock-cell').html('<span class="text-muted">- Select WH -</span>'); });
+            $('#btnExecuteConversion').prop('disabled', true);
+            $('#stockWarningAlert').addClass('d-none');
+            return;
+        }
+
+        // Show loading spinners in all stock cells
+        $('#orderItemsBody tr').each(function() {
+            $(this).find('.stock-cell').html('<i class="spinner-border spinner-border-sm text-secondary"></i>');
+        });
+
+        // Fetch stock asynchronously for every line item
+        const rows = $('#orderItemsBody tr').toArray();
+        for (const row of rows) {
+            const $row = $(row);
+            const varId = $row.data('vid');
+            const reqQty = parseFloat($row.data('qty'));
+            const $cell = $row.find('.stock-cell');
+
+            try {
+                const res = await api.get(`/api/inventory/stock/available?variantId=${varId}&warehouseId=${warehouseId}`);
+                const available = res.data !== undefined ? res.data : (res || 0);
+
+                if (available >= reqQty) {
+                    $cell.html(`<span class="text-success fw-bold"><i class="fa-solid fa-check me-1"></i> ${available}</span>`);
+                    $row.removeClass('table-danger');
+                } else {
+                    $cell.html(`<span class="text-danger fw-bold"><i class="fa-solid fa-xmark me-1"></i> ${available}</span>`);
+                    $row.addClass('table-danger');
+                    allStockAvailable = false; // Flag a shortage
+                }
+            } catch (e) {
+                $cell.html('<span class="text-danger">Error</span>');
+                allStockAvailable = false;
+            }
+        }
+
+        // Enterprise Guard: Toggle UI based on stock validation
+        if (allStockAvailable) {
+            $('#btnExecuteConversion').prop('disabled', false);
+            $('#stockWarningAlert').addClass('d-none');
+        } else {
+            $('#btnExecuteConversion').prop('disabled', true);
+            $('#stockWarningAlert').removeClass('d-none');
         }
     },
 
@@ -120,7 +228,7 @@
             WarehouseId: parseInt($('#DispatchWarehouseId').val())
         };
 
-        var $btn = $(event.currentTarget);
+        var $btn = $('#btnExecuteConversion');
         var ogText = $btn.html();
         $btn.prop('disabled', true).html('<i class="spinner-border spinner-border-sm"></i> Processing...');
 
@@ -131,11 +239,10 @@
                 this._modal.hide();
                 this._table.ajax.reload(null, false);
             } else {
-                toastr.error(res.message || "Conversion failed. Please check stock levels.");
+                toastr.error(res.messages?.[0] || "Conversion failed. Please check stock levels.");
             }
         } catch (e) {
-            console.error(e);
-            toastr.error("An error occurred during conversion.");
+            toastr.error(e.responseJSON?.messages?.[0] || "An error occurred during conversion.");
         } finally {
             $btn.prop('disabled', false).html(ogText);
         }

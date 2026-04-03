@@ -1,54 +1,175 @@
 @{
-    ViewData["Title"] = "Import Legacy Inventory";
+    ViewData["Title"] = "Bulk Import Wizard";
 }
 
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <h1 class="h2">Import Legacy Inventory</h1>
-    <div class="btn-toolbar mb-2 mb-md-0">
-        <button type="button" class="btn btn-sm btn-outline-secondary">
-            <i class="fas fa-question-circle"></i> Help
-        </button>
+<div class="container-fluid py-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h4 class="mb-0 text-dark fw-bold"><i class="fa-solid fa-file-csv text-success me-2"></i>Bulk Import Wizard</h4>
+            <p class="text-muted mb-0 fs-14">Upload your legacy CSV, review and edit the data, and commit to the database.</p>
+        </div>
     </div>
-</div>
 
-<div class="row mb-4">
-    <div class="col-12 col-lg-8 offset-lg-2">
-        <div class="card shadow-sm mt-4">
-            <div class="card-body text-center p-5">
-                
-                <div id="dropzone" class="border border-2 border-dashed rounded p-5 bg-light transition-all" style="cursor: pointer;">
-                    <i class="fas fa-cloud-upload-alt fa-3x text-primary mb-3"></i>
-                    <h5>Drag and drop your Legacy Inventory CSV here</h5>
-                    <p class="text-muted mb-0">or click to browse files</p>
-                    <small class="text-danger mt-2 d-block">Note: Only .csv files are supported. If using Excel, save as CSV first.</small>
-                    <input type="file" id="fileInput" class="d-none" accept=".csv">
-                </div>
-                
-                <div id="processingState" style="display:none;" class="py-4">
-                    <div class="spinner-border text-primary mb-3" role="status" style="width: 4rem; height: 4rem;"></div>
-                    <h4>Importing Legacy Data...</h4>
-                    <p class="text-muted">This may take a few moments depending on the file size. Please do not close or refresh this window.</p>
-                    <div class="progress mt-4" style="height: 10px;">
-                        <div class="progress-bar progress-bar-striped progress-bar-animated w-100" role="progressbar"></div>
-                    </div>
-                </div>
+    <div class="card shadow-sm border-0 mb-4" id="uploadSection">
+        <div class="card-body p-4 text-center">
+            <i class="fa-solid fa-cloud-arrow-up text-primary mb-3" style="font-size: 3rem;"></i>
+            <h5 class="fw-bold">Select CSV File</h5>
+            <input type="file" id="csvFileInput" class="form-control w-50 mx-auto mt-3 mb-3" accept=".csv">
+            <button class="btn btn-primary px-4 fw-bold shadow-sm" onclick="importApp.previewCsv()">
+                <i class="fa-solid fa-eye me-2"></i>Preview Data
+            </button>
+        </div>
+    </div>
 
-                <div id="successState" style="display:none;" class="py-4">
-                    <i class="fas fa-check-circle fa-5x text-success mb-3"></i>
-                    <h4 class="text-success">Import Successful!</h4>
-                    <p class="fs-5 mt-3 text-secondary">Your inventory has been updated.</p>
-                    
-                    <div class="mt-4">
-                        <a href="/" class="btn btn-primary px-4 me-2">Return to Dashboard</a>
-                        <button class="btn btn-outline-secondary px-4" onclick="location.reload()">Import Another File</button>
-                    </div>
-                </div>
-
-            </div>
+    <div class="card shadow-sm border-0 d-none" id="previewSection">
+        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center py-2">
+            <span class="fw-bold"><i class="fa-solid fa-table me-2"></i>Review & Edit Data</span>
+            <button class="btn btn-success btn-sm fw-bold shadow-sm" onclick="importApp.executeImport()">
+                <i class="fa-solid fa-check-double me-1"></i> Commit to Database
+            </button>
+        </div>
+        <div class="card-body p-0" style="max-height: 60vh; overflow-y: auto;">
+            <table class="table table-bordered table-hover align-middle mb-0 fs-13" id="previewTable">
+                <thead class="table-light sticky-top shadow-sm">
+                    <tr>
+                        <th class="bg-success bg-opacity-10">Lot No (Group)</th>
+                        <th>Item Name (Variant)</th>
+                        <th>SKU</th>
+                        <th>Category</th>
+                        <th class="bg-info bg-opacity-10">Sub Category</th>
+                        <th>Brand</th>
+                        <th>Size</th>
+                        <th>Color</th>
+                        <th class="text-end" style="width:100px;">Avg Cost</th>
+                        <th class="text-end" style="width:100px;">Sell Price</th>
+                        <th class="text-end" style="width:100px;">Min Sell Price</th>
+                        <th class="text-end bg-warning bg-opacity-25" style="width:100px;">Legacy Qty</th>
+                    </tr>
+                </thead>
+                <tbody id="previewBody"></tbody>
+            </table>
         </div>
     </div>
 </div>
 
 @section Scripts {
-    <script src="~/js/inventory-import.js" asp-append-version="true"></script>
+    <script>
+        window.importApp = {
+            _currentData: [],
+
+            _getToken: function() {
+                return document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+            },
+
+            previewCsv: async function() {
+                const fileInput = document.getElementById('csvFileInput');
+                if (!fileInput.files.length) {
+                    toastr.warning("Please select a file first."); return;
+                }
+
+                const formData = new FormData();
+                formData.append('file', fileInput.files[0]);
+
+                try {
+                    const response = await fetch('/api/inventory/preview-import', {
+                        method: 'POST',
+                        headers: {
+                            'RequestVerificationToken': this._getToken()
+                        },
+                        body: formData
+                    });
+                    
+                    const res = await response.json();
+                    
+                    if (res.succeeded) {
+                        this._currentData = res.data;
+                        this.renderTable();
+                        $('#uploadSection').addClass('d-none');
+                        $('#previewSection').removeClass('d-none');
+                        toastr.success("File parsed. Please review the data.");
+                    } else {
+                        toastr.error(res.messages?.[0] || "Failed to parse CSV.");
+                    }
+                } catch (e) {
+                    toastr.error("Network error during upload.");
+                }
+            },
+
+            renderTable: function() {
+                let html = '';
+                this._currentData.forEach((row, index) => {
+                    html += `
+                                <tr data-index="${index}">
+                                            <td class="bg-success bg-opacity-10"><input type="text" class="form-control form-control-sm border-0 bg-transparent row-data fw-bold" data-field="lotNo" value="${row.lotNo}"></td>
+                                    <td><input type="text" class="form-control form-control-sm border-0 bg-transparent row-data" data-field="itemName" value="${row.itemName}"></td>
+                                    <td><input type="text" class="form-control form-control-sm border-0 bg-transparent row-data fw-bold text-primary font-monospace" data-field="sku" value="${row.sku}"></td>
+                                    <td><input type="text" class="form-control form-control-sm border-0 bg-transparent row-data" data-field="category" value="${row.category}"></td>
+                            
+                                    <td class="bg-info bg-opacity-10"><input type="text" class="form-control form-control-sm border-0 bg-transparent row-data" data-field="subCategory" value="${row.subCategory}"></td>
+                            
+                                    <td><input type="text" class="form-control form-control-sm border-0 bg-transparent row-data" data-field="brand" value="${row.brand}"></td>
+                                    <td><input type="text" class="form-control form-control-sm border-0 bg-transparent row-data" data-field="size" value="${row.size}"></td>
+                                    <td><input type="text" class="form-control form-control-sm border-0 bg-transparent row-data" data-field="color" value="${row.color}"></td>
+                            
+                                    <td><input type="number" class="form-control form-control-sm border-0 bg-transparent row-data text-end fw-bold" data-field="averageCost" value="${row.averageCost}" step="0.01"></td>
+                                    <td><input type="number" class="form-control form-control-sm border-0 bg-transparent row-data text-end fw-bold" data-field="sellingPrice" value="${row.sellingPrice}" step="0.01"></td>
+                                    <td><input type="number" class="form-control form-control-sm border-0 bg-transparent row-data text-end fw-bold text-muted" data-field="minSellingPrice" value="${row.minSellingPrice}" step="0.01"></td>
+                                    <td class="bg-warning bg-opacity-10"><input type="number" class="form-control form-control-sm border-0 bg-transparent row-data text-end fw-bold text-dark" data-field="totalQuantity" value="${row.totalQuantity}" step="0.01"></td>
+                                </tr>`;
+                });
+                $('#previewBody').html(html);
+            },
+
+            executeImport: async function() {
+                let finalData = [];
+                $('#previewBody tr').each(function() {
+                    let row = {};
+                    $(this).find('.row-data').each(function() {
+                        let field = $(this).data('field');
+                        let val = $(this).val();
+                        
+                        // Parse all numeric fields correctly
+                        if (field === 'averageCost' || field === 'sellingPrice' || field === 'minSellingPrice' || field === 'totalQuantity') {
+                            row[field] = parseFloat(val) || 0;
+                        } else {
+                            row[field] = val; // This will now automatically include subCategory
+                        }
+                    });
+                    
+                    finalData.push(row);
+                });
+
+                if (finalData.length === 0) return;
+
+                var $btn = $(event.currentTarget);
+                var ogText = $btn.html();
+                $btn.prop('disabled', true).html('<i class="spinner-border spinner-border-sm me-1"></i> Committing...');
+
+                try {
+                    const response = await fetch('/api/inventory/execute-import', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'RequestVerificationToken': this._getToken()
+                        },
+                        body: JSON.stringify({ products: finalData })
+                    });
+                    
+                    const res = await response.json();
+                    
+                    if (res.succeeded) {
+                        Swal.fire('Success!', res.message, 'success').then(() => {
+                            window.location.reload();
+                        });
+                    } else {
+                        toastr.error(res.messages?.[0] || "Import failed.");
+                    }
+                } catch (e) {
+                    toastr.error("Network error during execution.");
+                } finally {
+                    $btn.prop('disabled', false).html(ogText);
+                }
+            }
+        };
+    </script>
 }

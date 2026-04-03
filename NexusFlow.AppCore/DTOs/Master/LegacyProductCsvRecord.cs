@@ -15,7 +15,7 @@ namespace NexusFlow.AppCore.DTOs.Master
         [Name("color")] public string? Color { get; set; }
         [Name("size")] public string? Size { get; set; }
         [Name("msize")] public string? MSize { get; set; }
-
+        [Name("lotno")] public string? LotNo { get; set; }
         [Name("avar")] public decimal AverageCost { get; set; }
         [Name("selprice")] public decimal SellingPrice { get; set; }
         [Name("minsellpri")] public decimal MinSellingPrice { get; set; }

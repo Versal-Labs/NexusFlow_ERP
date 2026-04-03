@@ -10,10 +10,33 @@
         </div>
     </div>
 
+    <div class="card border-0 shadow-sm mb-3 bg-white">
+        <div class="card-body py-2 px-3">
+            <div class="row g-2 align-items-center fs-13">
+                <div class="col-md-4">
+                    <label class="form-label mb-0 fw-bold text-muted">Filter by Customer</label>
+                    <select class="form-select form-select-sm" id="filterCustomer"></select>
+                </div>
+                <div class="col-md-5">
+                    <label class="form-label mb-0 fw-bold text-muted">Order Date Range</label>
+                    <div class="input-group input-group-sm">
+                        <input type="date" class="form-control" id="filterStartDate">
+                        <span class="input-group-text">to</span>
+                        <input type="date" class="form-control" id="filterEndDate">
+                    </div>
+                </div>
+                <div class="col-md-3 text-end mt-4">
+                    <button class="btn btn-sm btn-outline-secondary me-1" onclick="fulfillmentApp.resetFilters()"><i class="fa-solid fa-eraser"></i> Clear</button>
+                    <button class="btn btn-sm btn-primary px-3" onclick="fulfillmentApp.applyFilters()"><i class="fa-solid fa-filter"></i> Apply</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="card border-0 shadow-sm">
-        <div class="card-body p-0">
+        <div class="card-body">
             <table id="fulfillmentGrid" class="table table-hover table-striped align-middle mb-0 w-100 fs-13">
-                <thead class="table-light text-secondary">
+                <thead class="table-dark">
                     <tr>
                         <th class="ps-4">Order #</th>
                         <th>Date</th>
@@ -30,7 +53,7 @@
 </div>
 
 <div class="modal fade" id="conversionModal" tabindex="-1" data-bs-backdrop="static">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg">
             <div class="modal-header bg-primary text-white">
                 <h5 class="modal-title fw-bold"><i class="fa-solid fa-file-export me-2"></i>Convert to Sales Invoice</h5>
@@ -41,45 +64,58 @@
                 <form id="conversionForm">
                     <input type="hidden" id="ConvertOrderId" value="0" />
                     
-                    <div class="alert alert-info border-info shadow-sm mb-3">
-                        <h6 class="fw-bold mb-1">Order: <span id="lblConvertOrderNo" class="font-monospace text-dark"></span></h6>
-                        <p class="mb-0 fs-12">Converting this order will permanently deduct strict FIFO inventory, recognize Revenue & COGS in the General Ledger, and accrue Sales Commissions.</p>
+                    <div class="row mb-3">
+                        <div class="col-md-8">
+                            <div class="alert alert-info border-info shadow-sm h-100 mb-0">
+                                <h6 class="fw-bold mb-1">Order: <span id="lblConvertOrderNo" class="font-monospace text-dark"></span></h6>
+                                <p class="mb-0 fs-12">Converting this order will permanently deduct strict FIFO inventory, recognize Revenue & COGS in the General Ledger, and accrue Sales Commissions.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card border-primary shadow-sm h-100">
+                                <div class="card-body p-2 bg-white">
+                                    <label class="form-label fw-bold mb-1 fs-12 text-primary">Dispatch From Warehouse <span class="text-danger">*</span></label>
+                                    <select class="form-select shadow-sm border-primary" id="DispatchWarehouseId" onchange="fulfillmentApp.validateStock()" required></select>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    <h6 class="fw-bold text-dark mb-2">Order Contents</h6>
-                    <div class="table-responsive border rounded bg-white shadow-sm mb-4">
+                    <h6 class="fw-bold text-dark mb-2">Order Contents & Stock Validation</h6>
+                    <div class="table-responsive border rounded bg-white shadow-sm mb-2">
                         <table class="table table-sm table-hover align-middle mb-0" id="orderItemsTable">
                             <thead class="table-light text-secondary">
                                 <tr>
                                     <th>Item Description</th>
-                                    <th class="text-center" style="width: 10%">Qty</th>
-                                    <th class="text-end" style="width: 20%">Unit Price</th>
+                                    <th class="text-center" style="width: 10%">Required Qty</th>
+                                    
+                                    <th class="text-center bg-warning bg-opacity-10" style="width: 15%">Available Stock</th>
+                                    
+                                    <th class="text-end" style="width: 15%">Unit Price</th>
                                     <th class="text-end" style="width: 15%">Discount</th>
-                                    <th class="text-end" style="width: 20%">Line Total</th>
+                                    <th class="text-end" style="width: 15%">Line Total</th>
                                 </tr>
                             </thead>
                             <tbody id="orderItemsBody">
                             </tbody>
                             <tfoot class="table-light">
                                 <tr>
-                                    <td colspan="4" class="text-end fw-bold text-dark">Grand Total:</td>
-                                    <td class="text-end fw-bold text-primary font-monospace" id="lblOrderGrandTotal">0.00</td>
+                                    <td colspan="5" class="text-end fw-bold text-dark">Grand Total:</td>
+                                    <td class="text-end fw-bold text-primary font-monospace fs-6" id="lblOrderGrandTotal">0.00</td>
                                 </tr>
                             </tfoot>
                         </table>
                     </div>
-
-                    <div class="mb-2">
-                        <label class="form-label fw-bold mb-1">Dispatch From Warehouse <span class="text-danger">*</span></label>
-                        <select class="form-select form-select-lg shadow-sm border-primary" id="DispatchWarehouseId" required></select>
-                        <div class="form-text mt-2"><i class="fa-solid fa-triangle-exclamation text-warning me-1"></i> Ensure the selected warehouse has sufficient stock, or the atomic transaction will safely roll back and fail.</div>
+                    
+                    <div id="stockWarningAlert" class="alert alert-danger d-none py-2 fs-13 mt-2">
+                        <i class="fa-solid fa-triangle-exclamation me-2"></i> Insufficient stock in the selected warehouse. You cannot fulfill this order until inventory is replenished or a different warehouse is selected.
                     </div>
                 </form>
             </div>
             
             <div class="modal-footer bg-white border-top p-3 d-flex justify-content-between">
                 <button type="button" class="btn btn-light border btn-sm px-4" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-success btn-lg px-4 shadow-sm fw-bold" onclick="fulfillmentApp.executeConversion()">
+                <button type="button" class="btn btn-success btn-lg px-4 shadow-sm fw-bold" id="btnExecuteConversion" onclick="fulfillmentApp.executeConversion()" disabled>
                     <i class="fa-solid fa-check-double me-2"></i> Post Invoice
                 </button>
             </div>

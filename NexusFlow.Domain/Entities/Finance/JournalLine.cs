@@ -18,6 +18,9 @@ namespace NexusFlow.Domain.Entities.Finance
         // Standard Accounting: Store both, but one is usually 0
         public decimal Debit { get; set; }
         public decimal Credit { get; set; }
+        public bool IsCleared { get; set; } = false;
+        public int? BankReconciliationId { get; set; }
+        public BankReconciliation? BankReconciliation { get; set; }
 
         // Optional: Dimension tagging (e.g., Cost Center, Department)
         public string? Description { get; set; }

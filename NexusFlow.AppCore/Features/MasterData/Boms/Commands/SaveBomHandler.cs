@@ -10,15 +10,7 @@ using System.Text;
 
 namespace NexusFlow.AppCore.Features.MasterData.Boms.Commands
 {
-    public class SaveBomCommand : IRequest<Result<int>>
-    {
-        public BomDto Payload { get; set; }
-
-        public SaveBomCommand(BomDto payload)
-        {
-            Payload = payload;
-        }
-    }
+    public record SaveBomCommand(BomDto Payload) : IRequest<Result<int>>;
 
     public class SaveBomHandler : IRequestHandler<SaveBomCommand, Result<int>>
     {
@@ -31,61 +23,51 @@ namespace NexusFlow.AppCore.Features.MasterData.Boms.Commands
 
         public async Task<Result<int>> Handle(SaveBomCommand request, CancellationToken cancellationToken)
         {
-            var payload = request.Payload;
+            var dto = request.Payload;
             BillOfMaterial bom;
 
-            if (payload.Id > 0)
+            if (dto.Id == 0)
             {
-                bom = await _context.BillOfMaterials
-                    .Include(b => b.Components)
-                    .FirstOrDefaultAsync(b => b.Id == payload.Id, cancellationToken);
+                // ENTERPRISE GUARD: One active BOM per product variant to prevent manufacturing conflicts.
+                bool exists = await _context.BillOfMaterials
+                    .AnyAsync(b => b.ProductVariantId == dto.ProductVariantId, cancellationToken);
 
-                if (bom == null) return Result<int>.Failure("BOM not found.");
+                if (exists) return Result<int>.Failure("A Bill of Materials already exists for this Product Variant.");
 
-                bom.Name = payload.Name;
-                bom.ProductVariantId = payload.ProductVariantId;
-                bom.IsActive = payload.IsActive;
-
-                // Handle Component removal and updates
-                _context.BomComponents.RemoveRange(bom.Components.Where(c => !payload.Components.Any(pc => pc.Id == c.Id)));
-
-                foreach (var comp in payload.Components)
-                {
-                    var existingComp = bom.Components.FirstOrDefault(c => c.Id == comp.Id);
-                    if (existingComp != null)
-                    {
-                        existingComp.MaterialVariantId = comp.MaterialVariantId;
-                        existingComp.Quantity = comp.Quantity;
-                    }
-                    else
-                    {
-                        bom.Components.Add(new BomComponent
-                        {
-                            MaterialVariantId = comp.MaterialVariantId,
-                            Quantity = comp.Quantity
-                        });
-                    }
-                }
+                bom = new BillOfMaterial();
+                await _context.BillOfMaterials.AddAsync(bom, cancellationToken);
             }
             else
             {
-                bom = new BillOfMaterial
-                {
-                    Name = payload.Name,
-                    ProductVariantId = payload.ProductVariantId,
-                    IsActive = payload.IsActive,
-                    Components = payload.Components.Select(c => new BomComponent
-                    {
-                        MaterialVariantId = c.MaterialVariantId,
-                        Quantity = c.Quantity
-                    }).ToList()
-                };
+                bom = await _context.BillOfMaterials
+                    .Include(b => b.Components)
+                    .FirstOrDefaultAsync(b => b.Id == dto.Id, cancellationToken);
 
-                await _context.BillOfMaterials.AddAsync(bom, cancellationToken);
+                if (bom == null) return Result<int>.Failure("BOM not found.");
+            }
+
+            bom.Name = dto.Name;
+            bom.ProductVariantId = dto.ProductVariantId;
+            bom.IsActive = dto.IsActive;
+
+            // Master-Detail Update Strategy: Wipe and Replace for exact consistency
+            bom.Components.Clear();
+
+            foreach (var comp in dto.Components)
+            {
+                // ENTERPRISE GUARD: Prevent infinite manufacturing loops
+                if (comp.MaterialVariantId == dto.ProductVariantId)
+                    return Result<int>.Failure("A finished good cannot be used as a raw material for itself!");
+
+                bom.Components.Add(new BomComponent
+                {
+                    MaterialVariantId = comp.MaterialVariantId,
+                    Quantity = comp.Quantity
+                });
             }
 
             await _context.SaveChangesAsync(cancellationToken);
-            return Result<int>.Success(bom.Id, "BOM saved successfully.");
+            return Result<int>.Success(bom.Id, "Bill of Materials saved successfully.");
         }
     }
 }

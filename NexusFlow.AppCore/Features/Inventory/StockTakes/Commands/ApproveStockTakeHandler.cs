@@ -21,12 +21,14 @@ namespace NexusFlow.AppCore.Features.Inventory.StockTakes.Commands
         private readonly IErpDbContext _context;
         private readonly IStockService _stockService;
         private readonly IJournalService _journalService;
+        private readonly IFinancialAccountResolver _accountResolver;
 
-        public ApproveStockTakeHandler(IErpDbContext context, IStockService stockService, IJournalService journalService)
+        public ApproveStockTakeHandler(IFinancialAccountResolver accountResolver, IErpDbContext context, IStockService stockService, IJournalService journalService)
         {
             _context = context;
             _stockService = stockService;
             _journalService = journalService;
+            _accountResolver = accountResolver;
         }
 
         public async Task<Result<int>> Handle(ApproveStockTakeCommand request, CancellationToken cancellationToken)
@@ -133,14 +135,14 @@ namespace NexusFlow.AppCore.Features.Inventory.StockTakes.Commands
 
                     if (totalSurplusValue > 0)
                     {
-                        var surplusConfig = await _context.SystemConfigs.FirstOrDefaultAsync(c => c.Key == "Account.Inventory.Surplus", cancellationToken);
-                        if (surplusConfig == null) throw new Exception("GL Config Missing: 'Account.Inventory.Surplus'");
+
+                        var surplusId = await _accountResolver.ResolveAccountIdAsync("Account.Inventory.Surplus", cancellationToken);
+                        if (surplusId == null) throw new Exception("GL Config Missing: 'Account.Inventory.Surplus'");
 
                         // ARCHITECTURAL FIX: Translate the human-readable Account Code to the Database Id
-                        var surplusAccount = await _context.Accounts.FirstOrDefaultAsync(a => a.Code == surplusConfig.Value, cancellationToken);
-                        if (surplusAccount == null) throw new Exception($"Configured Surplus Account Code '{surplusConfig.Value}' does not exist in the Chart of Accounts.");
+                        if (surplusId == null) throw new Exception($"Configured Surplus Account Code '{surplusId}' does not exist in the Chart of Accounts.");
 
-                        journalLines.Add(new JournalLineRequest { AccountId = surplusAccount.Id, Debit = 0, Credit = totalSurplusValue, Note = $"Inventory Gain - {stockTake.StockTakeNumber}" });
+                        journalLines.Add(new JournalLineRequest { AccountId = surplusId, Debit = 0, Credit = totalSurplusValue, Note = $"Inventory Gain - {stockTake.StockTakeNumber}" });
                     }
 
                     var jResult = await _journalService.PostJournalAsync(new JournalEntryRequest

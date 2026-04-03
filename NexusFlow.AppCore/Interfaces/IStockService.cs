@@ -16,5 +16,6 @@ namespace NexusFlow.AppCore.Interfaces
         // The "Receive" Function (Supplier -> Main)
         Task<Result<decimal>> ReceiveStockAsync(int productVariantId, int warehouseId, decimal qty, decimal unitCost, string referenceDoc, string notes = "");
         Task<Result<int>> RestoreStockAsync(int variantId, int warehouseId, decimal qty, decimal originalTotalCogs, string referenceNo, string reason);
+        Task<decimal> IssueStockAsync(int productVariantId, int warehouseId, decimal qty, string referenceDoc, string notes = "");
     }
 }

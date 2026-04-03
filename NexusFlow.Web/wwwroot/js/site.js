@@ -1,6 +1,8 @@
 ﻿// Nexus ERP Global Utilities
 // v2.2 - Robust Error Parsing (Handles 'errors', 'messages', and 'message')
 
+// Nexus ERP Global Utilities
+// v3.0 - Stripped auto-toasting for business logic. UI handles its own state.
 const api = {
     // Helper: Get Anti-Forgery Token
     getToken: () => document.querySelector('meta[name="csrf-token"]')?.getAttribute('content'),
@@ -35,46 +37,28 @@ const api = {
             // === HELPER: Smart Error Extractor ===
             const getErrorMsg = (res) => {
                 if (!res) return null;
-                // Check 'messages' (Result<T> standard)
                 if (res.messages && res.messages.length > 0) return res.messages[0];
-                // Check 'errors' (ASP.NET Validation standard)
                 if (res.errors && Array.isArray(res.errors) && res.errors.length > 0) return res.errors[0];
-                // Check 'errors' object (FluentValidation dictionary)
                 if (res.errors && typeof res.errors === 'object' && !Array.isArray(res.errors)) {
                     const firstKey = Object.keys(res.errors)[0];
                     return res.errors[firstKey];
                 }
-                // Check 'message' (General exception)
                 if (res.message) return res.message;
                 return null;
             };
 
-            // 3. Handle HTTP Errors (400, 404, 500)
+            // 3. Handle Hard HTTP Errors (400, 404, 500)
             if (!response.ok) {
                 console.error("API Error:", response.status, result);
-
                 let errorMsg = getErrorMsg(result) || `System Error (${response.status})`;
-
+                
+                // We keep global toasts for catastrophic HTTP failures
                 if (typeof toastr !== 'undefined') toastr.error(errorMsg);
                 return result || { succeeded: false, messages: [errorMsg] };
             }
 
-            // 4. Handle Success Logic (200 OK)
-            if (result && typeof result.succeeded !== 'undefined') {
-                if (!result.succeeded) {
-                    // Business Logic Failure (e.g. "Domain validation failed")
-                    let failMsg = getErrorMsg(result) || "Operation failed";
-                    if (typeof toastr !== 'undefined') toastr.error(failMsg);
-                } else {
-                    // SUCCESS: Show Toast for Non-GET requests
-                    if (method !== 'GET' && typeof toastr !== 'undefined') {
-                        // Use backend message OR generic fallback
-                        const successMsg = getErrorMsg(result) || "Saved successfully.";
-                        toastr.success(successMsg);
-                    }
-                }
-            }
-
+            // 4. Return to Caller (REMOVED GLOBAL TOASTR.SUCCESS)
+            // We now rely on the calling function (e.g. orderApp.save) to display success/warning toasts.
             return result;
 
         } catch (error) {

@@ -128,6 +128,57 @@
     </div>
 </div>
 
+<div class="modal fade" id="viewerModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content bg-light">
+            <div class="modal-header bg-dark text-white py-2">
+                <h5 class="modal-title fw-bold"><i class="fa-solid fa-file-lines me-2"></i>Document Viewer</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-0">
+                <div class="bg-white p-4 m-3 shadow-sm border" style="min-height: 500px;">
+                    <div class="d-flex justify-content-between align-items-start mb-4 border-bottom pb-3">
+                        <div>
+                            <h3 class="fw-bold text-dark mb-0">SALES ORDER</h3>
+                            <h5 class="text-primary font-monospace" id="docOrderNo">SO-0000</h5>
+                        </div>
+                        <div class="text-end">
+                            <span id="docStatusBadge" class="badge bg-secondary fs-6 mb-2">Status</span>
+                            <div class="text-muted fs-13"><strong>Date:</strong> <span id="docDate"></span></div>
+                            <div class="text-muted fs-13"><strong>Rep:</strong> <span id="docRep"></span></div>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <h6 class="fw-bold text-muted mb-1 fs-12 text-uppercase">Customer Information</h6>
+                        <div class="fs-14 fw-bold text-dark" id="docCustomer"></div>
+                        <div class="fs-13 text-muted mt-2"><strong>Notes:</strong> <span id="docNotes">-</span></div>
+                    </div>
+
+                    <table class="table table-sm table-bordered align-middle fs-13">
+                        <thead class="table-light text-secondary text-center">
+                            <tr>
+                                <th class="text-start">Description</th>
+                                <th>Qty</th>
+                                <th class="text-end">Unit Price</th>
+                                <th class="text-end">Disc.</th>
+                                <th class="text-end">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody id="docItemsBody"></tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="4" class="text-end fw-bold">GRAND TOTAL</td>
+                                <td class="text-end fw-bold text-primary fs-6" id="docTotal">0.00</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <script src="~/js/sales/sales-orders.js" asp-append-version="true"></script>
 }

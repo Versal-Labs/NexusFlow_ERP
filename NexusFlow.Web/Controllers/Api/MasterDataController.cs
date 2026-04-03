@@ -64,5 +64,12 @@ namespace NexusFlow.Web.Controllers.Api
             var result = await _mediator.Send(command);
             return result.Succeeded ? Ok(result) : BadRequest(result);
         }
+
+        [HttpGet("variants/search")]
+        public async Task<IActionResult> SearchVariants([FromQuery] string? query, [FromQuery] int? productType)
+        {
+            var data = await _mediator.Send(new SearchVariantsQuery(query, productType));
+            return Ok(data);
+        }
     }
 }

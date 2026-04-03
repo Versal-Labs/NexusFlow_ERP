@@ -11,5 +11,9 @@ namespace NexusFlow.Web.Controllers
 
         public IActionResult GRN() => View();
         public IActionResult SupplierBills() => View();
+        public IActionResult DebitNotes()
+        {
+            return View();
+        }
     }
 }

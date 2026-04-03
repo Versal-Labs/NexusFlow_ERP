@@ -1,0 +1,177 @@
+﻿@{
+    ViewData["Title"] = "Bank Reconciliation";
+}
+
+@section Styles {
+    <style>
+        .recon-sticky-footer { position: fixed; bottom: 0; left: 250px; right: 0; z-index: 1030; background: #fff; border-top: 2px solid #dee2e6; padding: 15px 30px; box-shadow: 0 -4px 10px rgba(0,0,0,0.05); transition: left 0.3s; }
+        body.sb-sidenav-toggled .recon-sticky-footer { left: 60px; }
+        .split-board-container { height: calc(100vh - 350px); overflow-y: auto; }
+        .recon-row.selected { background-color: rgba(25, 135, 84, 0.1) !important; }
+    </style>
+}
+
+<div class="container-fluid py-3 mb-5 pb-5">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h4 class="mb-0 text-dark fw-bold"><i class="fa-solid fa-scale-balanced text-primary me-2"></i>Bank Reconciliation</h4>
+            <p class="text-muted mb-0 fs-14">Match ERP ledger entries to your physical bank statements.</p>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm mb-4" id="setupCard">
+        <div class="card-header bg-dark text-white fw-bold"><i class="fa-solid fa-sliders me-2"></i>Step 1: Statement Details</div>
+        <div class="card-body">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label fw-bold mb-1">Bank Account</label>
+                    <select class="form-select select2" id="BankAccountId" onchange="reconApp.onAccountSelect()"></select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-bold mb-1">Statement Date</label>
+                    <input type="date" class="form-control" id="StatementDate">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-bold mb-1 text-muted">Beginning Balance</label>
+                    <div class="input-group">
+                        <span class="input-group-text">$</span>
+                        <input type="text" class="form-control fw-bold bg-light" id="BeginningBalance" value="0.00" readonly>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold mb-1 text-primary">Ending Balance <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                        <span class="input-group-text">$</span>
+                        <input type="number" class="form-control fw-bold font-monospace" id="EndingBalance" step="0.01" value="0.00" onclick="this.select()">
+                    </div>
+                </div>
+                <div class="col-md-2 text-end">
+                    <button class="btn btn-primary fw-bold w-100" id="btnStart" onclick="reconApp.startReconciliation()">Start Matching <i class="fa-solid fa-arrow-right ms-1"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="splitBoardCard" class="d-none">
+        <div class="d-flex justify-content-between mb-2">
+            <h5 class="fw-bold text-dark"><i class="fa-solid fa-check-double me-2"></i>Step 2: Match Transactions</h5>
+            <div>
+                <button class="btn btn-sm btn-outline-danger me-2" onclick="reconApp.openAdjustment('FEE')"><i class="fa-solid fa-minus-circle me-1"></i> Add Bank Fee</button>
+                <button class="btn btn-sm btn-outline-success" onclick="reconApp.openAdjustment('INTEREST')"><i class="fa-solid fa-plus-circle me-1"></i> Add Interest</button>
+            </div>
+        </div>
+
+        <div class="row g-3">
+            <div class="col-md-6">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-header bg-danger bg-opacity-10 text-danger fw-bold border-bottom-0">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span>Money Out (Payments, Fees)</span>
+                            <span class="font-monospace fs-5" id="lblTotalMoneyOut">0.00</span>
+                        </div>
+                    </div>
+                    <div class="card-body p-0 split-board-container">
+                        <table class="table table-sm table-hover align-middle mb-0 fs-13" id="tableMoneyOut">
+                            <thead class="table-light sticky-top shadow-sm">
+                                <tr>
+                                    <th class="text-center" style="width: 40px;"><input type="checkbox" class="form-check-input" onchange="reconApp.toggleAll('OUT', this)"></th>
+                                    <th>Date</th>
+                                    <th>Ref No</th>
+                                    <th class="text-end pe-3">Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody id="bodyMoneyOut"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-header bg-success bg-opacity-10 text-success fw-bold border-bottom-0">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span>Money In (Deposits, Interest)</span>
+                            <span class="font-monospace fs-5" id="lblTotalMoneyIn">0.00</span>
+                        </div>
+                    </div>
+                    <div class="card-body p-0 split-board-container">
+                        <table class="table table-sm table-hover align-middle mb-0 fs-13" id="tableMoneyIn">
+                            <thead class="table-light sticky-top shadow-sm">
+                                <tr>
+                                    <th class="text-center" style="width: 40px;"><input type="checkbox" class="form-check-input" onchange="reconApp.toggleAll('IN', this)"></th>
+                                    <th>Date</th>
+                                    <th>Ref No</th>
+                                    <th class="text-end pe-3">Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody id="bodyMoneyIn"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="recon-sticky-footer d-none" id="reconFooter">
+    <div class="row align-items-center">
+        <div class="col-md-8">
+            <div class="d-flex justify-content-around fw-bold text-muted fs-14">
+                <div>Begin Balance: <br><span class="text-dark font-monospace fs-5" id="calcBegin">0.00</span></div>
+                <div class="fs-4">-</div>
+                <div>Payments: <br><span class="text-danger font-monospace fs-5" id="calcOut">0.00</span></div>
+                <div class="fs-4">+</div>
+                <div>Deposits: <br><span class="text-success font-monospace fs-5" id="calcIn">0.00</span></div>
+                <div class="fs-4">=</div>
+                <div>Cleared Balance: <br><span class="text-primary font-monospace fs-5" id="calcCleared">0.00</span></div>
+            </div>
+        </div>
+        <div class="col-md-4 text-end border-start">
+            <div class="d-flex justify-content-end align-items-center">
+                <div class="me-4 text-end">
+                    <span class="text-muted fw-bold d-block fs-12 text-uppercase">Difference</span>
+                    <span class="font-monospace fs-3 fw-bold text-danger" id="calcDiff">0.00</span>
+                </div>
+                <button class="btn btn-success btn-lg px-4 fw-bold shadow-sm" id="btnFinalize" disabled onclick="reconApp.finalizeReconciliation()">
+                    <i class="fa-solid fa-lock me-2"></i> Finalize
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="adjModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-dark text-white">
+                <h5 class="modal-title fw-bold" id="adjTitle">Bank Adjustment</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4 bg-light">
+                <form id="adjForm">
+                    <input type="hidden" id="AdjType">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Date <span class="text-danger">*</span></label>
+                        <input type="date" class="form-control shadow-sm" id="AdjDate" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Amount <span class="text-danger">*</span></label>
+                        <input type="number" class="form-control font-monospace shadow-sm" id="AdjAmount" step="0.01" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Reference / Note</label>
+                        <input type="text" class="form-control shadow-sm" id="AdjNote" placeholder="e.g. Monthly Account Fee">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer bg-white">
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary btn-sm fw-bold shadow-sm" onclick="reconApp.postAdjustment()">Post & Auto-Clear</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/finance/bank-reconciliation.js" asp-append-version="true"></script>
+}

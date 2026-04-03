@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NexusFlow.AppCore.Constants;
 using NexusFlow.AppCore.Features.Purchasing.Commands;
+using NexusFlow.AppCore.Features.Purchasing.DebitNotes.Commands;
+using NexusFlow.AppCore.Features.Purchasing.DebitNotes.Queries;
 using NexusFlow.AppCore.Features.Purchasing.PurchaseOrders.Commands;
 using NexusFlow.AppCore.Features.Purchasing.PurchaseOrders.Queries;
 using NexusFlow.AppCore.Features.Purchasing.Queries;
@@ -92,6 +94,37 @@ namespace NexusFlow.Web.Controllers.Api
         {
             var result = await _mediator.Send(new GetUnbilledGrnsQuery { SupplierId = supplierId });
             return Ok(result);
+        }
+
+        [HttpGet("suppliers/{supplierId}/unpaid-bills")]
+        public async Task<IActionResult> GetUnpaidSupplierBills(int supplierId)
+        {
+            var result = await _mediator.Send(new GetUnpaidSupplierBillsQuery { SupplierId = supplierId });
+            return Ok(result);
+        }
+
+        // ==========================================
+        // 4. Purchase Returns
+        // ==========================================
+
+        [HttpGet("debit-notes")]
+        public async Task<IActionResult> GetDebitNotes([FromQuery] int? supplierId, [FromQuery] DateTime? startDate, [FromQuery] DateTime? endDate)
+        {
+            return Ok(await _mediator.Send(new GetDebitNotesQuery { SupplierId = supplierId, StartDate = startDate, EndDate = endDate }));
+        }
+
+        [HttpGet("debit-notes/{id}")]
+        public async Task<IActionResult> GetDebitNoteById(int id)
+        {
+            var res = await _mediator.Send(new GetDebitNoteByIdQuery { Id = id });
+            return res.Succeeded ? Ok(res.Data) : NotFound();
+        }
+
+        [HttpPost("debit-notes")]
+        public async Task<IActionResult> CreateDebitNote([FromBody] CreateDebitNoteCommand command)
+        {
+            var res = await _mediator.Send(command);
+            return res.Succeeded ? Ok(res) : BadRequest(res);
         }
     }
 }

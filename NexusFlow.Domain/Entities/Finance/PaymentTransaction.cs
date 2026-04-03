@@ -1,4 +1,6 @@
 ﻿using NexusFlow.Domain.Common;
+using NexusFlow.Domain.Entities.Purchasing;
+using NexusFlow.Domain.Entities.Sales;
 using NexusFlow.Domain.Enums;
 using System;
 using System.Collections.Generic;
@@ -18,11 +20,14 @@ namespace NexusFlow.Domain.Entities.Finance
 
         public decimal Amount { get; set; }
         public string? Remarks { get; set; }
+        public bool IsVoided { get; set; } = false;
 
         // --- LINKING ---
         // Who is this transaction with?
         public int? CustomerId { get; set; }
+        public Customer? Customer { get; set; }
         public int? SupplierId { get; set; }
+        public Supplier? Supplier { get; set; }
         public string? RelatedDocumentNo { get; set; }
         public ICollection<PaymentAllocation> Allocations { get; set; } = new List<PaymentAllocation>();
     }

@@ -8,6 +8,7 @@ namespace NexusFlow.Domain.Enums
     {
         Unpaid = 0,
         Partial = 1,
-        Paid = 2
+        Paid = 2,
+        Voided = 3
     }
 }

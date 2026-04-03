@@ -173,8 +173,7 @@ namespace NexusFlow.IntegrationTests
                 Date = DateTime.UtcNow,
                 Type = NexusFlow.Domain.Enums.PaymentType.SupplierPayment,
                 Method = NexusFlow.Domain.Enums.PaymentMethod.BankTransfer,
-                Amount = 10000,
-                SupplierId = 1,
+                ReceiptAmount = 10000,
                 Remarks = "Settling PO-1"
             };
             var payResult = await SendAsync(payCmd);
@@ -187,7 +186,7 @@ namespace NexusFlow.IntegrationTests
                 Date = DateTime.UtcNow,
                 Type = NexusFlow.Domain.Enums.PaymentType.CustomerReceipt,
                 Method = NexusFlow.Domain.Enums.PaymentMethod.Cash,
-                Amount = 590,
+                ReceiptAmount = 590,
                 CustomerId = 1,
                 Remarks = "Payment for INV-1"
             };

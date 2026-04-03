@@ -12,16 +12,18 @@ namespace NexusFlow.AppCore.Features.Treasury.Commands
         public DateTime Date { get; set; }
         public PaymentType Type { get; set; }
         public PaymentMethod Method { get; set; }
-        public decimal Amount { get; set; }
-        public string Remarks { get; set; } = string.Empty;
-        public int AccountId { get; set; }
 
-        // One of these must be provided
+        public decimal ReceiptAmount { get; set; } // The actual physical money/cheque received
+        public int AccountId { get; set; } // Destination Bank/Cash
         public int? CustomerId { get; set; }
-        public int? SupplierId { get; set; }
-        public List<PaymentAllocationRequest> Allocations { get; set; } = new();
+        public string Remarks { get; set; } = string.Empty;
 
-        public string? RelatedDocumentNo { get; set; } // e.g. "INV-2024-001"
+        // CHEQUE SPECIFIC FIELDS
+        public string? ChequeNumber { get; set; }
+        public int? BankBranchId { get; set; }
+        public DateTime? ChequeDate { get; set; }
+
+        public List<PaymentAllocationRequest> Allocations { get; set; } = new();
     }
 
     public class PaymentAllocationRequest

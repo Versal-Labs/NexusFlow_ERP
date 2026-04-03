@@ -4,41 +4,59 @@
 
 @section Styles {
     <style>
-        .dataTables_filter {
-            text-align: left !important;
-        }
-
-            .dataTables_filter label {
-                width: 100%;
-                display: flex;
-                align-items: center;
-            }
-
-            .dataTables_filter input {
-                margin-left: 10px;
-                width: auto;
-                flex-grow: 1;
-                max-width: 300px;
-            }
-
-        .invoice-totals-box {
-            background-color: #f8f9fa;
-            border-radius: 8px;
-            padding: 15px;
-            border: 1px solid #e9ecef;
-        }
+        .dataTables_filter { text-align: left !important; }
+        .dataTables_filter label { width: 100%; display: flex; align-items: center; }
+        .dataTables_filter input { margin-left: 10px; width: auto; flex-grow: 1; max-width: 300px; }
+        .invoice-totals-box { background-color: #f8f9fa; border-radius: 8px; padding: 15px; border: 1px solid #e9ecef; }
+        
+        /* Fix for squished select dropdowns inside input groups */
+        .discount-type-select { width: 65px !important; flex-shrink: 0; padding-left: 5px; padding-right: 15px; text-align: center; }
     </style>
 }
 
-<div class="container-fluid">
+<div class="container-fluid py-3">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <div>
-            <h4 class="mb-0">Sales Invoices</h4>
-            <small class="text-muted">Manage customer billings and recognize revenue.</small>
+            <h4 class="mb-0 text-dark fw-bold"><i class="fa-solid fa-file-invoice-dollar text-success me-2"></i>Sales Invoices</h4>
+            <p class="text-muted mb-0 fs-14">Manage customer billings, recognize revenue, and process RMAs.</p>
         </div>
-        <button class="btn btn-primary btn-sm shadow-sm" onclick="invoiceApp.openCreateModal()">
-            <i class="fa-solid fa-file-invoice me-1"></i> Create Invoice
+        <button class="btn btn-primary shadow-sm btn-sm px-3" onclick="window.invoiceApp.openCreateModal()">
+            <i class="fa-solid fa-plus me-1"></i> Create Invoice
         </button>
+    </div>
+
+    <div class="card border-0 shadow-sm mb-3 bg-white">
+        <div class="card-body py-2 px-3">
+            <div class="row g-2 align-items-center fs-13">
+                <div class="col-md-3">
+                    <label class="form-label mb-0 fw-bold text-muted">Customer</label>
+                    <select class="form-select form-select-sm" id="filterCustomer"></select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label mb-0 fw-bold text-muted">Status</label>
+                    <select class="form-select form-select-sm" id="filterStatus">
+                        <option value="">All Statuses</option>
+                        <option value="Open">Open (Unpaid)</option>
+                        <option value="Partial">Partially Paid</option>
+                        <option value="Paid">Paid in Full</option>
+                        <option value="Overdue">Overdue</option>
+                        <option value="Voided">Voided</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label mb-0 fw-bold text-muted">Date Range</label>
+                    <div class="input-group input-group-sm">
+                        <input type="date" class="form-control" id="filterStartDate">
+                        <span class="input-group-text">to</span>
+                        <input type="date" class="form-control" id="filterEndDate">
+                    </div>
+                </div>
+                <div class="col-md-3 text-end mt-4">
+                    <button class="btn btn-sm btn-outline-secondary me-1" onclick="window.invoiceApp.resetFilters()"><i class="fa-solid fa-eraser"></i> Clear</button>
+                    <button class="btn btn-sm btn-primary px-3" onclick="window.invoiceApp.reloadGrid()"><i class="fa-solid fa-filter"></i> Apply</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="card shadow-sm border-0">
@@ -90,11 +108,11 @@
                         </div>
                         <div class="col-md-2">
                             <label class="form-label fw-bold mb-1">Invoice Date <span class="text-danger">*</span></label>
-                            <input type="date" class="form-control form-control-sm" id="Date" required>
+                            <input type="date" class="form-control form-control-sm calc-trigger" id="Date" required>
                         </div>
                         <div class="col-md-2">
                             <label class="form-label fw-bold mb-1">Due Date <span class="text-danger">*</span></label>
-                            <input type="date" class="form-control form-control-sm" id="DueDate" required>
+                            <input type="date" class="form-control form-control-sm calc-trigger" id="DueDate" required>
                         </div>
                     </div>
 
@@ -136,19 +154,25 @@
                         <div class="col-md-5">
                             <div class="invoice-totals-box shadow-sm">
                                 <div class="d-flex justify-content-between mb-2 align-items-center">
-                                    <span class="fw-bold text-muted">Sub Total:</span>
+                                    <span class="fw-bold text-muted">Sub Total (Gross):</span>
                                     <span class="font-monospace fs-6" id="lblSubTotal">0.00</span>
                                 </div>
                                 <div class="d-flex justify-content-between mb-2 align-items-center">
                                     <span class="fw-bold text-muted">Global Discount:</span>
                                     <div class="input-group input-group-sm w-50">
-                                        <input type="number" class="form-control text-end calc-trigger" id="GlobalDiscountVal" value="0" min="0" step="0.01">
-                                        <select class="form-select text-center calc-trigger" id="GlobalDiscountType" style="max-width: 60px;">
+                                        <input type="number" class="form-control text-end calc-trigger" id="GlobalDiscountVal" value="0" min="0" step="0.01" onclick="this.select()">
+                                        <select class="form-select discount-type-select calc-trigger" id="GlobalDiscountType">
                                             <option value="$">$</option>
                                             <option value="%">%</option>
                                         </select>
                                     </div>
                                 </div>
+                                
+                                <div class="d-flex justify-content-between mb-2 align-items-center text-success" id="discountRow" style="display: none;">
+                                    <span class="fw-bold">Total Discount Saved:</span>
+                                    <span class="font-monospace fw-bold" id="lblTotalDiscount">- 0.00</span>
+                                </div>
+
                                 <div class="d-flex justify-content-between mb-2 align-items-center" id="vatRow">
                                     <span class="fw-bold text-muted">VAT (18% Est):</span>
                                     <span class="font-monospace text-danger" id="lblTax">+ 0.00</span>
@@ -193,12 +217,12 @@
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <h6 class="fw-bold mb-0 text-dark">Original Invoice: <span id="lblRmaInvoiceNo" class="font-monospace text-primary"></span></h6>
                         </div>
-                        <p class="mb-0 fs-12 text-dark">Processing a return will permanently reverse the associated Revenue, restore inventory to the selected warehouse, and execute a negative commission clawback on the Sales Rep.</p>
+                        <p class="mb-0 fs-12 text-dark">Processing a return will permanently reverse Revenue, restore inventory, and execute commission clawbacks.</p>
                     </div>
 
                     <div class="row g-3 mb-3">
                         <div class="col-md-6">
-                            <label class="form-label fw-bold mb-1">Return To Warehouse (Quarantine) <span class="text-danger">*</span></label>
+                            <label class="form-label fw-bold mb-1">Return To Warehouse <span class="text-danger">*</span></label>
                             <select class="form-select form-select-sm" id="RmaWarehouseId" required></select>
                         </div>
                         <div class="col-md-6">
@@ -224,8 +248,7 @@
                                     <th class="text-center" style="width: 20%">Return Qty</th>
                                 </tr>
                             </thead>
-                            <tbody id="rmaBody">
-                            </tbody>
+                            <tbody id="rmaBody"></tbody>
                         </table>
                     </div>
                 </form>
@@ -235,6 +258,88 @@
                 <button type="button" class="btn btn-danger btn-sm px-4 shadow-sm fw-bold" onclick="invoiceApp.submitReturn()">
                     <i class="fa-solid fa-triangle-exclamation me-2"></i> Execute RMA
                 </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="viewerModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content bg-light">
+            <div class="modal-header bg-dark text-white py-2 d-flex justify-content-between align-items-center">
+                <h5 class="modal-title fw-bold mb-0"><i class="fa-solid fa-magnifying-glass-chart me-2"></i>Invoice Details</h5>
+                <div>
+                    <button class="btn btn-sm btn-light text-dark me-1" id="btnModalPrint" title="Export PDF"><i class="fa-solid fa-print"></i></button>
+                    <button class="btn btn-sm btn-primary me-1" id="btnModalReceive" title="Receive Payment"><i class="fa-solid fa-hand-holding-dollar"></i> Receive Payment</button>
+                    <button type="button" class="btn-close btn-close-white ms-2" data-bs-dismiss="modal"></button>
+                </div>
+            </div>
+            
+            <div class="modal-body p-0">
+                <div class="bg-white p-5 m-3 shadow-sm border" style="min-height: 600px; position: relative;">
+                    <div id="voidStamp" class="d-none" style="position: absolute; top: 30%; left: 25%; font-size: 8rem; color: rgba(220, 53, 69, 0.15); font-weight: 900; transform: rotate(-30deg); border: 10px solid rgba(220, 53, 69, 0.15); padding: 10px; pointer-events: none;">VOIDED</div>
+                    <div class="row border-bottom pb-4 mb-4">
+                        <div class="col-6">
+                            <h2 class="fw-bold text-dark mb-0">INVOICE</h2>
+                            <h5 class="text-muted font-monospace" id="docInvoiceNo">INV-0000</h5>
+                        </div>
+                        <div class="col-6 text-end">
+                            <h3 class="fw-bold text-danger mb-0" id="docBalanceDueLarge">$0.00</h3>
+                            <div class="text-muted fs-13 text-uppercase">Balance Due</div>
+                        </div>
+                    </div>
+                    <div class="row mb-4">
+                        <div class="col-6">
+                            <h6 class="fw-bold text-muted mb-1 fs-12 text-uppercase">Bill To:</h6>
+                            <div class="fs-15 fw-bold text-dark" id="docCustomer"></div>
+                        </div>
+                        <div class="col-6 text-end fs-13">
+                            <div><strong>Invoice Date:</strong> <span id="docDate"></span></div>
+                            <div><strong>Due Date:</strong> <span id="docDueDate" class="fw-bold"></span></div>
+                        </div>
+                    </div>
+                    <table class="table table-sm table-bordered align-middle fs-13 mb-4">
+                        <thead class="table-light text-secondary text-center">
+                            <tr>
+                                <th class="text-start">Description</th>
+                                <th style="width: 10%">Qty</th>
+                                <th class="text-end" style="width: 15%">Rate</th>
+                                <th class="text-end" style="width: 15%">Discount</th> <th class="text-end" style="width: 15%">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody id="docItemsBody"></tbody>
+                    </table>
+                    
+                    <div class="row">
+                        <div class="col-7">
+                            <h6 class="fw-bold text-muted mb-1 fs-12 text-uppercase">Notes</h6>
+                            <div class="text-dark fs-13 bg-light p-2 rounded" style="min-height: 60px;" id="docNotes">-</div>
+                        </div>
+                        <div class="col-5">
+                            <table class="table table-sm table-borderless text-end fs-14">
+                                <tr><td class="text-muted">Subtotal (Gross)</td><td class="fw-bold" id="docSubtotal">0.00</td></tr>
+                                
+                                <tr id="docDiscountRow" style="display:none;">
+                                    <td class="text-success">Total Discount</td>
+                                    <td class="fw-bold text-success" id="docTotalDiscount">-0.00</td>
+                                </tr>
+                                
+                                <tr><td class="text-muted border-bottom">Tax</td><td class="fw-bold border-bottom" id="docTax">0.00</td></tr>
+                                <tr><td class="text-dark fw-bold fs-5">Total</td><td class="text-dark fw-bold fs-5" id="docTotal">0.00</td></tr>
+                                <tr><td class="text-success pb-3 border-bottom">Amount Paid</td><td class="text-success pb-3 border-bottom" id="docPaid">-0.00</td></tr>
+                                <tr><td class="text-danger fw-bold fs-5">Balance Due</td><td class="text-danger fw-bold fs-5" id="docBalanceDue">0.00</td></tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-footer bg-light border-top shadow-sm py-2 d-flex justify-content-between">
+                <div>
+                    <button type="button" class="btn btn-outline-dark btn-sm me-1" id="btnModalDuplicate"><i class="fa-solid fa-copy me-1"></i> Duplicate</button>
+                    <button type="button" class="btn btn-outline-danger btn-sm" id="btnModalVoid"><i class="fa-solid fa-ban me-1"></i> Void</button>
+                </div>
+                <button type="button" class="btn btn-secondary btn-sm px-4" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
     </div>

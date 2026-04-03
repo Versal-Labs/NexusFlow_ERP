@@ -23,6 +23,7 @@ namespace NexusFlow.AppCore.DTOs.Sales
         public DateTime? ValidTo { get; set; }
 
         public decimal CommissionPercentage { get; set; }
+        public bool IsPercentage { get; set; } = true;
         public bool IsActive { get; set; }
     }
 }
