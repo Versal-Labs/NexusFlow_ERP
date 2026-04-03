@@ -45,5 +45,12 @@ namespace NexusFlow.Web.Controllers.Api
             var result = await _mediator.Send(command);
             return result.Succeeded ? Ok(result) : BadRequest(result);
         }
+
+        [HttpGet("search")]
+        public async Task<IActionResult> SearchSuppliers([FromQuery] string? query)
+        {
+            var data = await _mediator.Send(new SearchSuppliersQuery(query));
+            return Ok(data);
+        }
     }
 }

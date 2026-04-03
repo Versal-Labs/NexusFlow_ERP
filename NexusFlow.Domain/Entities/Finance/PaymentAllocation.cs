@@ -1,4 +1,5 @@
 ﻿using NexusFlow.Domain.Common;
+using NexusFlow.Domain.Entities.Purchasing;
 using NexusFlow.Domain.Entities.Sales;
 using System;
 using System.Collections.Generic;
@@ -13,8 +14,12 @@ namespace NexusFlow.Domain.Entities.Finance
         public int PaymentTransactionId { get; set; }
         public PaymentTransaction PaymentTransaction { get; set; } = null!;
 
-        public int SalesInvoiceId { get; set; }
-        public SalesInvoice SalesInvoice { get; set; } = null!;
+        public int? SalesInvoiceId { get; set; }
+        public SalesInvoice? SalesInvoice { get; set; }
+
+        // Used for Supplier Payments & Endorsements
+        public int? SupplierBillId { get; set; }
+        public SupplierBill? SupplierBill { get; set; }
 
         public decimal AmountAllocated { get; set; }
     }

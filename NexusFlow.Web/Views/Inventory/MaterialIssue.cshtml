@@ -1,0 +1,98 @@
+﻿@{
+    ViewData["Title"] = "Material Issue Notes";
+}
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="mb-0 text-dark fw-bold"><i class="fa-solid fa-boxes-stacked text-primary me-2"></i>Material Issues</h4>
+            <p class="text-muted mb-0 fs-14">Issue exact Raw Material quantities to Garment Subcontractors based on BOM.</p>
+        </div>
+        <button class="btn btn-primary shadow-sm btn-lg px-4 rounded-pill" onclick="window.issueApp.openCreateModal()">
+            <i class="fa-solid fa-plus me-2"></i>New Issue Note
+        </button>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+            <table id="issuesGrid" class="table table-hover table-striped align-middle mb-0 w-100 fs-13">
+                <thead class="table-light text-secondary">
+                    <tr>
+                        <th class="ps-4">Issue No #</th>
+                        <th>Issue Date</th>
+                        <th>Source Warehouse</th>
+                        <th class="text-end">Total Capitalized Cost</th>
+                        <th class="text-center pe-4">Status</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="issueModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content bg-light">
+            <div class="modal-header bg-white border-bottom shadow-sm py-2">
+                <h5 class="modal-title fw-bold text-dark"><i class="fa-solid fa-truck-fast text-primary me-2"></i>Dispatch Materials</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            
+            <div class="modal-body p-4">
+                <form id="issueForm">
+                    <div class="card border-0 shadow-sm mb-3">
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold fs-13 mb-1">Issue Date <span class="text-danger">*</span></label>
+                                    <input type="date" class="form-control" id="issueDate" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold fs-13 mb-1">Reference / Job Order #</label>
+                                    <input type="text" class="form-control" id="referenceNumber">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold fs-13 mb-1">Subcontractor (Garment Factory) <span class="text-danger">*</span></label>
+                                    <select class="form-select select2" id="subcontractorId" required style="width:100%;"></select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold fs-13 mb-1">Source Warehouse <span class="text-danger">*</span></label>
+                                    <select class="form-select" id="warehouseId" required></select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info py-2 mb-3 border-0 shadow-sm fs-13">
+                        <i class="fa-solid fa-circle-info me-2"></i> The system will automatically calculate Raw Material requirements via the BOM and deduct via FIFO.
+                    </div>
+
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-md-8">
+                                    <label class="form-label fw-bold fs-13 mb-1 text-primary">Target Finished Good <span class="text-danger">*</span></label>
+                                    <select class="form-select select2" id="finishedGoodId" required style="width:100%;"></select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label fw-bold fs-13 mb-1 text-primary">Target Quantity <span class="text-danger">*</span></label>
+                                    <input type="number" class="form-control fw-bold text-end" id="targetQuantity" min="1" required>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer bg-white border-top shadow-sm py-2">
+                <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary px-4 fw-bold" id="btnSaveIssue">
+                    <i class="fa-solid fa-paper-plane me-2"></i> Execute Issue
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/inventory/material-issue.js" asp-append-version="true"></script>
+}

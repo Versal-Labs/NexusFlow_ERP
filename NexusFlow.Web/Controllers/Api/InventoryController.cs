@@ -9,6 +9,7 @@ using NexusFlow.AppCore.Features.Inventory.Commands;
 using NexusFlow.AppCore.Features.Inventory.Queries;
 using NexusFlow.AppCore.Features.Inventory.StockTakes.Commands;
 using NexusFlow.AppCore.Features.Inventory.StockTakes.Queries;
+using NexusFlow.AppCore.Features.MasterData.Products.Commands;
 using NexusFlow.Web.Filters;
 
 namespace NexusFlow.Web.Controllers.Api
@@ -90,6 +91,67 @@ namespace NexusFlow.Web.Controllers.Api
         {
             var res = await _mediator.Send(new ApproveStockTakeCommand { StockTakeId = id, ApproverName = User.Identity?.Name ?? "System" });
             return res.Succeeded ? Ok(res) : BadRequest(res);
+        }
+
+        [HttpPost("issue-materials")]
+        public async Task<IActionResult> IssueMaterials([FromBody] CreateMaterialIssueCommand command)
+        {
+            var result = await _mediator.Send(command);
+            if (result.Succeeded)
+            {
+                return Ok(result);
+            }
+
+            return BadRequest(result);
+        }
+
+        [HttpPost("production-receipts")]
+        public async Task<IActionResult> ReceiveProduction([FromBody] ReceiveProductionCommand command)
+        {
+            var result = await _mediator.Send(command);
+            if (result.Succeeded) return Ok(result);
+            return BadRequest(result);
+        }
+
+        [HttpGet("production-receipts")]
+        public async Task<IActionResult> GetProductionReceipts()
+        {
+            var result = await _mediator.Send(new GetProductionReceiptsQuery());
+            // Wrapping in an anonymous object 'new { data = ... }' exactly matches the DataTables expectation
+            if (result.Succeeded) return Ok(new { data = result.Data });
+            return BadRequest(result);
+        }
+
+        [HttpGet("issues")]
+        public async Task<IActionResult> GetMaterialIssues()
+        {
+            var result = await _mediator.Send(new GetMaterialIssuesQuery());
+            if (result.Succeeded) return Ok(new { data = result.Data });
+            return BadRequest(result);
+        }
+
+
+        //Bulk import
+
+        [HttpPost("preview-import")]
+        [AllowAnonymous]
+        public async Task<IActionResult> PreviewImport(IFormFile file, CancellationToken cancellationToken)
+        {
+            if (file == null || file.Length == 0) return BadRequest("No file uploaded.");
+            if (!file.FileName.EndsWith(".csv", StringComparison.OrdinalIgnoreCase)) return BadRequest("Only CSV supported.");
+
+            using var stream = file.OpenReadStream();
+            var result = await _mediator.Send(new PreviewLegacyProductsCommand(stream), cancellationToken);
+
+            return result.Succeeded ? Ok(result) : BadRequest(result);
+        }
+
+        [HttpPost("execute-import")]
+        [AllowAnonymous]
+        public async Task<IActionResult> ExecuteImport([FromBody] ExecuteLegacyProductsCommand command, CancellationToken cancellationToken)
+        {
+            var result = await _mediator.Send(command, cancellationToken);
+            return result.Succeeded ? Ok(result) : BadRequest(result);
         }
     }
 }

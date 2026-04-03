@@ -9,6 +9,6 @@ namespace NexusFlow.Domain.Enums
         Draft = 1,       // Rep is still building the order
         Submitted = 2,   // Sent to Back-Office for review
         Converted = 3,   // Back-Office approved and converted to SalesInvoice
-        Cancelled = 4
+        Cancelled = 4,
     }
 }

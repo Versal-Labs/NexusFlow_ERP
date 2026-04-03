@@ -49,9 +49,16 @@
                             <label class="form-label fw-bold mb-1">Rule Name / Description <span class="text-danger">*</span></label>
                             <input type="text" class="form-control form-control-sm" id="Name" placeholder="e.g., John's 10% Denim Override" required>
                         </div>
-                        <div class="col-md-4">
-                            <label class="form-label fw-bold mb-1">Commission Rate (%) <span class="text-danger">*</span></label>
-                            <input type="number" class="form-control form-control-sm fw-bold text-success" id="CommissionPercentage" step="0.01" min="0" max="100" required>
+                        <div class="col-md-5">
+                            <label class="form-label fw-bold mb-1">Calculation Type <span class="text-danger">*</span></label>
+                            <select class="form-select form-select-sm" id="IsPercentage" required>
+                                <option value="true">Percentage of Line Value (%)</option>
+                                <option value="false">Fixed Value per Quantity ($)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold mb-1">Rate / Value <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control form-control-sm fw-bold text-success" id="CommissionPercentage" step="0.01" min="0" required>
                         </div>
                     </div>
 

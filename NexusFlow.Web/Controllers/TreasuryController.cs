@@ -13,5 +13,6 @@ namespace NexusFlow.Web.Controllers
         }
 
         public IActionResult Receipts() => View();
+        public IActionResult Payments() => View();
     }
 }

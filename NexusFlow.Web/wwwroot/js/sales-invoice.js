@@ -3,63 +3,98 @@
     _modal: null,
     _rmaModal: null,
     _products: [],
+    _currentDocId: null,
 
     init: function () {
         try {
             var modalEl = document.getElementById('invoiceModal');
-            if (modalEl) {
-                this._modal = new bootstrap.Modal(modalEl, { backdrop: 'static', keyboard: false });
-            }
+            if (modalEl) this._modal = new bootstrap.Modal(modalEl, { backdrop: 'static', keyboard: false });
 
-            // Set default dates
             document.getElementById('Date').valueAsDate = new Date();
             var dueDate = new Date();
-            dueDate.setDate(dueDate.getDate() + 30); // Default Net 30
+            dueDate.setDate(dueDate.getDate() + 30);
             document.getElementById('DueDate').valueAsDate = dueDate;
 
+            this._initFilters();
             this._initGrid();
             this._loadMasterData();
 
-            // Global event listener for calculations
-            $('#linesBody').on('input', '.calc-trigger', () => this.calculateTotals());
+            // FIX 1: Attach calc-trigger to the entire FORM to catch VAT checkbox and Global Discount changes
+            $('#invoiceForm').on('input change', '.calc-trigger', () => this.calculateTotals());
+            
+            // Viewer Modal Buttons
+            $('#btnModalVoid').click(() => this.voidInvoice(this._currentDocId));
+            $('#btnModalReceive').click(() => {
+                window.location.href = `/Treasury/Receipts?invoiceId=${this._currentDocId}`;
+            });
+            $('#btnModalPrint').click(() => {
+                window.open(`/api/sales/invoices/${this._currentDocId}/pdf`, '_blank');
+            });
+            
         } catch (e) {
             console.error("[InvoiceApp] Init Error:", e);
         }
     },
 
+    _initFilters: function () {
+        api.get('/api/customer').then(res => {
+            const customers = res.data || res || [];
+            let $cust = $('#filterCustomer').empty().append('<option value="">All Customers</option>');
+            customers.forEach(c => $cust.append($('<option></option>').val(c.id).text(c.name)));
+        });
+        $('#filterCustomer, #filterStatus, #filterStartDate, #filterEndDate').on('change', () => this.reloadGrid());
+    },
+
+    resetFilters: function() {
+        $('#filterCustomer').val(''); $('#filterStatus').val('');
+        $('#filterStartDate').val(''); $('#filterEndDate').val('');
+        this.reloadGrid();
+    },
+
+    reloadGrid: function() { this._table.ajax.reload(); },
+
     _initGrid: function () {
         this._table = $('#invoiceGrid').DataTable({
             ajax: {
                 url: '/api/sales/invoices',
+                data: function (d) {
+                    d.customerId = $('#filterCustomer').val();
+                    d.status = $('#filterStatus').val();
+                    d.startDate = $('#filterStartDate').val();
+                    d.endDate = $('#filterEndDate').val();
+                },
                 dataSrc: function (json) { return json.data || json || []; },
                 headers: { "Authorization": "Bearer " + localStorage.getItem("jwtToken") }
             },
             columns: [
                 { data: 'invoiceNumber', className: 'fw-bold text-primary font-monospace' },
-                { data: 'invoiceDate', render: d => new Date(d).toLocaleDateString() },
-                { data: 'dueDate', render: d => new Date(d).toLocaleDateString() },
+                { data: 'invoiceDate', render: d => d ? new Date(d).toLocaleDateString() : '-' },
+                { data: 'dueDate', render: d => d ? new Date(d).toLocaleDateString() : '-' },
                 { data: 'customerName', className: 'fw-bold' },
+                { data: 'grandTotal', className: 'text-end fw-bold text-dark', render: d => parseFloat(d).toLocaleString(undefined, { minimumFractionDigits: 2 }) },
                 {
-                    data: 'grandTotal',
-                    className: 'text-end fw-bold text-dark',
-                    render: d => parseFloat(d).toLocaleString(undefined, { minimumFractionDigits: 2 })
-                },
-                {
-                    data: 'isPosted',
+                    data: null, 
                     className: 'text-center',
-                    render: d => d ? '<span class="badge bg-success">Posted</span>' : '<span class="badge bg-secondary">Draft</span>'
+                    render: function(data, type, row) {
+                        if (!row.isPosted) return '<span class="badge bg-secondary">Draft</span>';
+                        if (row.paymentStatus === 'Unpaid') return '<span class="badge bg-warning text-dark">Open</span>';
+                        if (row.paymentStatus === 'Partial') return '<span class="badge bg-info text-dark">Partial</span>';
+                        if (row.paymentStatus === 'Paid') return '<span class="badge bg-success">Paid</span>';
+                        if (row.paymentStatus === 'Voided') return '<span class="badge bg-danger">Voided</span>';
+                        return '<span class="badge bg-success">Posted</span>'; 
+                    }
                 },
                 {
                     data: null,
                     className: 'text-end pe-3',
                     orderable: false,
                     render: function (data, type, row) {
-                        if (row.isPosted) {
-                            return `<button class="btn btn-sm btn-outline-danger shadow-sm" title="Process Return" onclick="invoiceApp.openReturnModal(${row.id}, '${row.invoiceNumber}')">
-                                        <i class="fa-solid fa-arrow-rotate-left"></i> RMA
-                                    </button>`;
+                        let btns = `<button class="btn btn-sm btn-outline-dark shadow-sm me-1" onclick="window.invoiceApp.viewDocument(${row.id})" title="View Document"><i class="fa-solid fa-eye"></i></button>`;
+                        
+                        if (row.isPosted && row.paymentStatus !== 'Voided') {
+                            btns += `<button class="btn btn-sm btn-outline-danger shadow-sm" title="Process Return" onclick="invoiceApp.openReturnModal(${row.id}, '${row.invoiceNumber}')"><i class="fa-solid fa-arrow-rotate-left"></i> RMA</button>`;
                         }
-                        return ''; 
+                        return btns; 
                     }
                 }
             ],
@@ -69,16 +104,16 @@
         });
     },
 
+    // ==========================================
+    // CREATE INVOICE LOGIC
+    // ==========================================
     _loadMasterData: async function () {
         try {
             const [custRes, whRes, prodRes, empRes] = await Promise.all([
-                api.get('/api/customer'),
-                api.get('/api/masterdata/warehouses'), 
-                api.get('/api/product'),
-                api.get('/api/employee')
+                api.get('/api/customer'), api.get('/api/masterdata/warehouses'), 
+                api.get('/api/product'), api.get('/api/employee')
             ]);
 
-            // Safe extraction guarantees UI won't break if one API fails
             const customers = Array.isArray(custRes) ? custRes : (custRes?.data || []);
             const warehouses = Array.isArray(whRes) ? whRes : (whRes?.data || []);
             this._products = Array.isArray(prodRes) ? prodRes : (prodRes?.data || []);
@@ -86,14 +121,12 @@
 
             this._populateSelect('CustomerId', customers, 'id', 'name');
             this._populateSelect('WarehouseId', warehouses, 'id', 'name');
+            this._populateSelect('RmaWarehouseId', warehouses, 'id', 'name');
 
             if (employees && employees.length > 0) {
-                var salesReps = employees
-                    .filter(e => e.isSalesRep === true)
-                    .map(e => ({
-                        id: e.id,
-                        displayName: `[${e.employeeCode}] ${e.firstName} ${e.lastName}`
-                    }));
+                var salesReps = employees.filter(e => e.isSalesRep === true).map(e => ({
+                    id: e.id, displayName: `[${e.employeeCode}] ${e.firstName} ${e.lastName}`
+                }));
                 this._populateSelect('SalesRepId', salesReps, 'id', 'displayName');
             }
 
@@ -101,7 +134,6 @@
                 $('#CustomerId').select2('destroy');
             }
             $('#CustomerId').select2({ dropdownParent: $('#invoiceModal') });
-
         } catch (e) {
             console.error("[InvoiceApp] Lookup Error:", e);
         }
@@ -110,9 +142,7 @@
     _populateSelect: function (id, data, valProp, textProp) {
         let $el = $(`#${id}`);
         $el.empty().append('<option value="">-- Select --</option>');
-        if (data) {
-            data.forEach(i => $el.append($('<option></option>').val(i[valProp]).text(i[textProp])));
-        }
+        if (data) data.forEach(i => $el.append($('<option></option>').val(i[valProp]).text(i[textProp])));
     },
 
     openCreateModal: function () {
@@ -139,6 +169,7 @@
             }
         });
 
+        // FIX 2: Added onclick="this.select()" and fixed the discount select class layout
         const html = `
             <tr id="row_${id}" data-absolute-discount="0" data-stock="999999">
                 <td>
@@ -147,14 +178,14 @@
                     </select>
                 </td>
                 <td>
-                    <input type="number" class="form-control form-control-sm text-center line-qty calc-trigger" value="1" min="1">
+                    <input type="number" class="form-control form-control-sm text-center line-qty calc-trigger" value="1" min="1" onclick="this.select()">
                     <div class="stock-label text-center text-muted mt-1 fw-bold" style="font-size: 10px;">-</div>
                 </td>
-                <td><input type="number" class="form-control form-control-sm text-end line-price calc-trigger" value="0.00" step="0.01"></td>
+                <td><input type="number" class="form-control form-control-sm text-end line-price calc-trigger" value="0.00" step="0.01" onclick="this.select()"></td>
                 <td>
                     <div class="input-group input-group-sm">
-                        <input type="number" class="form-control text-end line-discount-val calc-trigger" value="0" min="0" step="0.01">
-                        <select class="form-select text-center line-discount-type calc-trigger" style="max-width: 55px;">
+                        <input type="number" class="form-control text-end line-discount-val calc-trigger" value="0" min="0" step="0.01" onclick="this.select()">
+                        <select class="form-select discount-type-select calc-trigger">
                             <option value="$">$</option>
                             <option value="%">%</option>
                         </select>
@@ -173,7 +204,7 @@
     onWarehouseChange: function() {
         var linesCount = $('#linesBody tr').length;
         if (linesCount > 0) {
-            toastr.info("Warehouse changed. All line items have been reset to re-evaluate available stock.");
+            toastr.info("Warehouse changed. Line items reset to re-evaluate physical stock.");
             $('#linesBody').empty();
             this.addLine();
             this.calculateTotals();
@@ -221,7 +252,6 @@
                         if (qtyInput.val() == 0) qtyInput.val(1);
                     }
                 } catch(e) {
-                    console.error("Stock fetch error", e);
                     stockLabel.html('<span class="text-danger">Error</span>');
                 }
             }
@@ -229,12 +259,12 @@
             row.attr('data-stock', 999999);
             stockLabel.html('-');
         }
-
         this.calculateTotals();
     },
 
     calculateTotals: function () {
-        let subTotal = 0;
+        let grossSubTotal = 0;
+        let totalLineDiscounts = 0;
 
         $('#linesBody tr').each(function () {
             const qtyInput = $(this).find('.line-qty');
@@ -249,75 +279,77 @@
 
             const price = parseFloat($(this).find('.line-price').val()) || 0;
             const discVal = parseFloat($(this).find('.line-discount-val').val()) || 0;
-            const discType = $(this).find('.line-discount-type').val();
+            const discType = $(this).find('.discount-type-select').val();
 
             let lineGross = qty * price;
             let lineDiscAmount = discType === '%' ? (lineGross * (discVal / 100)) : discVal;
-
             if (lineDiscAmount > lineGross) lineDiscAmount = lineGross;
-
+            
             let lineNet = lineGross - lineDiscAmount;
 
             $(this).find('.line-total').text(lineNet.toFixed(2));
             $(this).attr('data-absolute-discount', lineDiscAmount); 
-
-            subTotal += lineNet;
+            
+            grossSubTotal += lineGross;
+            totalLineDiscounts += lineDiscAmount;
         });
 
+        let netSubTotal = grossSubTotal - totalLineDiscounts;
+
+        // Global Discount Calculation
         const globDiscVal = parseFloat($('#GlobalDiscountVal').val()) || 0;
         const globDiscType = $('#GlobalDiscountType').val();
-        let globDiscAmount = globDiscType === '%' ? (subTotal * (globDiscVal / 100)) : globDiscVal;
-        if (globDiscAmount > subTotal) globDiscAmount = subTotal;
+        let globDiscAmount = globDiscType === '%' ? (netSubTotal * (globDiscVal / 100)) : globDiscVal;
+        if (globDiscAmount > netSubTotal) globDiscAmount = netSubTotal;
 
-        let taxableAmount = subTotal - globDiscAmount;
+        // Final Computations
+        let totalDiscount = totalLineDiscounts + globDiscAmount;
+        let taxableAmount = netSubTotal - globDiscAmount;
         let applyVat = $('#ApplyVat').is(':checked');
-
         let tax = applyVat ? (taxableAmount * 0.18) : 0; 
         let grandTotal = taxableAmount + tax;
 
-        if (applyVat) $('#vatRow').show();
-        else $('#vatRow').hide();
+        // UI Updates
+        if (applyVat) $('#vatRow').show(); else $('#vatRow').hide();
+        
+        if (totalDiscount > 0) {
+            $('#discountRow').show();
+            $('#lblTotalDiscount').text('- ' + totalDiscount.toLocaleString(undefined, { minimumFractionDigits: 2 }));
+        } else {
+            $('#discountRow').hide();
+        }
 
-        $('#lblSubTotal').text(subTotal.toLocaleString(undefined, { minimumFractionDigits: 2 }));
+        $('#lblSubTotal').text(grossSubTotal.toLocaleString(undefined, { minimumFractionDigits: 2 }));
         $('#lblTax').text('+ ' + tax.toLocaleString(undefined, { minimumFractionDigits: 2 }));
         $('#lblGrandTotal').text(grandTotal.toLocaleString(undefined, { minimumFractionDigits: 2 }));
-
         $('#invoiceForm').data('calculated-global-discount', globDiscAmount);
     },
 
     saveInvoice: async function (isDraft) {
         var form = document.getElementById('invoiceForm');
         
+        // FIX 3: Strict Due Date Validation
+        var dateVal = $('#Date').val();
+        var dueDateVal = $('#DueDate').val();
+        if (new Date(dueDateVal) < new Date(dateVal)) {
+            toastr.warning("The Due Date cannot be earlier than the Invoice Date.");
+            $('#DueDate').focus();
+            return;
+        }
+
         var customerId = parseInt($('#CustomerId').val()) || 0;
         var warehouseId = parseInt($('#WarehouseId').val()) || 0;
         var salesRepId = parseInt($('#SalesRepId').val()) || null;
 
-        if (customerId === 0) {
-            toastr.warning("Please select a Customer.");
-            $('#CustomerId').select2('open'); 
-            return;
-        }
-        if (warehouseId === 0) {
-            toastr.warning("Please select a Dispatch Warehouse.");
-            $('#WarehouseId').focus();
-            return;
-        }
-
-        if (!form.checkValidity()) {
-            form.reportValidity();
-            return;
-        }
+        if (customerId === 0) { toastr.warning("Select Customer."); $('#CustomerId').select2('open'); return; }
+        if (warehouseId === 0) { toastr.warning("Select Dispatch Warehouse."); $('#WarehouseId').focus(); return; }
+        if (!form.checkValidity()) { form.reportValidity(); return; }
 
         const payload = {
             Invoice: {
-                Date: $('#Date').val(),
-                DueDate: $('#DueDate').val(),
-                CustomerId: customerId,
-                WarehouseId: warehouseId,
-                SalesRepId: salesRepId,
-                Notes: $('#Notes').val(),
-                ApplyVat: $('#ApplyVat').is(':checked'),
-                IsDraft: isDraft,
+                Date: dateVal, DueDate: dueDateVal, CustomerId: customerId,
+                WarehouseId: warehouseId, SalesRepId: salesRepId, Notes: $('#Notes').val(),
+                ApplyVat: $('#ApplyVat').is(':checked'), IsDraft: isDraft,
                 GlobalDiscountAmount: parseFloat($('#invoiceForm').data('calculated-global-discount')) || 0,
                 Items: []
             }
@@ -335,10 +367,7 @@
             }
         });
 
-        if (payload.Invoice.Items.length === 0) {
-            toastr.warning("Please add at least one item to the invoice.");
-            return;
-        }
+        if (payload.Invoice.Items.length === 0) { toastr.warning("Add at least one item."); return; }
 
         var $btn = $(event.currentTarget);
         var originalText = $btn.html();
@@ -346,21 +375,17 @@
 
         try {
             const res = await api.post('/api/sales/invoices', payload);
-
             if (res && res.succeeded) {
                 toastr.success(res.message || "Invoice saved successfully.");
                 this._modal.hide();
                 this._table.ajax.reload(null, false);
             }
-        } catch (e) {
-            console.error("Save Invoice Error:", e);
-        } finally {
-            $btn.prop('disabled', false).html(originalText);
-        }
-    }, // <-- Note the critical comma here!
+        } catch (e) { console.error(e); } 
+        finally { $btn.prop('disabled', false).html(originalText); }
+    },
 
     // ==========================================
-    // RMA / RETURN LOGIC
+    // RMA LOGIC
     // ==========================================
     openReturnModal: async function (invoiceId, invoiceNumber) {
         try {
@@ -370,8 +395,6 @@
             $('#RmaInvoiceId').val(invoice.id);
             $('#lblRmaInvoiceNo').text(invoiceNumber);
             $('#RmaReason').val('');
-            
-            $('#RmaWarehouseId').html($('#WarehouseId').html());
             $('#RmaWarehouseId').val('');
 
             let $tbody = $('#rmaBody');
@@ -382,30 +405,22 @@
                     <tr data-vid="${item.productVariantId}">
                         <td class="fw-bold text-dark">${item.description}</td>
                         <td class="text-center font-monospace">${item.invoicedQuantity}</td>
-                        <td class="text-end text-muted">${item.unitPrice.toFixed(2)}</td>
-                        <td>
-                            <input type="number" class="form-control form-control-sm text-center border-danger fw-bold rma-qty" value="0" min="0" max="${item.invoicedQuantity}" step="0.01">
-                        </td>
+                        <td class="text-end text-muted">${(item.unitPrice || 0).toFixed(2)}</td>
+                        <td><input type="number" class="form-control form-control-sm text-center border-danger fw-bold rma-qty" value="0" min="0" max="${item.invoicedQuantity}" step="0.01" onclick="this.select()"></td>
                     </tr>
                 `);
             });
 
-            if (!this._rmaModal) {
-                this._rmaModal = new bootstrap.Modal(document.getElementById('rmaModal'));
-            }
+            if (!this._rmaModal) this._rmaModal = new bootstrap.Modal(document.getElementById('rmaModal'));
             this._rmaModal.show();
         } catch (e) {
-            console.error("Failed to load invoice details for RMA", e);
             toastr.error("Could not load invoice details.");
         }
     },
 
     submitReturn: async function () {
         var form = document.getElementById('rmaForm');
-        if (!form.checkValidity()) {
-            form.reportValidity();
-            return;
-        }
+        if (!form.checkValidity()) { form.reportValidity(); return; }
 
         let returnedItems = {};
         let totalReturnQty = 0;
@@ -413,16 +428,10 @@
         $('#rmaBody tr').each(function () {
             let vid = parseInt($(this).data('vid'));
             let qty = parseFloat($(this).find('.rma-qty').val()) || 0;
-            if (qty > 0) {
-                returnedItems[vid] = qty;
-                totalReturnQty += qty;
-            }
+            if (qty > 0) { returnedItems[vid] = qty; totalReturnQty += qty; }
         });
 
-        if (totalReturnQty <= 0) {
-            toastr.warning("You must enter a return quantity greater than 0 for at least one item.");
-            return;
-        }
+        if (totalReturnQty <= 0) { toastr.warning("Enter return quantity greater than 0."); return; }
 
         const payload = {
             Payload: {
@@ -442,11 +451,122 @@
             if (res && res.succeeded) {
                 toastr.success(res.message || "RMA processed successfully.");
                 this._rmaModal.hide();
+                this._table.ajax.reload(null, false);
+            }
+        } catch (e) { console.error(e); } 
+        finally { $btn.prop('disabled', false).html(originalText); }
+    },
+
+    // ==========================================
+    // DOCUMENT VIEWER & ACTIONS
+    // ==========================================
+    viewDocument: async function(id) {
+        try {
+            this._currentDocId = id;
+            const doc = await api.get(`/api/sales/invoices/${id}`); 
+            
+            $('#docInvoiceNo').text(doc.invoiceNumber);
+            $('#docDate').text(new Date(doc.invoiceDate).toLocaleDateString());
+            $('#docDueDate').text(new Date(doc.dueDate).toLocaleDateString());
+            $('#docCustomer').text(doc.customerName);
+            $('#docNotes').text(doc.notes || '-');
+            
+            let total = parseFloat(doc.grandTotal || 0);
+            let paid = parseFloat(doc.amountPaid || 0);
+            let balance = total - paid;
+            let totalDiscount = parseFloat(doc.totalDiscount || 0); // Extract Global Discount
+
+            // Subtotal
+            $('#docSubtotal').text(parseFloat(doc.subTotal || 0).toLocaleString(undefined, { minimumFractionDigits: 2 }));
+            
+            // Handle Global/Total Discount Display
+            if (totalDiscount > 0) {
+                $('#docDiscountRow').show();
+                $('#docTotalDiscount').text('- ' + totalDiscount.toLocaleString(undefined, { minimumFractionDigits: 2 }));
+            } else {
+                $('#docDiscountRow').hide();
+            }
+
+            $('#docTax').text(parseFloat(doc.totalTax || 0).toLocaleString(undefined, { minimumFractionDigits: 2 }));
+            $('#docTotal').text(total.toLocaleString(undefined, { minimumFractionDigits: 2 }));
+            $('#docPaid').text(`-${paid.toLocaleString(undefined, { minimumFractionDigits: 2 })}`);
+            
+            const balString = balance.toLocaleString(undefined, { minimumFractionDigits: 2 });
+            $('#docBalanceDue').text(balString);
+            $('#docBalanceDueLarge').text(`$${balString}`);
+
+            const isVoided = doc.paymentStatus === 'Voided';
+            if (isVoided) {
+                $('#voidStamp').removeClass('d-none');
+                $('#btnModalVoid, #btnModalReceive').hide();
+            } else {
+                $('#voidStamp').addClass('d-none');
+                if (paid > 0) $('#btnModalVoid').hide(); // Cannot void paid invoices
+                else $('#btnModalVoid').show();
+                
+                if (doc.paymentStatus === 'Paid') $('#btnModalReceive').hide();
+                else $('#btnModalReceive').show();
+            }
+
+            let tbody = '';
+            if (doc.items) {
+                doc.items.forEach(i => {
+                    // Dynamic Percentage Reverse-Calculation
+                    let qty = parseFloat(i.invoicedQuantity || 0);
+                    let price = parseFloat(i.unitPrice || 0);
+                    let lineGross = qty * price;
+                    let disc = parseFloat(i.discount || 0);
+                    
+                    let discHtml = '-';
+                    if (disc > 0) {
+                        let pct = (disc / lineGross) * 100;
+                        discHtml = `
+                            <div class="text-danger fw-bold">-$${disc.toFixed(2)}</div>
+                            <small class="text-muted">(${pct.toFixed(1)}%)</small>
+                        `;
+                    }
+
+                    tbody += `
+                        <tr>
+                            <td class="fw-bold">${i.description}</td>
+                            <td class="text-center">${qty}</td>
+                            <td class="text-end">${price.toFixed(2)}</td>
+                            <td class="text-end">${discHtml}</td>
+                            <td class="text-end fw-bold">${(i.lineTotal || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                        </tr>`;
+                });
+            }
+            $('#docItemsBody').html(tbody);
+            new bootstrap.Modal(document.getElementById('viewerModal')).show();
+        } catch (e) {
+            toastr.error("Failed to load invoice document.");
+            console.error(e);
+        }
+    },
+
+    voidInvoice: async function(id) {
+        const result = await Swal.fire({
+            title: 'Void this Invoice?',
+            text: "This will reverse the General Ledger entries and put the stock back. This action cannot be undone.",
+            icon: 'error',
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Yes, Void Invoice',
+            reverseButtons: true
+        });
+
+        if (!result.isConfirmed) return;
+
+        try {
+            const res = await api.post(`/api/sales/invoices/${id}/void`);
+            if (res && res.succeeded) {
+                toastr.success("Invoice voided successfully.");
+                $('#viewerModal').modal('hide');
+                this.reloadGrid();
             }
         } catch (e) {
-            console.error("RMA Submission Error:", e);
-        } finally {
-            $btn.prop('disabled', false).html(originalText);
+            toastr.error(e.responseJSON?.messages?.[0] || "Failed to void invoice.");
         }
     }
 };

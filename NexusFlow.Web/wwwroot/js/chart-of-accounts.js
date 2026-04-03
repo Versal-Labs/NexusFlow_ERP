@@ -127,7 +127,7 @@
         };
 
         // HIT THE POST ENDPOINT (Assuming it remains /api/finance/accounts)
-        const response = await api.post('/api/finance/accounts', payload);
+        const response = await api.post('/api/finance/account', payload);
 
         if (response && response.succeeded) {
             _drawer.hide();

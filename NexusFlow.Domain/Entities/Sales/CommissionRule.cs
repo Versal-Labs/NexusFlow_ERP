@@ -40,6 +40,7 @@ namespace NexusFlow.Domain.Entities.Sales
 
         // The actual mathematical rate (e.g., 5.00 for 5%)
         public decimal CommissionPercentage { get; set; }
+        public bool IsPercentage { get; set; } = true;
 
         public bool IsActive { get; set; } = true;
     }

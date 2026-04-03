@@ -26,5 +26,17 @@ namespace NexusFlow.Domain.Entities.Inventory
 
         // ARCHITECTURAL ADDITION: Critical for FIFO Query Optimization
         public bool IsExhausted { get; set; } = false;
+
+        // ========================================================
+        // ARCHITECTURAL ADDITION: Computed Properties
+        // ========================================================
+
+        // This is your 'costval' / 'totcost'. 
+        // NotMapped ensures it doesn't create a useless column in SQL.
+        [NotMapped]
+        public decimal CurrentTotalValue => RemainingQty * UnitCost;
+
+        [NotMapped]
+        public decimal InitialTotalValue => InitialQty * UnitCost;
     }
 }

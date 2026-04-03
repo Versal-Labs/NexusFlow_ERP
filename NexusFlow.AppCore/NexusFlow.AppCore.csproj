@@ -7,6 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Features\Sales\Commissions\NewFolder\**" />
+    <EmbeddedResource Remove="Features\Sales\Commissions\NewFolder\**" />
+    <None Remove="Features\Sales\Commissions\NewFolder\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="AutoMapper" Version="16.1.1" />
     <PackageReference Include="CsvHelper" Version="33.1.0" />
     <PackageReference Include="Dapper" Version="2.1.72" />
@@ -26,7 +32,6 @@
 
   <ItemGroup>
     <Folder Include="Common\" />
-    <Folder Include="Features\Sales\Commissions\NewFolder\" />
   </ItemGroup>
 
 </Project>

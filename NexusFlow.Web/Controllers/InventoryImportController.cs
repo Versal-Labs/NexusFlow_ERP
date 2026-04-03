@@ -29,56 +29,23 @@ namespace NexusFlow.Web.Controllers
             return View();
         }
 
-        [HttpPost("UploadAndImport")]
-        public async Task<IActionResult> UploadAndImport(IFormFile file, CancellationToken cancellationToken)
+        [HttpPost("preview-import")]
+        public async Task<IActionResult> PreviewImport(IFormFile file, CancellationToken cancellationToken)
         {
-            // 1. Validate the file
-            if (file == null || file.Length == 0)
-            {
-                return BadRequest(new { success = false, message = "No file was uploaded or the file is empty." });
-            }
+            if (file == null || file.Length == 0) return BadRequest("No file uploaded.");
+            if (!file.FileName.EndsWith(".csv", StringComparison.OrdinalIgnoreCase)) return BadRequest("Only CSV supported.");
 
-            if (!file.FileName.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
-            {
-                return BadRequest(new { success = false, message = "Only CSV files are supported. If using Excel, save as .csv first." });
-            }
+            using var stream = file.OpenReadStream();
+            var result = await _mediator.Send(new PreviewLegacyProductsCommand(stream), cancellationToken);
 
-            try
-            {
-                // 2. Open a read stream from the uploaded file
-                using var stream = file.OpenReadStream();
+            return result.Succeeded ? Ok(result) : BadRequest(result);
+        }
 
-                // 3. Create the MediatR Command
-                var command = new ImportLegacyProductsCommand(stream);
-
-                // 4. Send to your Handler
-                var result = await _mediator.Send(command, cancellationToken);
-
-                // 5. Check your custom Result<T> wrapper
-                if (result.Succeeded)
-                {
-                    return Ok(new
-                    {
-                        success = true,
-                        message = string.IsNullOrWhiteSpace(result.Message) ? "Import successful" : result.Message,
-                        importedCount = result.Data
-                    });
-                }
-                else
-                {
-                    // Combine the errors array into a single string for the frontend, or fallback to Message
-                    string errorMessage = result.Errors != null && result.Errors.Length > 0
-                        ? string.Join(" | ", result.Errors)
-                        : result.Message ?? "Import failed due to an unknown error.";
-
-                    return BadRequest(new { success = false, message = errorMessage });
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error occurred while importing legacy products.");
-                return StatusCode(500, new { success = false, message = "An internal server error occurred during import. Check logs for details." });
-            }
+        [HttpPost("execute-import")]
+        public async Task<IActionResult> ExecuteImport([FromBody] ExecuteLegacyProductsCommand command, CancellationToken cancellationToken)
+        {
+            var result = await _mediator.Send(command, cancellationToken);
+            return result.Succeeded ? Ok(result) : BadRequest(result);
         }
     }
 }

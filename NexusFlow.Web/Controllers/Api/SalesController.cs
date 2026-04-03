@@ -8,6 +8,7 @@ using NexusFlow.AppCore.Constants;
 using NexusFlow.AppCore.DTOs.Sales;
 using NexusFlow.AppCore.Features.Sales.Commands;
 using NexusFlow.AppCore.Features.Sales.CreditNotes.Commands;
+using NexusFlow.AppCore.Features.Sales.CreditNotes.Queries;
 using NexusFlow.AppCore.Features.Sales.Orders.Commands;
 using NexusFlow.AppCore.Features.Sales.Orders.Queries;
 using NexusFlow.AppCore.Features.Sales.Queries;
@@ -47,7 +48,23 @@ namespace NexusFlow.Web.Controllers.Api
         public async Task<IActionResult> GetInvoiceById(int id)
         {
             var result = await _mediator.Send(new GetInvoiceByIdQuery { InvoiceId = id });
-            return result.Succeeded ? Ok(result) : NotFound(result.Message);
+
+            // ARCHITECT FIX: Unwrap the Data so JS can bind it directly
+            if (result.Succeeded) return Ok(result.Data);
+            return NotFound(result.Message);
+        }
+
+        [HttpGet("credit-notes")]
+        public async Task<IActionResult> GetCreditNotes([FromQuery] int? customerId, [FromQuery] DateTime? startDate, [FromQuery] DateTime? endDate)
+        {
+            return Ok(await _mediator.Send(new GetCreditNotesQuery { CustomerId = customerId, StartDate = startDate, EndDate = endDate }));
+        }
+
+        [HttpGet("credit-notes/{id}")]
+        public async Task<IActionResult> GetCreditNoteById(int id)
+        {
+            var res = await _mediator.Send(new GetCreditNoteByIdQuery { Id = id });
+            return res.Succeeded ? Ok(res.Data) : NotFound();
         }
 
         [HttpPost("credit-notes")]
@@ -104,6 +121,31 @@ namespace NexusFlow.Web.Controllers.Api
 
             // Returns a true PDF file stream to the browser
             return File(result.Data, "application/pdf", $"Order_{id}_{DateTime.UtcNow:yyyyMMdd}.pdf");
+        }
+
+        [HttpGet("orders/{id}/document")]
+        public async Task<IActionResult> GetDocument(int id)
+        {
+            var result = await _mediator.Send(new GetSalesOrderDocumentQuery(id));
+            if (result.Succeeded) return Ok(result.Data); // Unwrapped for JS consumption
+            return BadRequest(result.Message);
+        }
+
+        [HttpPost("orders/{id}/change-status")]
+        public async Task<IActionResult> ChangeStatus(int id, [FromBody] int newStatus)
+        {
+            var command = new ChangeSalesOrderStatusCommand(id, (NexusFlow.Domain.Enums.SalesOrderStatus)newStatus);
+            var result = await _mediator.Send(command);
+            if (result.Succeeded) return Ok(result);
+            return BadRequest(result);
+        }
+
+        [HttpPost("invoices/{id}/void")]
+        public async Task<IActionResult> VoidInvoice(int id)
+        {
+            var result = await _mediator.Send(new VoidInvoiceCommand(id));
+            if (result.Succeeded) return Ok(result);
+            return BadRequest(result.Message);
         }
     }
 }

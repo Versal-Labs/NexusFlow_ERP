@@ -1,0 +1,46 @@
+﻿@{
+    ViewData["Title"] = "Trial Balance";
+}
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="mb-0 text-dark fw-bold"><i class="fa-solid fa-scale-balanced text-primary me-2"></i>Trial Balance</h4>
+            <p class="text-muted mb-0 fs-14">Real-time General Ledger balance verification.</p>
+        </div>
+        <button class="btn btn-outline-secondary btn-sm px-3" onclick="window.tbApp.loadData()">
+            <i class="fa-solid fa-rotate-right me-1"></i> Refresh
+        </button>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0 w-100 fs-13" id="tbTable">
+                    <thead class="table-dark">
+                        <tr>
+                            <th class="ps-4">Account Code</th>
+                            <th>Account Name</th>
+                            <th>Type</th>
+                            <th class="text-end">Debit</th>
+                            <th class="text-end pe-4">Credit</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbBody">
+                    </tbody>
+                    <tfoot class="table-light fw-bold fs-6">
+                        <tr>
+                            <td colspan="3" class="text-end text-dark pe-4">GRAND TOTALS:</td>
+                            <td class="text-end text-primary" id="totDebit">0.00</td>
+                            <td class="text-end text-primary pe-4" id="totCredit">0.00</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/finance/trial-balance.js" asp-append-version="true"></script>
+}

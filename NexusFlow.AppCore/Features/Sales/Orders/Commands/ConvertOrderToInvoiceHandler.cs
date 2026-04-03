@@ -34,6 +34,7 @@ namespace NexusFlow.AppCore.Features.Sales.Orders.Commands
             _journalService = journalService;
             _sequenceService = sequenceService;
             _accountResolver = accountResolver;
+
         }
 
         public async Task<Result<int>> Handle(ConvertOrderToInvoiceCommand request, CancellationToken cancellationToken)
@@ -42,7 +43,7 @@ namespace NexusFlow.AppCore.Features.Sales.Orders.Commands
 
             try
             {
-                // 1. FETCH ORDER WITH DEEP GRAPH (To resolve Category Posting Groups)
+                // 1. FETCH ORDER WITH DEEP GRAPH
                 var order = await _context.SalesOrders
                     .Include(o => o.Customer)
                     .Include(o => o.Items)
@@ -55,24 +56,23 @@ namespace NexusFlow.AppCore.Features.Sales.Orders.Commands
                 if (order.Status != SalesOrderStatus.Submitted) return Result<int>.Failure($"Order cannot be converted. Current status is {order.Status}.");
 
                 string invoiceNo = await _sequenceService.GenerateNextNumberAsync("SalesInvoice", cancellationToken);
-                decimal vatRate = await _taxService.GetTaxRateAsync("VAT", DateTime.UtcNow); // Assuming standard VAT applies
+                decimal vatRate = await _taxService.GetTaxRateAsync("VAT", DateTime.UtcNow);
 
                 var invoice = new SalesInvoice
                 {
                     InvoiceNumber = invoiceNo,
                     InvoiceDate = DateTime.UtcNow,
-                    DueDate = DateTime.UtcNow.AddDays(30), // Configurable term
+                    DueDate = DateTime.UtcNow.AddDays(30),
                     CustomerId = order.CustomerId,
                     SalesRepId = order.SalesRepId,
                     Notes = $"Converted from Order {order.OrderNumber}. {order.Notes}",
-                    ApplyVat = true, // Configurable per customer
+                    ApplyVat = true,
                     IsPosted = true,
                     SubTotal = 0,
                     TotalTax = 0,
                     GrandTotal = 0
                 };
 
-                // GL Groupings for the Journal Entry
                 var revenueGroup = new Dictionary<int, decimal>();
                 var cogsGroup = new Dictionary<int, decimal>();
                 var inventoryAssetGroup = new Dictionary<int, decimal>();
@@ -101,19 +101,15 @@ namespace NexusFlow.AppCore.Features.Sales.Orders.Commands
                     if (!revenueGroup.ContainsKey(revAccountId)) revenueGroup[revAccountId] = 0;
                     revenueGroup[revAccountId] += item.LineTotal;
 
-                    // B. Consume Stock & Group COGS (If Physical Item)
+                    // B. Consume Stock & Group COGS
                     if (product.Type != ProductType.Service)
                     {
                         var stockResult = await _stockService.ConsumeStockAsync(
-                            item.ProductVariantId,
-                            request.WarehouseId,
-                            item.Quantity,
-                            invoiceNo,
-                            $"Sales Invoice {invoiceNo}");
+                            item.ProductVariantId, request.WarehouseId, item.Quantity, invoiceNo, $"Sales Invoice {invoiceNo}");
 
                         if (!stockResult.Succeeded) throw new InvalidOperationException($"Stock Error for {product.Name}: {stockResult.Message}");
 
-                        decimal actualCogs = stockResult.Data; // Exact FIFO Cost
+                        decimal actualCogs = stockResult.Data;
 
                         int cogsAcc = category.CogsAccountId ?? 0;
                         int invAcc = category.InventoryAccountId ?? 0;
@@ -141,40 +137,35 @@ namespace NexusFlow.AppCore.Features.Sales.Orders.Commands
                 {
                     _context.CommissionLedgers.Add(new CommissionLedger
                     {
-                        SalesRepId = order.SalesRepId,
-                        SalesInvoice = invoice, // EF Core resolves the ID upon save
+                        SalesRepId = order.SalesRepId, // Added .Value guard
+                        SalesInvoice = invoice,
                         CommissionAmount = totalCommission,
-                        Status = CommissionStatus.Unearned // Awaiting Customer Payment
+                        Status = CommissionStatus.Unearned
                     });
                 }
 
                 // 5. UPDATE ORDER STATUS
                 order.Status = SalesOrderStatus.Converted;
-                await _context.SaveChangesAsync(cancellationToken); // Save to generate InvoiceId
+                await _context.SaveChangesAsync(cancellationToken);
 
                 // 6. POST TO GENERAL LEDGER
-                if (order.Customer.DefaultReceivableAccountId == 0)
-                    throw new InvalidOperationException("Customer is missing an A/R Account mapping.");
+                if (order.Customer.DefaultReceivableAccountId == 0) throw new InvalidOperationException("Customer is missing an A/R Account mapping.");
 
                 var journalLines = new List<JournalLineRequest>
                 {
-                    // DEBIT: Accounts Receivable
                     new JournalLineRequest { AccountId = order.Customer.DefaultReceivableAccountId, Debit = invoice.GrandTotal, Credit = 0, Note = $"AR for Invoice {invoiceNo}" }
                 };
 
-                // CREDIT: Revenue Accounts
                 foreach (var rev in revenueGroup)
                     journalLines.Add(new JournalLineRequest { AccountId = rev.Key, Debit = 0, Credit = rev.Value, Note = $"Revenue - {invoiceNo}" });
 
-                // CREDIT: Tax Payable
                 if (invoice.TotalTax > 0)
                 {
-                    var taxConfig = await _context.SystemConfigs.FirstOrDefaultAsync(c => c.Key == "Account.Tax.VATPayable", cancellationToken);
-                    if (taxConfig == null) throw new InvalidOperationException("Global Tax Payable account is not configured.");
-                    journalLines.Add(new JournalLineRequest { AccountId = int.Parse(taxConfig.Value), Debit = 0, Credit = invoice.TotalTax, Note = $"VAT - {invoiceNo}" });
+                    var taxId = await _accountResolver.ResolveAccountIdAsync("Account.Tax.VATPayable", cancellationToken);
+                    if (taxId == null) throw new InvalidOperationException("Global Tax Payable account is not configured.");
+                    journalLines.Add(new JournalLineRequest { AccountId = taxId, Debit = 0, Credit = invoice.TotalTax, Note = $"VAT - {invoiceNo}" });
                 }
 
-                // DEBIT COGS / CREDIT INVENTORY
                 foreach (var cogs in cogsGroup)
                     journalLines.Add(new JournalLineRequest { AccountId = cogs.Key, Debit = cogs.Value, Credit = 0, Note = $"COGS - {invoiceNo}" });
 
@@ -203,13 +194,13 @@ namespace NexusFlow.AppCore.Features.Sales.Orders.Commands
         }
 
         // =========================================================================
-        // THE COMMISSION SPECIFICITY MATRIX ENGINE
+        // THE NEW TIER-1 COMMISSION ENGINE (PERCENTAGE & FLAT-RATE AWARE)
         // =========================================================================
-        private async Task<decimal> CalculateCommissionAsync(int salesRepId, IEnumerable<SalesOrderItem> items, CancellationToken cancellationToken)
+        private async Task<decimal> CalculateCommissionAsync(int? salesRepId, IEnumerable<SalesOrderItem> items, CancellationToken cancellationToken)
         {
-            var now = DateTime.UtcNow;
+            if (!salesRepId.HasValue) return 0;
 
-            // Fetch all currently active rules
+            var now = DateTime.UtcNow;
             var activeRules = await _context.CommissionRules
                 .AsNoTracking()
                 .Where(r => r.IsActive
@@ -224,29 +215,25 @@ namespace NexusFlow.AppCore.Features.Sales.Orders.Commands
             foreach (var item in items)
             {
                 int categoryId = item.ProductVariant.Product.CategoryId;
-                decimal percentageToApply = 0;
 
-                // PRIORITY 1: Specific Rep + Specific Category
                 var p1 = activeRules.FirstOrDefault(r => r.EmployeeId == salesRepId && r.RuleType == CommissionRuleType.CategoryBased && r.CategoryId == categoryId);
-
-                // PRIORITY 2: Specific Rep + Global Flat Rate
                 var p2 = activeRules.FirstOrDefault(r => r.EmployeeId == salesRepId && r.RuleType == CommissionRuleType.GlobalFlatRate);
-
-                // PRIORITY 3: All Reps + Specific Category
                 var p3 = activeRules.FirstOrDefault(r => r.EmployeeId == null && r.RuleType == CommissionRuleType.CategoryBased && r.CategoryId == categoryId);
-
-                // PRIORITY 4: All Reps + Global Flat Rate
                 var p4 = activeRules.FirstOrDefault(r => r.EmployeeId == null && r.RuleType == CommissionRuleType.GlobalFlatRate);
 
-                // Resolution
-                if (p1 != null) percentageToApply = p1.CommissionPercentage;
-                else if (p2 != null) percentageToApply = p2.CommissionPercentage;
-                else if (p3 != null) percentageToApply = p3.CommissionPercentage;
-                else if (p4 != null) percentageToApply = p4.CommissionPercentage;
+                var appliedRule = p1 ?? p2 ?? p3 ?? p4;
 
-                if (percentageToApply > 0)
+                if (appliedRule != null)
                 {
-                    totalCommission += item.LineTotal * (percentageToApply / 100m);
+                    // ENTERPRISE FIX: Enforcing IsPercentage logic here
+                    if (appliedRule.IsPercentage)
+                    {
+                        totalCommission += item.LineTotal * (appliedRule.CommissionPercentage / 100m);
+                    }
+                    else
+                    {
+                        totalCommission += item.Quantity * appliedRule.CommissionPercentage; // Flat Rate per Unit
+                    }
                 }
             }
 

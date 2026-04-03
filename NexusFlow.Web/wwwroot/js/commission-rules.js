@@ -28,9 +28,12 @@
                 },
                 { data: 'employeeName', className: 'fst-italic' },
                 { 
-                    data: 'commissionPercentage', 
+                    // ARCHITECT FIX: Changed from 'commissionPercentage' to null so we can evaluate the 'isPercentage' flag
+                    data: null, 
                     className: 'text-end fw-bold text-success',
-                    render: d => d.toFixed(2) + '%'
+                    render: row => row.isPercentage 
+                                   ? row.commissionPercentage.toFixed(2) + '%' 
+                                   : '$' + row.commissionPercentage.toFixed(2) + ' per Unit'
                 },
                 {
                     data: null,
@@ -63,9 +66,9 @@
     _loadLookups: async function() {
         try {
             const [catRes, empRes] = await Promise.all([
-            api.get('/api/category'),
-            api.get('/api/employee')
-        ]);
+                api.get('/api/category'),
+                api.get('/api/employee')
+            ]);
 
             const categories = Array.isArray(catRes) ? catRes : (catRes?.data || []);
             const employees = Array.isArray(empRes) ? empRes : (empRes?.data || []);
@@ -75,8 +78,8 @@
 
             let $emp = $('#EmployeeId');
             employees.filter(e => e.isSalesRep).forEach(e => {
-            $emp.append($('<option></option>').val(e.id).text(`[${e.employeeCode}] ${e.firstName} ${e.lastName}`));
-        });
+                $emp.append($('<option></option>').val(e.id).text(`[${e.employeeCode}] ${e.firstName} ${e.lastName}`));
+            });
         } catch (e) {
             console.error("Lookup Error:", e);
         }
@@ -97,6 +100,7 @@
         $('#commissionForm')[0].reset();
         $('#commissionForm').removeClass('was-validated');
         $('#Id').val(0);
+        $('#IsPercentage').val('true'); // Reset calculation type to percentage
         $('#modalTitle').html('<i class="fa-solid fa-plus text-primary me-2"></i>New Commission Rule');
         this.onRuleTypeChange();
         this._modal.show();
@@ -113,7 +117,11 @@
 
         $('#CategoryId').val(row.categoryId || '');
         $('#EmployeeId').val(row.employeeId || '');
+        
+        // Map the calculation type and value
+        $('#IsPercentage').val(row.isPercentage ? 'true' : 'false');
         $('#CommissionPercentage').val(row.commissionPercentage);
+        
         $('#IsActive').prop('checked', row.isActive);
 
         $('#ValidFrom').val(row.validFrom ? row.validFrom.split('T')[0] : '');
@@ -136,6 +144,7 @@
                 RuleType: parseInt($('#RuleType').val()),
                 CategoryId: parseInt($('#CategoryId').val()) || null,
                 EmployeeId: parseInt($('#EmployeeId').val()) || null,
+                IsPercentage: $('#IsPercentage').val() === 'true', // Added to payload
                 CommissionPercentage: parseFloat($('#CommissionPercentage').val()),
                 ValidFrom: $('#ValidFrom').val() || null,
                 ValidTo: $('#ValidTo').val() || null,
@@ -153,9 +162,12 @@
                 toastr.success("Commission Matrix updated.");
                 this._modal.hide();
                 this._table.ajax.reload(null, false);
+            } else if (res && res.messages) {
+                toastr.error(res.messages[0]);
             }
         } catch (e) {
             console.error(e);
+            toastr.error(e.responseJSON?.messages?.[0] || "Failed to save rule.");
         } finally {
             $btn.prop('disabled', false).html(ogText);
         }

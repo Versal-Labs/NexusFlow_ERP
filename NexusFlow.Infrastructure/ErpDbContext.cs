@@ -16,6 +16,7 @@ using NexusFlow.Infrastructure.Persistence;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using static Microsoft.Data.SqlClient.Internal.SqlClientEventSource;
 
 namespace NexusFlow.Infrastructure
 {
@@ -72,6 +73,10 @@ namespace NexusFlow.Infrastructure
         public DbSet<CreditNoteItem> CreditNoteItems { get; set; }
         public DbSet<StockTake> StockTakes { get; set; }
         public DbSet<StockTakeItem> StockTakeItems { get; set; }
+        public DbSet<ChequeRegister> ChequeRegisters { get; set; }
+        public DbSet<Bank> Banks { get; set; }
+        public DbSet<BankBranch> BankBranches { get; set; }
+        public DbSet<BankReconciliation> BankReconciliations { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

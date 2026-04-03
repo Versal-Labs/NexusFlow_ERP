@@ -24,18 +24,24 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpGet]
-        public async Task<IActionResult> Get()
+        public async Task<IActionResult> GetAll()
         {
             var result = await _mediator.Send(new GetBomsQuery());
-            return Ok(result);
+            return Ok(new { data = result.Data }); // DataTables format
+        }
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(int id)
+        {
+            var result = await _mediator.Send(new GetBomByIdQuery(id));
+            return result.Succeeded ? Ok(result) : BadRequest(result);
         }
 
         [HttpPost]
-        public async Task<IActionResult> Post([FromBody] BomDto payload)
+        public async Task<IActionResult> Save(SaveBomCommand command)
         {
-            var result = await _mediator.Send(new SaveBomCommand(payload));
-            if (result.Succeeded) return Ok(result);
-            return BadRequest(result);
+            var result = await _mediator.Send(command);
+            return result.Succeeded ? Ok(result) : BadRequest(result);
         }
     }
 }

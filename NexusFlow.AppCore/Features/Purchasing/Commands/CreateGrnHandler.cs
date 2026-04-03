@@ -17,13 +17,15 @@ namespace NexusFlow.AppCore.Features.Purchasing.Commands
         private readonly IStockService _stockService;
         private readonly IJournalService _journalService;
         private readonly INumberSequenceService _numSequenceService;
+        private readonly IFinancialAccountResolver _accountResolver;
 
-        public CreateGrnHandler(INumberSequenceService numSequenceService, IErpDbContext context, IStockService stockService, IJournalService journalService)
+        public CreateGrnHandler(IFinancialAccountResolver accountResolver, INumberSequenceService numSequenceService, IErpDbContext context, IStockService stockService, IJournalService journalService)
         {
             _context = context;
             _stockService = stockService;
             _journalService = journalService;
             _numSequenceService = numSequenceService;
+            _accountResolver = accountResolver;
         }
 
         public async Task<Result<int>> Handle(CreateGrnCommand command, CancellationToken cancellationToken)
@@ -135,15 +137,12 @@ namespace NexusFlow.AppCore.Features.Purchasing.Commands
                 _context.GRNs.Add(grn);
                 await _context.SaveChangesAsync(cancellationToken);
 
-                // 6. ENTERPRISE FINANCIAL POSTING (GRN Clearing Account)
-                // We do NOT hit AP here. We hit Unbilled Receipts (Clearing). The Supplier Bill hits AP.
-                var unbilledConfig = await _context.SystemConfigs
-                    .FirstOrDefaultAsync(c => c.Key == "Account.Purchasing.UnbilledReceipts", cancellationToken);
+                
 
-                if (unbilledConfig == null)
+                int grnClearingAccountId = await _accountResolver.ResolveAccountIdAsync("Account.Purchasing.UnbilledReceipts", cancellationToken);
+
+                if (grnClearingAccountId == null)
                     throw new Exception("Global 'Unbilled Receipts' (GRN Clearing) liability account is not configured in SystemConfigs.");
-
-                int grnClearingAccountId = int.Parse(unbilledConfig.Value);
 
                 var journalLines = new List<JournalLineRequest>
                 {
