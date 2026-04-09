@@ -1,0 +1,98 @@
+﻿@{
+    ViewData["Title"] = "Stock Adjustments";
+}
+
+<div class="container-fluid py-3 mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h4 class="mb-0 text-dark fw-bold"><i class="fa-solid fa-scale-unbalanced text-warning me-2"></i>Stock Adjustments</h4>
+            <p class="text-muted mb-0 fs-14">Record Shrinkage (losses) or Surplus (gains) and post directly to the General Ledger.</p>
+        </div>
+        <button class="btn btn-warning shadow-sm btn-sm px-3 fw-bold text-dark" onclick="adjApp.openCreateModal()">
+            <i class="fa-solid fa-plus me-1"></i> New Adjustment
+        </button>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-3">
+            <table id="adjustmentsGrid" class="table table-hover table-sm w-100 fs-13 align-middle mb-0">
+                <thead class="table-light text-secondary">
+                    <tr>
+                        <th class="ps-3">Adjustment Ref</th>
+                        <th>Date</th>
+                        <th>Warehouse</th>
+                        <th>Reason / Notes</th>
+                        <th class="text-center">Items Affected</th>
+                        <th class="text-end pe-3">Total Asset Impact</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="adjModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-dark text-white py-2">
+                <h5 class="modal-title fw-bold fs-6"><i class="fa-solid fa-sliders me-2"></i>Execute Stock Adjustment</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            
+            <div class="modal-body p-4 fs-13 bg-light">
+                <form id="adjForm">
+                    <div class="row g-3 mb-4 pb-3 border-bottom border-secondary">
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold mb-1">Adjustment Date <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control form-control-sm" id="AdjDate" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold mb-1">Target Warehouse <span class="text-danger">*</span></label>
+                            <select class="form-select form-select-sm" id="WarehouseId" required></select>
+                        </div>
+                        <div class="col-md-5">
+                            <label class="form-label fw-bold mb-1">Reason / GL Memo <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control form-control-sm" id="Reason" placeholder="e.g., Q3 Cycle Count Discrepancy" required>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="fw-bold text-dark mb-0"><i class="fa-solid fa-list-check me-2"></i>Adjustment Lines</h6>
+                        <button type="button" class="btn btn-sm btn-outline-dark bg-white shadow-sm fw-bold" onclick="adjApp.addLine()">
+                            <i class="fa-solid fa-plus me-1"></i> Add Item
+                        </button>
+                    </div>
+
+                    <div class="table-responsive border rounded bg-white shadow-sm mb-3">
+                        <table class="table table-sm table-hover align-middle mb-0" id="linesTable">
+                            <thead class="table-light text-secondary">
+                                <tr>
+                                    <th style="width: 35%" class="ps-3">Product / Variant <span class="text-danger">*</span></th>
+                                    <th style="width: 15%" class="text-end text-primary">On Hand</th>
+                                    <th style="width: 15%" class="text-center">Action <span class="text-danger">*</span></th>
+                                    <th style="width: 15%" class="text-center">Quantity <span class="text-danger">*</span></th>
+                                    <th style="width: 15%" class="text-end">Unit Cost (Surplus Only)</th>
+                                    <th style="width: 5%" class="text-center pe-2"><i class="fa-solid fa-trash-can"></i></th>
+                                </tr>
+                            </thead>
+                            <tbody id="linesBody"></tbody>
+                        </table>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer bg-white border-top py-2 d-flex justify-content-between">
+                <span class="text-muted fs-12"><i class="fa-solid fa-triangle-exclamation text-warning me-1"></i> Shrinkage uses strict FIFO cost automatically.</span>
+                <div>
+                    <button type="button" class="btn btn-secondary btn-sm px-3" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-warning text-dark btn-sm px-4 fw-bold shadow-sm" onclick="adjApp.saveAdjustment(event)">
+                        <i class="fa-solid fa-check-double me-2"></i> Post to GL
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/inventory/adjustments.js" asp-append-version="true"></script>
+}

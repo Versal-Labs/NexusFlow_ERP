@@ -57,7 +57,7 @@
                         return d;
                     }
                 },
-                { data: 'amount', className: 'text-end fw-bold text-danger', render: d => parseFloat(d).toLocaleString(undefined, { minimumFractionDigits: 2 }) },
+                { data: 'amount', className: 'text-end fw-bold text-danger', render: d => 'LKR ' + parseFloat(d).toLocaleString(undefined, { minimumFractionDigits: 2 }) },
                 {
                     data: null, className: 'text-end pe-3', orderable: false,
                     render: function (data, type, row) {

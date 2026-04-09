@@ -70,7 +70,7 @@
             
             // Populate Header
             $('#docCnNo').text(doc.creditNoteNumber);
-            $('#docTotalLarge').text('$' + doc.grandTotal.toLocaleString(undefined, { minimumFractionDigits: 2 }));
+            $('#docTotalLarge').text('LKR ' + doc.grandTotal.toLocaleString(undefined, { minimumFractionDigits: 2 }));
             $('#docCustomer').text(doc.customerName);
             $('#docDate').text(new Date(doc.date).toLocaleDateString());
             $('#docOrigInv').text(doc.originalInvoice);
@@ -84,16 +84,16 @@
                         <td class="fw-bold">${item.description}</td>
                         <td class="font-monospace text-muted fs-12">${item.sku}</td>
                         <td class="text-center">${item.qty}</td>
-                        <td class="text-end">${item.price.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
-                        <td class="text-end fw-bold">${item.total.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                        <td class="text-end">LKR ${item.price.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                        <td class="text-end fw-bold">LKR ${item.total.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
                     </tr>`;
             });
             $('#docItemsBody').html(tbody);
 
             // Populate Footer
-            $('#docSubtotal').text(doc.subTotal.toLocaleString(undefined, { minimumFractionDigits: 2 }));
-            $('#docTax').text(doc.totalTax.toLocaleString(undefined, { minimumFractionDigits: 2 }));
-            $('#docTotal').text(doc.grandTotal.toLocaleString(undefined, { minimumFractionDigits: 2 }));
+            $('#docSubtotal').text('LKR ' + doc.subTotal.toLocaleString(undefined, { minimumFractionDigits: 2 }));
+            $('#docTax').text('LKR ' + doc.totalTax.toLocaleString(undefined, { minimumFractionDigits: 2 }));
+            $('#docTotal').text('LKR ' + doc.grandTotal.toLocaleString(undefined, { minimumFractionDigits: 2 }));
 
             this._viewModal.show();
         } catch (e) {

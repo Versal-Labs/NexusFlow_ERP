@@ -19,17 +19,17 @@
                        data-bs-toggle="collapse" href="#menuMasterData" role="button" aria-expanded="false">
                     <div class="d-flex align-items-center">
                         <i class="fas fa-database fa-fw me-3"></i>
-                        <span class="fw-semibold">Registries</span>
+                        <span class="fw-semibold">Global Registries</span>
                     </div>
                     <i class="fas fa-chevron-down small transition-icon"></i>
                 </a>
                 <div class="collapse" id="menuMasterData">
                     <nav class="nav flex-column py-1 ps-4">
-                        <a href="/Product" class="nav-link py-1 small">Products & Services</a>
-                        <a href="/Customer" class="nav-link py-1 small">Customers</a>
-                        <a href="/Supplier" class="nav-link py-1 small">Suppliers & Contractors</a>
-                        <a href="/MasterData/Definitions" class="nav-link py-1 small">Categories & Brands</a>
-                        <a href="/MasterData/Warehouses" class="nav-link py-1 small">Warehouses</a>
+                        <a href="/Product" class="nav-link py-1 small">Item Master</a>
+                        <a href="/Customer" class="nav-link py-1 small">Customer Registry</a>
+                        <a href="/Supplier" class="nav-link py-1 small">Supplier Registry</a>
+                        <a href="/MasterData/Definitions" class="nav-link py-1 small">Item Classifications</a>
+                        <a href="/MasterData/Warehouses" class="nav-link py-1 small">Warehouse Locations</a>
                     </nav>
                 </div>
 
@@ -46,11 +46,11 @@
                 </a>
                 <div class="collapse" id="menuSales">
                     <nav class="nav flex-column py-1 ps-4">
-                        <a href="/SalesOrder" class="nav-link py-1 small">Sales Orders</a> 
-                        <a href="/Sales/Invoices" class="nav-link py-1 small">Sales Invoices</a>
-                        <a href="/Fulfillment" class="nav-link py-1 small">Order Fulfillment</a>
-                        <a href="/CommissionRule" class="nav-link py-1 small">Commission Rules</a>
-                        <a href="/Sales/CreditNotes" class="nav-link py-1 small">Credit Notes (WIP)</a>
+                        <a href="/SalesOrder" class="nav-link py-1 small">Sales Orders</a>
+                        <a href="/Fulfillment" class="nav-link py-1 small">Outbound Deliveries</a>
+                        <a href="/Sales/Invoices" class="nav-link py-1 small">AR Invoices</a>
+                        <a href="/Sales/CreditNotes" class="nav-link py-1 small">Credit Notes (Returns)</a>
+                        <a href="/CommissionRule" class="nav-link py-1 small">Sales Commissions</a>
                     </nav>
                 </div>
 
@@ -66,8 +66,8 @@
                     <nav class="nav flex-column py-1 ps-4">
                         <a href="/Purchasing" class="nav-link py-1 small">Purchase Orders</a>
                         <a href="/Purchasing/GRN" class="nav-link py-1 small">Goods Receipt (GRN)</a>
-                        <a href="/Purchasing/SupplierBills" class="nav-link py-1 small">Supplier Bills</a>
-                        <a href="/Purchasing/DebitNotes" class="nav-link py-1 small">Debit Notes (WIP)</a>
+                        <a href="/Purchasing/SupplierBills" class="nav-link py-1 small">AP Bills</a>
+                        <a href="/Purchasing/DebitNotes" class="nav-link py-1 small">Debit Notes (Returns)</a>
                     </nav>
                 </div>
 
@@ -81,19 +81,19 @@
                 </a>
                 <div class="collapse" id="menuInventory">
                     <nav class="nav flex-column py-1 ps-4">
-                        <a href="/StockTake" class="nav-link py-1 small">Stock Takes (Count)</a>
-                        <a href="/InventoryImport" class="nav-link py-1 small">Bulk Import Wizard</a>
+                        <span class="nav-link py-1 small fw-bold opacity-75 text-uppercase mt-1" style="font-size:10px;">Execution</span>
+                        <a href="/StockTake" class="nav-link py-1 small">Physical Count (Stock Take)</a>
+                        <a href="/Inventory/Transfers" class="nav-link py-1 small">Warehouse Transfers</a>
+                        <a href="/Inventory/Adjustments" class="nav-link py-1 small">Stock Adjustments</a>
+                        <a href="/InventoryImport" class="nav-link py-1 small">Opening Balances Wizard</a>
                 
-                        <hr class="my-1 mx-2 text-secondary">
-                        <span class="nav-link py-1 small fw-bold text-dark">Manufacturing</span>
-                        <a href="/Bom" class="nav-link py-1 small">BOM Setup</a>
-                        <a href="/Inventory/MaterialIssue" class="nav-link py-1 small">Issue Materials (Job Work)</a>
+                        <span class="nav-link py-1 small fw-bold opacity-75 text-uppercase mt-2" style="font-size:10px;">Manufacturing</span>
+                        <a href="/Bom" class="nav-link py-1 small">Bill of Materials (BOM)</a>
+                        <a href="/Inventory/MaterialIssue" class="nav-link py-1 small">Material Issues (WIP)</a>
                         <a href="/Inventory/ProductionReceipt" class="nav-link py-1 small">Production Receipts</a>
-                
-                        <hr class="my-1 mx-2 text-secondary">
-                        <a href="#" class="nav-link py-1 small text-muted">Warehouse Transfers (WIP)</a>
-                        <a href="#" class="nav-link py-1 small text-muted">Stock Adjustments (WIP)</a>
-                        <a href="#" class="nav-link py-1 small text-muted">Stock Valuation (WIP)</a>
+
+                        <span class="nav-link py-1 small fw-bold opacity-75 text-uppercase mt-2" style="font-size:10px;">Analytics</span>
+                        <a href="/Inventory/StockValuation" class="nav-link py-1 small">Stock Valuation FIFO</a>
                     </nav>
                 </div>
 
@@ -101,74 +101,79 @@
                 <div class="small fw-semibold text-uppercase px-3 mt-4 mb-2 sidebar-section-header">Financials</div>
 
                 <a class="list-group-item list-group-item-action border-0 d-flex justify-content-between align-items-center py-2 px-3"
+                       data-bs-toggle="collapse" href="#menuTreasury" role="button" aria-expanded="false">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-vault fa-fw me-3"></i>
+                        <span class="fw-semibold">Treasury</span>
+                    </div>
+                    <i class="fas fa-chevron-down small transition-icon"></i>
+                </a>
+                <div class="collapse" id="menuTreasury">
+                    <nav class="nav flex-column py-1 ps-4">
+                        <a href="/Treasury/Receipts" class="nav-link py-1 small">Incoming Payments (AR)</a>
+                        <a href="/Treasury/Payments" class="nav-link py-1 small">Outgoing Payments (AP)</a>
+                        <a href="/Finance/ChequeVault" class="nav-link py-1 small">Cheque Vault (PDCs)</a>
+                        <a href="/Finance/BankReconciliation" class="nav-link py-1 small">Bank Reconciliation</a>
+                    </nav>
+                </div>
+
+                <a class="list-group-item list-group-item-action border-0 d-flex justify-content-between align-items-center py-2 px-3"
                        data-bs-toggle="collapse" href="#menuFinance" role="button" aria-expanded="false">
                     <div class="d-flex align-items-center">
                         <i class="fas fa-chart-line fa-fw me-3"></i>
-                        <span class="fw-semibold">Accounting</span>
+                        <span class="fw-semibold">Accounting & GL</span>
                     </div>
                     <i class="fas fa-chevron-down small transition-icon"></i>
                 </a>
                 <div class="collapse" id="menuFinance">
                     <nav class="nav flex-column py-1 ps-4">
-                        <a href="/Treasury/Receipts" class="nav-link py-1 small">Customer Receipts</a>
-                        <a href="/Treasury/Payments" class="nav-link py-1 small">Supplier Payments</a>
-                        <a href="/Finance/ChequeVault" class="nav-link py-1 small">
-                             Cheque Vault (PDCs)
-                        </a>
-
-                        <hr class="my-1 mx-2 text-secondary opacity-25">
-                        
-                        <a href="/Finance/BankReconciliation" class="nav-link py-1 small">
-                             Bank Reconciliation
-                        </a>
-                        
-                        <a href="/Finance/JournalAudit" class="nav-link py-1 smal">Journal Audit (GL)</a>
+                        <a href="/ChartOfAccounts" class="nav-link py-1 small">Chart of Accounts</a>
+                        <a href="/Finance/JournalAudit" class="nav-link py-1 small">Journal Entries</a>
                         <a href="/Finance/TrialBalance" class="nav-link py-1 small">Trial Balance</a>
-                        <a href="#" class="nav-link py-1 small text-muted">Financial Reports (WIP)</a>
+                        <a href="/FinancialPeriod" class="nav-link py-1 small">Financial Periods</a>
+                        <a href="#" class="nav-link py-1 small opacity-50">Financial Statements (WIP)</a>
+                        <a href="/Finance/ProfitAndLoss" class="nav-link py-1 small">Profit & Loss</a>
+                        <a href="/Finance/BalanceSheet" class="nav-link py-1 small">Balance Sheet</a>
+                        <span class="nav-link py-1 small fw-bold opacity-75 text-uppercase mt-2" style="font-size:10px;">Import Opening Balance</span>
+
+                        <a href="/Finance/ImportOpenInvoices" class="nav-link py-1 small">Import AR AP</a>
+                        <a href="/Finance/ImportTrialBalance" class="nav-link py-1 small">Import Trial Balance</a>
                     </nav>
                 </div>
 
-                <a class="list-group-item list-group-item-action border-0 d-flex align-items-center py-2 px-3" href="/ChartOfAccounts">
-                    <i class="fa-solid fa-sitemap fa-fw me-3"></i>
-                    <span class="fw-semibold">Chart of Accounts</span>
-                </a>
 
-                <a class="list-group-item list-group-item-action border-0 d-flex align-items-center py-2 px-3" href="/FinancialPeriod">
-                    <i class="fa-solid fa-calendar-week fa-fw me-3"></i>
-                    <span class="fw-semibold">Financial Periods</span>
-                </a>
-
-                <div class="small fw-semibold text-uppercase px-3 mt-4 mb-2 sidebar-section-header">HR</div>
+                <div class="small fw-semibold text-uppercase px-3 mt-4 mb-2 sidebar-section-header">Human Resources</div>
 
                 <a class="list-group-item list-group-item-action border-0 d-flex justify-content-between align-items-center py-2 px-3"
                        data-bs-toggle="collapse" href="#menuHR" role="button" aria-expanded="false">
                     <div class="d-flex align-items-center">
-                        <i class="fas fa-users fa-fw me-3"></i> <span class="fw-semibold">Master</span>
+                        <i class="fas fa-users fa-fw me-3"></i>
+                        <span class="fw-semibold">HR & Payroll</span>
                     </div>
                     <i class="fas fa-chevron-down small transition-icon"></i>
                 </a>
                 <div class="collapse" id="menuHR">
                     <nav class="nav flex-column py-1 ps-4">
-                        <a href="/Employee" class="nav-link py-1 small">Employees</a>
+                        <a href="/Employee" class="nav-link py-1 small">Employee Directory</a>
                     </nav>
                 </div>
 
 
-                <div class="small fw-semibold text-uppercase px-3 mt-4 mb-2 sidebar-section-header">System</div>
+                <div class="small fw-semibold text-uppercase px-3 mt-4 mb-2 sidebar-section-header">Administration</div>
 
                 <a class="list-group-item list-group-item-action border-0 d-flex justify-content-between align-items-center py-2 px-3"
                        data-bs-toggle="collapse" href="#menuConfig" role="button" aria-expanded="false">
                     <div class="d-flex align-items-center">
                         <i class="fas fa-cogs fa-fw me-3"></i>
-                        <span class="fw-semibold">Configuration</span>
+                        <span class="fw-semibold">Settings & Security</span>
                     </div>
                     <i class="fas fa-chevron-down small transition-icon"></i>
                 </a>
                 <div class="collapse" id="menuConfig">
                     <nav class="nav flex-column py-1 ps-4">
+                        <a href="/System/Users" class="nav-link py-1 small fw-bold text-white">Identity & Access (IAM)</a>
                         <a href="/Config" class="nav-link py-1 small">System Parameters</a>
-                        <a href="#" class="nav-link py-1 small text-muted">Tax Engine (WIP)</a>
-                        <a href="#" class="nav-link py-1 small text-muted">User & Roles (WIP)</a>
+                        <a href="#" class="nav-link py-1 small opacity-50">Tax Engine (WIP)</a>
                     </nav>
                 </div>
 

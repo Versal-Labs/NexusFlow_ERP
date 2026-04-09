@@ -1,0 +1,162 @@
+﻿@{
+    ViewData["Title"] = "Warehouse Transfers";
+}
+
+<div class="container-fluid py-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h4 class="mb-0 text-dark fw-bold"><i class="fa-solid fa-truck-fast text-primary me-2"></i>Warehouse Transfers</h4>
+            <p class="text-muted mb-0 fs-14">Move inventory between locations while maintaining strict FIFO cost layers.</p>
+        </div>
+        <button class="btn btn-primary shadow-sm btn-sm px-3 fw-bold" onclick="transferApp.openCreateModal()">
+            <i class="fa-solid fa-plus me-1"></i> New Transfer
+        </button>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-3">
+            <table id="transfersGrid" class="table table-hover table-sm w-100 fs-13 align-middle mb-0">
+                <thead class="table-light text-secondary">
+                    <tr>
+                        <th class="ps-3">Transfer Ref</th>
+                        <th>Date</th>
+                        <th>Source Location</th>
+                        <th>Target Location</th>
+                        <th class="text-center">Unique Items</th>
+                        <th class="text-end pe-3">Asset Value Moved</th>
+                        <th class="text-end pe-3">Actions</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="transferModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-dark text-white py-2">
+                <h5 class="modal-title fw-bold fs-6"><i class="fa-solid fa-dolly me-2"></i>Execute Stock Transfer</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            
+            <div class="modal-body p-4 fs-13 bg-light">
+                <form id="transferForm">
+                    <div class="row g-3 mb-4 pb-3 border-bottom border-secondary">
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold mb-1">Transfer Date <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control form-control-sm" id="TransferDate" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold mb-1 text-danger">Source Warehouse (From) <span class="text-danger">*</span></label>
+                            <select class="form-select form-select-sm" id="SourceWarehouseId" required></select>
+                        </div>
+                        <div class="col-md-1 d-flex align-items-end justify-content-center pb-1">
+                            <i class="fa-solid fa-arrow-right-long fs-4 text-muted"></i>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold mb-1 text-success">Target Warehouse (To) <span class="text-danger">*</span></label>
+                            <select class="form-select form-select-sm" id="TargetWarehouseId" required></select>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="fw-bold text-dark mb-0"><i class="fa-solid fa-boxes-packing me-2"></i>Items to Transfer</h6>
+                        <button type="button" class="btn btn-sm btn-outline-primary bg-white shadow-sm fw-bold" onclick="transferApp.addLine()">
+                            <i class="fa-solid fa-plus me-1"></i> Add Line
+                        </button>
+                    </div>
+
+                    <div class="table-responsive border rounded bg-white shadow-sm mb-3">
+                        <table class="table table-sm table-hover align-middle mb-0" id="linesTable">
+                            <thead class="table-light text-secondary">
+                                <tr>
+                                    <th style="width: 40%" class="ps-3">Product / Variant <span class="text-danger">*</span></th>
+                                    <th style="width: 15%" class="text-end text-danger">Available (Source)</th>
+                                    <th style="width: 15%" class="text-end text-success">Current (Target)</th>
+                                    <th style="width: 20%" class="text-center">Transfer Qty <span class="text-danger">*</span></th>
+                                    <th style="width: 10%" class="text-center pe-2">Remove</th>
+                                </tr>
+                            </thead>
+                            <tbody id="linesBody"></tbody>
+                        </table>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <label class="form-label fw-bold mb-1">Remarks / Reason</label>
+                            <input type="text" class="form-control form-control-sm" id="Notes" placeholder="e.g., Replenishing retail store stock for holiday season...">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer bg-white border-top py-2">
+                <button type="button" class="btn btn-secondary btn-sm px-3" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary btn-sm px-4 fw-bold shadow-sm" onclick="transferApp.saveTransfer(event)">
+                    <i class="fa-solid fa-check me-2"></i> Execute Transfer
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="viewTransferModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content bg-light border-0 shadow-lg">
+            <div class="modal-header bg-dark text-white py-2 d-flex justify-content-between align-items-center">
+                <h5 class="modal-title fw-bold mb-0"><i class="fa-solid fa-magnifying-glass-chart me-2"></i>Transfer Record</h5>
+                <div>
+                    <button class="btn btn-sm btn-light text-dark me-1 shadow-sm" id="btnModalPrint" title="Print Delivery Note"><i class="fa-solid fa-print me-1"></i> Print</button>
+                    <button type="button" class="btn-close btn-close-white ms-2" data-bs-dismiss="modal"></button>
+                </div>
+            </div>
+            
+            <div class="modal-body p-0">
+                <div class="bg-white p-5 m-3 shadow-sm border" style="min-height: 500px;">
+                    <div class="row border-bottom pb-4 mb-4">
+                        <div class="col-6">
+                            <h2 class="fw-bold text-dark mb-0">STOCK TRANSFER</h2>
+                            <h5 class="text-muted font-monospace" id="viewRefNo">TRN-0000</h5>
+                        </div>
+                        <div class="col-6 text-end">
+                            <h3 class="fw-bold text-primary mb-0" id="viewTotalValue">$0.00</h3>
+                            <div class="text-muted fs-13 text-uppercase">Asset Value Moved</div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-6">
+                            <h6 class="fw-bold text-muted mb-1 fs-12 text-uppercase">Routing Details</h6>
+                            <div class="fs-14 mb-1"><strong>From:</strong> <span class="text-danger fw-bold" id="viewSource">-</span></div>
+                            <div class="fs-14"><strong>To:</strong> <span class="text-success fw-bold" id="viewTarget">-</span></div>
+                        </div>
+                        <div class="col-6 text-end fs-13">
+                            <div><strong>Execution Date:</strong> <span id="viewDate"></span></div>
+                            <div class="mt-2 text-muted fst-italic" id="viewNotes"></div>
+                        </div>
+                    </div>
+
+                    <table class="table table-sm table-bordered align-middle fs-13 mb-4">
+                        <thead class="table-light text-secondary text-center">
+                            <tr>
+                                <th class="text-start">Product Description</th>
+                                <th style="width: 20%">SKU</th>
+                                <th class="text-center" style="width: 15%">Qty Moved</th>
+                                <th class="text-end" style="width: 20%">FIFO Cost Value</th>
+                            </tr>
+                        </thead>
+                        <tbody id="viewItemsBody"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer bg-light border-top shadow-sm py-2 d-flex justify-content-between">
+                <button type="button" class="btn btn-outline-danger btn-sm" id="btnModalReverse"><i class="fa-solid fa-rotate-left me-1"></i> Reverse Movement</button>
+                <button type="button" class="btn btn-secondary btn-sm px-4" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/inventory/transfers.js" asp-append-version="true"></script>
+}

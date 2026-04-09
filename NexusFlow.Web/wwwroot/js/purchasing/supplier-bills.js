@@ -150,7 +150,7 @@
                 <td><input type="text" class="form-control form-control-sm line-desc bg-light" value="Auto-pulled from GRN" readonly></td>
                 <td><input type="number" class="form-control form-control-sm text-center line-qty calc-trigger bg-light" value="${qty}" readonly></td>
                 <td><input type="number" class="form-control form-control-sm text-end line-price calc-trigger bg-light" value="${cost}" readonly></td>
-                <td class="text-end fw-bold align-middle line-total text-primary">${(qty * cost).toFixed(2)}</td>
+                <td class="text-end fw-bold align-middle line-total text-primary">LKR ${(qty * cost).toFixed(2)}</td>
                 <td class="text-center align-middle">
                     <i class="fa-solid fa-lock text-muted" title="Locked to GRN"></i>
                 </td>

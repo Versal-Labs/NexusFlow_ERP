@@ -1,3 +1,4 @@
+using Azure.Storage.Blobs;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -32,6 +33,10 @@ builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddNotifications();
 
 builder.Services.AddSignalR();
+
+string blobConnectionString = builder.Configuration.GetConnectionString("AzureBlobStorage");
+
+builder.Services.AddSingleton(x => new BlobServiceClient(blobConnectionString));
 
 // Add this at the very beginning of your Program.cs
 Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense("Ngo9BigBOggjHTQxAR8/V1JHaF5cWWdCf1FpRmJGdld5fUVHYVZUTXxaS00DNHVRdkdlWXxcdXRdRmdZV0Z0XURWYEo=");

@@ -1,4 +1,6 @@
-﻿using MediatR;
+﻿using CsvHelper;
+using CsvHelper.Configuration;
+using MediatR;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -12,8 +14,10 @@ using NexusFlow.AppCore.Features.Finance.Banks.Queries;
 using NexusFlow.AppCore.Features.Finance.Commands;
 using NexusFlow.AppCore.Features.Finance.Journals.Queries;
 using NexusFlow.AppCore.Features.Finance.Queries;
+using NexusFlow.AppCore.Features.Finance.Reports.Queries;
 using NexusFlow.AppCore.Interfaces;
 using NexusFlow.Web.Filters;
+using System.Globalization;
 
 namespace NexusFlow.Web.Controllers.Api
 {
@@ -44,16 +48,29 @@ namespace NexusFlow.Web.Controllers.Api
         public async Task<IActionResult> GetChartOfAccounts()
         {
             var result = await _mediator.Send(new GetChartOfAccountsQuery());
-            if (result.Succeeded) return Ok(result.Data); // Unwrapped for UI Tree
-            return BadRequest(result.Message); // Fixed from result.Errors to standard Messages
+            return result.Succeeded ? Ok(result.Data) : BadRequest(result.Message);
         }
 
         [HttpPost("account")]
         public async Task<IActionResult> CreateAccount([FromBody] CreateAccountCommand command)
         {
             var result = await _mediator.Send(command);
-            if (result.Succeeded) return Ok(result);
-            return BadRequest(result);
+            return result.Succeeded ? Ok(result) : BadRequest(result);
+        }
+
+        [HttpPut("account/{id}")]
+        public async Task<IActionResult> UpdateAccount(int id, [FromBody] UpdateAccountCommand command)
+        {
+            if (id != command.Id) return BadRequest("ID Mismatch");
+            var result = await _mediator.Send(command);
+            return result.Succeeded ? Ok(result) : BadRequest(result);
+        }
+
+        [HttpDelete("account/{id}")]
+        public async Task<IActionResult> DeactivateAccount(int id)
+        {
+            var result = await _mediator.Send(new DeactivateAccountCommand(id));
+            return result.Succeeded ? Ok(result) : BadRequest(result);
         }
 
         [HttpGet("trial-balance")]
@@ -70,7 +87,7 @@ namespace NexusFlow.Web.Controllers.Api
         [HttpGet("balance-sheet")]
         public async Task<IActionResult> GetBalanceSheet([FromQuery] DateTime? date)
         {
-            var query = new GetBalanceSheetQuery { AsOfDate = date ?? DateTime.UtcNow };
+            var query = new AppCore.Features.Finance.Queries.GetBalanceSheetQuery { AsOfDate = date ?? DateTime.UtcNow };
             var result = await _mediator.Send(query);
 
             // ARCHITECT FIX: Pre-emptively unwrapping this for when we build the Balance Sheet UI
@@ -181,6 +198,103 @@ namespace NexusFlow.Web.Controllers.Api
             var result = await _mediator.Send(command);
             if (result.Succeeded) return Ok(result);
             return BadRequest(result);
+        }
+
+        [HttpGet("reports/profit-and-loss")]
+        public async Task<IActionResult> GetProfitAndLoss([FromQuery] DateTime startDate, [FromQuery] DateTime endDate, [FromQuery] string basis = "Accrual")
+        {
+            var result = await _mediator.Send(new GetProfitAndLossQuery { StartDate = startDate, EndDate = endDate, Basis = basis });
+            return result.Succeeded ? Ok(result.Data) : BadRequest(result.Message);
+        }
+
+        [HttpGet("reports/balance-sheet")]
+        public async Task<IActionResult> GetBalanceSheet([FromQuery] DateTime asOfDate)
+        {
+            var result = await _mediator.Send(new AppCore.Features.Finance.Reports.Queries.GetBalanceSheetQuery { AsOfDate = asOfDate });
+            return result.Succeeded ? Ok(result.Data) : BadRequest(result.Message);
+        }
+
+        // ==========================================
+        // 1. PREVIEW CSV DATA (Safe Parsing)
+        // ==========================================
+        [HttpPost("preview-arap-import")]
+        public IActionResult PreviewArApImport(IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+                return BadRequest(new { succeeded = false, messages = new[] { "No file uploaded." } });
+
+            try
+            {
+                var config = new CsvConfiguration(CultureInfo.InvariantCulture)
+                {
+                    HasHeaderRecord = true,
+                    MissingFieldFound = null,
+                    HeaderValidated = null
+                };
+
+                using var reader = new StreamReader(file.OpenReadStream());
+                using var csv = new CsvReader(reader, config);
+
+                // Read directly into our DTO
+                var records = csv.GetRecords<OpenInvoiceImportDto>().ToList();
+
+                return Ok(new { succeeded = true, data = records });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { succeeded = false, messages = new[] { $"CSV Parsing Failed: {ex.Message}. Ensure your columns are: Type, PartyName, DocumentNo, Date, OutstandingAmount" } });
+            }
+        }
+
+        // ==========================================
+        // 2. EXECUTE IMPORT
+        // ==========================================
+        [HttpPost("execute-arap-import")]
+        public async Task<IActionResult> ExecuteArApImport([FromBody] ImportOpenInvoicesCommand command)
+        {
+            var result = await _mediator.Send(command);
+            return result.Succeeded ? Ok(result) : BadRequest(result);
+        }
+
+        // ==========================================
+        // 1. PREVIEW TRIAL BALANCE CSV
+        // ==========================================
+        [HttpPost("preview-tb-import")]
+        public IActionResult PreviewTbImport(IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+                return BadRequest(new { succeeded = false, messages = new[] { "No file uploaded." } });
+
+            try
+            {
+                var config = new CsvConfiguration(CultureInfo.InvariantCulture)
+                {
+                    HasHeaderRecord = true,
+                    MissingFieldFound = null,
+                    HeaderValidated = null
+                };
+
+                using var reader = new StreamReader(file.OpenReadStream());
+                using var csv = new CsvReader(reader, config);
+
+                var records = csv.GetRecords<TbImportDto>().ToList();
+
+                return Ok(new { succeeded = true, data = records });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { succeeded = false, messages = new[] { $"CSV Parsing Failed: {ex.Message}. Ensure columns are exactly: AccountCode, Debit, Credit" } });
+            }
+        }
+
+        // ==========================================
+        // 2. EXECUTE TRIAL BALANCE IMPORT
+        // ==========================================
+        [HttpPost("execute-tb-import")]
+        public async Task<IActionResult> ExecuteTbImport([FromBody] ImportTrialBalanceCommand command)
+        {
+            var result = await _mediator.Send(command);
+            return result.Succeeded ? Ok(result) : BadRequest(result);
         }
     }
 }

@@ -36,6 +36,10 @@ namespace NexusFlow.Infrastructure.Persistence.Configurations
                    .HasForeignKey(x => x.ParentAccountId)
                    .OnDelete(DeleteBehavior.Restrict);
 
+            builder.Property(a => a.IsActive).HasDefaultValue(true);
+            builder.Property(a => a.IsSystemAccount).HasDefaultValue(false);
+            builder.Property(a => a.RequiresReconciliation).HasDefaultValue(false);
+
             // =========================================================
             // SEED DATA: INDUSTRY STANDARD COA
             // =========================================================

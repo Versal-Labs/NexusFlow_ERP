@@ -1,6 +1,9 @@
 ﻿using AutoMapper;
+using Dapper;
 using MediatR;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using NexusFlow.AppCore.DTOs.Finance;
 using NexusFlow.AppCore.Interfaces;
 using NexusFlow.Shared.Wrapper;
@@ -12,30 +15,43 @@ namespace NexusFlow.AppCore.Features.Finance.Queries
 {
     public class GetChartOfAccountsHandler : IRequestHandler<GetChartOfAccountsQuery, Result<List<AccountDto>>>
     {
-        private readonly IErpDbContext _context;
-        private readonly IMapper _mapper;
+        private readonly IConfiguration _config;
 
-        public GetChartOfAccountsHandler(IErpDbContext context, IMapper mapper)
-        {
-            _context = context;
-            _mapper = mapper;
-        }
+        public GetChartOfAccountsHandler(IConfiguration config) => _config = config;
 
         public async Task<Result<List<AccountDto>>> Handle(GetChartOfAccountsQuery request, CancellationToken cancellationToken)
         {
-            // 1. Fetch ALL accounts flat from DB
-            var allAccounts = await _context.Accounts
-                .OrderBy(a => a.Code)
-                .ToListAsync(cancellationToken);
+            using var connection = new SqlConnection(_config.GetConnectionString("DefaultConnection"));
 
-            // 2. Map to DTOs
-            var dtos = _mapper.Map<List<AccountDto>>(allAccounts);
+            // Dapper Query prioritizing Active accounts but mapping hierarchy
+            var sql = @"
+    SELECT 
+        Id, 
+        Code, 
+        Name, 
+        CASE Type
+            WHEN 1 THEN 'Asset'
+            WHEN 2 THEN 'Liability'
+            WHEN 3 THEN 'Equity'
+            WHEN 4 THEN 'Revenue'
+            WHEN 5 THEN 'Expense'
+            ELSE 'Unknown'
+        END AS Type, 
+        IsTransactionAccount, 
+        ParentAccountId, 
+        Balance, 
+        IsActive, 
+        IsSystemAccount, 
+        RequiresReconciliation
+    FROM Finance.Accounts
+    ORDER BY Code ASC";
 
-            // 3. Build the Tree Structure (In-Memory)
-            var lookup = dtos.ToDictionary(x => x.Id);
+            var allAccounts = (await connection.QueryAsync<AccountDto>(sql)).ToList();
+
+            var lookup = allAccounts.ToDictionary(x => x.Id);
             var rootNodes = new List<AccountDto>();
 
-            foreach (var dto in dtos)
+            foreach (var dto in allAccounts)
             {
                 if (dto.ParentAccountId.HasValue && lookup.TryGetValue(dto.ParentAccountId.Value, out var parent))
                 {
@@ -43,7 +59,6 @@ namespace NexusFlow.AppCore.Features.Finance.Queries
                 }
                 else
                 {
-                    // If no parent, it's a Root Node (e.g., "Assets")
                     rootNodes.Add(dto);
                 }
             }

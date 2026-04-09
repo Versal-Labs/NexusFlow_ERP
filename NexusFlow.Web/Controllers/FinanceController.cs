@@ -1,7 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using NexusFlow.AppCore.Constants;
 
 namespace NexusFlow.Web.Controllers
 {
+    [Authorize(AuthenticationSchemes = AuthConstants.IdentityScheme)]
     public class FinanceController : Controller
     {
         public IActionResult Index()
@@ -21,6 +24,26 @@ namespace NexusFlow.Web.Controllers
             return View();
         }
         public IActionResult BankReconciliation()
+        {
+            return View();
+        }
+
+        public IActionResult ProfitAndLoss()
+        {
+            return View();
+        }
+
+        public IActionResult BalanceSheet()
+        {
+            return View();
+        }
+
+        public IActionResult ImportOpenInvoices()
+        {
+            return View();
+        }
+
+        public IActionResult ImportTrialBalance()
         {
             return View();
         }

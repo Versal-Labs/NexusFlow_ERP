@@ -10,7 +10,6 @@ namespace NexusFlow.Domain.Entities.Purchasing
     [Table("GoodsReceipts", Schema = "Purchasing")]
     public class GoodsReceipt : AuditableEntity
     {
-        public int Id { get; set; }
         public string GrnNumber { get; set; } = string.Empty;
         public DateTime ReceiptDate { get; set; }
 

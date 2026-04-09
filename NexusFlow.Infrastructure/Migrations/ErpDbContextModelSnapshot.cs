@@ -327,6 +327,16 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.Property<string>("CreatedBy")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
+                    b.Property<bool>("IsSystemAccount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
                     b.Property<bool>("IsTransactionAccount")
                         .HasColumnType("bit");
 
@@ -343,6 +353,11 @@ namespace NexusFlow.Infrastructure.Migrations
 
                     b.Property<int?>("ParentAccountId")
                         .HasColumnType("int");
+
+                    b.Property<bool>("RequiresReconciliation")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
 
                     b.Property<int>("Type")
                         .HasColumnType("int");
@@ -363,8 +378,11 @@ namespace NexusFlow.Infrastructure.Migrations
                             Balance = 0m,
                             Code = "1000",
                             CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            IsActive = true,
+                            IsSystemAccount = false,
                             IsTransactionAccount = false,
                             Name = "Assets",
+                            RequiresReconciliation = false,
                             Type = 1
                         },
                         new
@@ -373,8 +391,11 @@ namespace NexusFlow.Infrastructure.Migrations
                             Balance = 0m,
                             Code = "2000",
                             CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            IsActive = true,
+                            IsSystemAccount = false,
                             IsTransactionAccount = false,
                             Name = "Liabilities",
+                            RequiresReconciliation = false,
                             Type = 2
                         },
                         new
@@ -383,8 +404,11 @@ namespace NexusFlow.Infrastructure.Migrations
                             Balance = 0m,
                             Code = "3000",
                             CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            IsActive = true,
+                            IsSystemAccount = false,
                             IsTransactionAccount = false,
                             Name = "Equity",
+                            RequiresReconciliation = false,
                             Type = 3
                         },
                         new
@@ -393,8 +417,11 @@ namespace NexusFlow.Infrastructure.Migrations
                             Balance = 0m,
                             Code = "4000",
                             CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            IsActive = true,
+                            IsSystemAccount = false,
                             IsTransactionAccount = false,
                             Name = "Revenue",
+                            RequiresReconciliation = false,
                             Type = 4
                         },
                         new
@@ -403,8 +430,11 @@ namespace NexusFlow.Infrastructure.Migrations
                             Balance = 0m,
                             Code = "6000",
                             CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            IsActive = true,
+                            IsSystemAccount = false,
                             IsTransactionAccount = false,
                             Name = "Operating Expenses",
+                            RequiresReconciliation = false,
                             Type = 5
                         },
                         new
@@ -413,9 +443,12 @@ namespace NexusFlow.Infrastructure.Migrations
                             Balance = 0m,
                             Code = "1100",
                             CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            IsActive = true,
+                            IsSystemAccount = false,
                             IsTransactionAccount = false,
                             Name = "Current Assets",
                             ParentAccountId = 1,
+                            RequiresReconciliation = false,
                             Type = 1
                         },
                         new
@@ -424,9 +457,12 @@ namespace NexusFlow.Infrastructure.Migrations
                             Balance = 0m,
                             Code = "1110",
                             CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            IsActive = true,
+                            IsSystemAccount = false,
                             IsTransactionAccount = false,
                             Name = "Cash & Cash Equivalents",
                             ParentAccountId = 101,
+                            RequiresReconciliation = false,
                             Type = 1
                         },
                         new
@@ -435,9 +471,12 @@ namespace NexusFlow.Infrastructure.Migrations
                             Balance = 0m,
                             Code = "2100",
                             CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            IsActive = true,
+                            IsSystemAccount = false,
                             IsTransactionAccount = false,
                             Name = "Current Liabilities",
                             ParentAccountId = 2,
+                            RequiresReconciliation = false,
                             Type = 2
                         },
                         new
@@ -446,9 +485,12 @@ namespace NexusFlow.Infrastructure.Migrations
                             Balance = 0m,
                             Code = "2120",
                             CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            IsActive = true,
+                            IsSystemAccount = false,
                             IsTransactionAccount = false,
                             Name = "Tax Payable",
                             ParentAccountId = 201,
+                            RequiresReconciliation = false,
                             Type = 2
                         },
                         new
@@ -457,9 +499,12 @@ namespace NexusFlow.Infrastructure.Migrations
                             Balance = 0m,
                             Code = "4100",
                             CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            IsActive = true,
+                            IsSystemAccount = false,
                             IsTransactionAccount = false,
                             Name = "Operating Revenue",
                             ParentAccountId = 4,
+                            RequiresReconciliation = false,
                             Type = 4
                         },
                         new
@@ -468,8 +513,11 @@ namespace NexusFlow.Infrastructure.Migrations
                             Balance = 0m,
                             Code = "5000",
                             CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            IsActive = true,
+                            IsSystemAccount = false,
                             IsTransactionAccount = false,
                             Name = "Cost of Goods Sold",
+                            RequiresReconciliation = false,
                             Type = 5
                         },
                         new
@@ -478,9 +526,12 @@ namespace NexusFlow.Infrastructure.Migrations
                             Balance = 0m,
                             Code = "6200",
                             CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            IsActive = true,
+                            IsSystemAccount = false,
                             IsTransactionAccount = false,
                             Name = "Administrative Expenses",
                             ParentAccountId = 5,
+                            RequiresReconciliation = false,
                             Type = 5
                         },
                         new
@@ -489,9 +540,12 @@ namespace NexusFlow.Infrastructure.Migrations
                             Balance = 0m,
                             Code = "6300",
                             CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            IsActive = true,
+                            IsSystemAccount = false,
                             IsTransactionAccount = false,
                             Name = "Sales & Marketing",
                             ParentAccountId = 5,
+                            RequiresReconciliation = false,
                             Type = 5
                         },
                         new
@@ -500,9 +554,12 @@ namespace NexusFlow.Infrastructure.Migrations
                             Balance = 0m,
                             Code = "1111",
                             CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            IsActive = true,
+                            IsSystemAccount = false,
                             IsTransactionAccount = true,
                             Name = "Cash in Hand",
                             ParentAccountId = 102,
+                            RequiresReconciliation = false,
                             Type = 1
                         },
                         new
@@ -511,9 +568,12 @@ namespace NexusFlow.Infrastructure.Migrations
                             Balance = 0m,
                             Code = "1112",
                             CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            IsActive = true,
+                            IsSystemAccount = false,
                             IsTransactionAccount = true,
                             Name = "Bank - Sampath",
                             ParentAccountId = 102,
+                            RequiresReconciliation = false,
                             Type = 1
                         },
                         new
@@ -522,9 +582,12 @@ namespace NexusFlow.Infrastructure.Migrations
                             Balance = 0m,
                             Code = "1130",
                             CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            IsActive = true,
+                            IsSystemAccount = false,
                             IsTransactionAccount = false,
                             Name = "Inventory Assets",
                             ParentAccountId = 101,
+                            RequiresReconciliation = false,
                             Type = 1
                         },
                         new
@@ -533,9 +596,12 @@ namespace NexusFlow.Infrastructure.Migrations
                             Balance = 0m,
                             Code = "4110",
                             CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            IsActive = true,
+                            IsSystemAccount = false,
                             IsTransactionAccount = true,
                             Name = "Sales Revenue - FG",
                             ParentAccountId = 401,
+                            RequiresReconciliation = false,
                             Type = 4
                         },
                         new
@@ -544,9 +610,12 @@ namespace NexusFlow.Infrastructure.Migrations
                             Balance = 0m,
                             Code = "6210",
                             CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            IsActive = true,
+                            IsSystemAccount = false,
                             IsTransactionAccount = true,
                             Name = "Rent Expense",
                             ParentAccountId = 601,
+                            RequiresReconciliation = false,
                             Type = 5
                         },
                         new
@@ -555,9 +624,12 @@ namespace NexusFlow.Infrastructure.Migrations
                             Balance = 0m,
                             Code = "6220",
                             CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            IsActive = true,
+                            IsSystemAccount = false,
                             IsTransactionAccount = true,
                             Name = "Electricity & Utilities",
                             ParentAccountId = 601,
+                            RequiresReconciliation = false,
                             Type = 5
                         },
                         new
@@ -566,9 +638,12 @@ namespace NexusFlow.Infrastructure.Migrations
                             Balance = 0m,
                             Code = "6310",
                             CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            IsActive = true,
+                            IsSystemAccount = false,
                             IsTransactionAccount = true,
                             Name = "Advertising & Marketing",
                             ParentAccountId = 602,
+                            RequiresReconciliation = false,
                             Type = 5
                         },
                         new
@@ -577,9 +652,12 @@ namespace NexusFlow.Infrastructure.Migrations
                             Balance = 0m,
                             Code = "2121",
                             CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            IsActive = true,
+                            IsSystemAccount = false,
                             IsTransactionAccount = true,
                             Name = "VAT Payable",
                             ParentAccountId = 202,
+                            RequiresReconciliation = false,
                             Type = 2
                         },
                         new
@@ -588,9 +666,12 @@ namespace NexusFlow.Infrastructure.Migrations
                             Balance = 0m,
                             Code = "2122",
                             CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            IsActive = true,
+                            IsSystemAccount = false,
                             IsTransactionAccount = true,
                             Name = "SSCL Payable",
                             ParentAccountId = 202,
+                            RequiresReconciliation = false,
                             Type = 2
                         },
                         new
@@ -599,9 +680,12 @@ namespace NexusFlow.Infrastructure.Migrations
                             Balance = 0m,
                             Code = "1120",
                             CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            IsActive = true,
+                            IsSystemAccount = false,
                             IsTransactionAccount = true,
                             Name = "Accounts Receivable (AR)",
                             ParentAccountId = 101,
+                            RequiresReconciliation = false,
                             Type = 1
                         },
                         new
@@ -610,9 +694,12 @@ namespace NexusFlow.Infrastructure.Migrations
                             Balance = 0m,
                             Code = "2110",
                             CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            IsActive = true,
+                            IsSystemAccount = false,
                             IsTransactionAccount = true,
                             Name = "Accounts Payable (AP)",
                             ParentAccountId = 201,
+                            RequiresReconciliation = false,
                             Type = 2
                         },
                         new
@@ -621,9 +708,12 @@ namespace NexusFlow.Infrastructure.Migrations
                             Balance = 0m,
                             Code = "1131",
                             CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            IsActive = true,
+                            IsSystemAccount = false,
                             IsTransactionAccount = true,
                             Name = "Raw Materials (RM) Inventory",
                             ParentAccountId = 8,
+                            RequiresReconciliation = false,
                             Type = 1
                         },
                         new
@@ -632,9 +722,12 @@ namespace NexusFlow.Infrastructure.Migrations
                             Balance = 0m,
                             Code = "1132",
                             CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            IsActive = true,
+                            IsSystemAccount = false,
                             IsTransactionAccount = true,
                             Name = "Finished Goods (FG) Inventory",
                             ParentAccountId = 8,
+                            RequiresReconciliation = false,
                             Type = 1
                         },
                         new
@@ -643,9 +736,12 @@ namespace NexusFlow.Infrastructure.Migrations
                             Balance = 0m,
                             Code = "5110",
                             CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            IsActive = true,
+                            IsSystemAccount = false,
                             IsTransactionAccount = true,
                             Name = "Raw Material Consumption",
                             ParentAccountId = 500,
+                            RequiresReconciliation = false,
                             Type = 5
                         },
                         new
@@ -654,9 +750,12 @@ namespace NexusFlow.Infrastructure.Migrations
                             Balance = 0m,
                             Code = "5120",
                             CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            IsActive = true,
+                            IsSystemAccount = false,
                             IsTransactionAccount = true,
                             Name = "Outsourced Job Work Costs",
                             ParentAccountId = 500,
+                            RequiresReconciliation = false,
                             Type = 5
                         },
                         new
@@ -665,9 +764,12 @@ namespace NexusFlow.Infrastructure.Migrations
                             Balance = 0m,
                             Code = "3100",
                             CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            IsActive = true,
+                            IsSystemAccount = false,
                             IsTransactionAccount = true,
                             Name = "Share Capital",
                             ParentAccountId = 3,
+                            RequiresReconciliation = false,
                             Type = 3
                         },
                         new
@@ -676,9 +778,12 @@ namespace NexusFlow.Infrastructure.Migrations
                             Balance = 0m,
                             Code = "3200",
                             CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            IsActive = true,
+                            IsSystemAccount = false,
                             IsTransactionAccount = true,
                             Name = "Retained Earnings",
                             ParentAccountId = 3,
+                            RequiresReconciliation = false,
                             Type = 3
                         });
                 });

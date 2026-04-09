@@ -1,7 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using NexusFlow.AppCore.Constants;
 
 namespace NexusFlow.Web.Controllers
 {
+    [Authorize(AuthenticationSchemes = AuthConstants.IdentityScheme)]
     public class InventoryController : Controller
     {
         // GET: /Inventory 
@@ -21,6 +24,21 @@ namespace NexusFlow.Web.Controllers
         // GET: /Inventory/ProductionReceipt 
         // (Serves the Phase 3 UI)
         public IActionResult ProductionReceipt()
+        {
+            return View();
+        }
+
+        public IActionResult StockValuation()
+        {
+            return View();
+        }
+
+        public IActionResult Transfers()
+        {
+            return View();
+        }
+
+        public IActionResult Adjustments()
         {
             return View();
         }

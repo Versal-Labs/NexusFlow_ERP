@@ -7,7 +7,7 @@ using System.Text;
 
 namespace NexusFlow.AppCore.Features.Finance.Queries
 {
-    public class GetChartOfAccountsQuery : IRequest<Result<List<AccountDto>>>
+    public record GetChartOfAccountsQuery : IRequest<Result<List<AccountDto>>>
     {
         // No parameters needed as we want the full tree
     }

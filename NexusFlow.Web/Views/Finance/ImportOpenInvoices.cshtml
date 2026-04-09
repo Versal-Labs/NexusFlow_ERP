@@ -1,0 +1,65 @@
+﻿@{
+    ViewData["Title"] = "Open AR & AP Migration Wizard";
+}
+
+<div class="container-fluid py-3 mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h4 class="mb-0 text-dark fw-bold"><i class="fa-solid fa-file-invoice-dollar text-primary me-2"></i>AR & AP Migration Wizard</h4>
+            <p class="text-muted mb-0 fs-14">Upload open Customer Invoices (AR) and Supplier Bills (AP). This hits Opening Balance Equity.</p>
+        </div>
+        <div>
+            <a href="/templates/AR_AP_Migration_Template.csv" class="btn btn-outline-dark btn-sm shadow-sm fw-bold">
+                <i class="fa-solid fa-download me-1"></i> Download CSV Template
+            </a>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0 mb-4" id="uploadSection">
+        <div class="card-body p-5 text-center">
+            <i class="fa-solid fa-file-csv text-primary mb-3" style="font-size: 3rem;"></i>
+            <h5 class="fw-bold">Select Migration CSV File</h5>
+            <p class="text-muted fs-13 mb-4">Required columns: Type (AR/AP), PartyName, DocumentNo, Date, OutstandingAmount</p>
+            
+            <input type="file" id="csvFileInput" class="form-control w-50 mx-auto mb-3" accept=".csv">
+            <button class="btn btn-primary px-4 fw-bold shadow-sm" onclick="arapImportApp.previewCsv()">
+                <i class="fa-solid fa-eye me-2"></i> Parse & Preview Data
+            </button>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0 d-none" id="previewSection">
+        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center py-2">
+            <span class="fw-bold"><i class="fa-solid fa-table-list me-2"></i>Review & Edit Financial Data</span>
+            <button class="btn btn-success btn-sm fw-bold shadow-sm" onclick="arapImportApp.executeImport(event)">
+                <i class="fa-solid fa-check-double me-1"></i> Commit to General Ledger
+            </button>
+        </div>
+        <div class="card-body p-0" style="max-height: 65vh; overflow-y: auto;">
+            <table class="table table-bordered table-hover align-middle mb-0 fs-13" id="previewTable">
+                <thead class="table-light sticky-top shadow-sm">
+                    <tr>
+                        <th style="width: 100px;" class="text-center">Type</th>
+                        <th style="width: 25%;">Customer / Supplier Name</th>
+                        <th style="width: 20%;">Document / Invoice No</th>
+                        <th style="width: 15%;">Document Date</th>
+                        <th class="text-end bg-warning bg-opacity-25" style="width: 15%;">Outstanding Amount</th>
+                        <th class="text-center" style="width: 5%;"><i class="fa-solid fa-trash-can text-danger"></i></th>
+                    </tr>
+                </thead>
+                <tbody id="previewBody"></tbody>
+            </table>
+        </div>
+        <div class="card-footer bg-light py-2 d-flex justify-content-between fs-13">
+            <span class="text-muted fw-bold" id="lblTotalRows">0 Records</span>
+            <div>
+                <span class="me-3 fw-bold text-success">Total AR: <span id="lblTotalAr">$0.00</span></span>
+                <span class="fw-bold text-danger">Total AP: <span id="lblTotalAp">$0.00</span></span>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/finance/import-arap.js" asp-append-version="true"></script>
+}

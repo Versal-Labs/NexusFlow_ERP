@@ -1,0 +1,95 @@
+﻿@{
+    ViewData["Title"] = "Balance Sheet";
+}
+
+<style>
+    .acct-row { transition: background-color 0.2s; }
+    .acct-row:hover { background-color: #f8f9fa; }
+    .acct-indent { padding-left: 2.5rem !important; }
+    .total-row { border-top: 1px solid #dee2e6; border-bottom: 1px solid #dee2e6; font-weight: bold; background-color: #fcfcfc; }
+    .grand-total-row { border-top: 2px solid #212529; border-bottom: 4px double #212529; font-weight: 900; font-size: 1.1rem; }
+    .print-header { display: none; }
+    @@media print {
+        .no-print { display: none !important; }
+        .print-header { display: block; text-align: center; margin-bottom: 2rem; }
+        .card { border: none !important; box-shadow: none !important; }
+    }
+</style>
+
+<div class="container py-3 mb-5" style="max-width: 900px;">
+    <div class="d-flex justify-content-between align-items-center mb-3 no-print">
+        <div>
+            <h4 class="mb-0 text-dark fw-bold"><i class="fa-solid fa-scale-balanced text-primary me-2"></i>Balance Sheet</h4>
+            <p class="text-muted mb-0 fs-14">A snapshot of your business's Assets, Liabilities, and Equity.</p>
+        </div>
+        <div>
+            <button class="btn btn-outline-secondary shadow-sm btn-sm px-3 fw-bold me-2" onclick="window.print()"><i class="fa-solid fa-print me-1"></i> Print</button>
+            <button class="btn btn-success shadow-sm btn-sm px-3 fw-bold" onclick="bsApp.exportExcel()"><i class="fa-solid fa-file-excel me-1"></i> Export Excel</button>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm mb-4 bg-white no-print">
+        <div class="card-body py-3 px-4">
+            <div class="row g-3 align-items-end justify-content-center">
+                <div class="col-md-4">
+                    <label class="form-label mb-1 fw-bold text-muted fs-13">Date Preset</label>
+                    <select class="form-select form-select-sm fw-bold text-primary" id="DatePreset">
+                        <option value="Today">Today</option>
+                        <option value="EndThisMonth">End of This Month</option>
+                        <option value="EndLastMonth">End of Last Month</option>
+                        <option value="EndThisYear">End of This Year</option>
+                        <option value="EndLastYear">End of Last Year</option>
+                        <option value="Custom">Custom Date...</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label mb-1 fw-bold text-muted fs-13">As Of Date</label>
+                    <input type="date" class="form-control form-control-sm fw-bold" id="AsOfDate">
+                </div>
+                <div class="col-md-4">
+                    <button class="btn btn-sm btn-primary w-100 shadow-sm fw-bold" onclick="bsApp.generateReport()">
+                        <i class="fa-solid fa-bolt me-1"></i> Generate Statement
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0" id="StatementCard" style="display:none;">
+        <div class="card-body p-4 p-md-5">
+            <div class="print-header">
+                <h2 class="fw-bold mb-1">BALANCE SHEET</h2>
+                <h5 class="text-muted" id="lblReportPeriod"></h5>
+            </div>
+            
+            <div id="outOfBalanceWarning" class="alert alert-danger py-2 mb-4 fw-bold text-center" style="display:none;">
+                <i class="fa-solid fa-triangle-exclamation me-2"></i> WARNING: BALANCE SHEET IS OUT OF BALANCE! CHECK GL INTEGRITY.
+            </div>
+
+            <table class="table table-borderless table-sm fs-14 mb-0" id="bsTable">
+                <tbody>
+                    <tr><td colspan="2" class="fw-bold text-primary fs-5 pt-3 pb-2 border-bottom">ASSETS</td></tr>
+                    <tbody id="assetsBody"></tbody>
+                    <tr class="grand-total-row mt-2"><td class="py-3">TOTAL ASSETS</td><td class="text-end py-3 text-primary" id="lblTotalAssets">$0.00</td></tr>
+
+                    <tr><td colspan="2" class="fw-bold text-dark fs-5 pt-5 pb-2 border-bottom">LIABILITIES & EQUITY</td></tr>
+                    
+                    <tr><td colspan="2" class="fw-bold text-danger fs-6 pt-3 pb-2">Liabilities</td></tr>
+                    <tbody id="liabilitiesBody"></tbody>
+                    <tr class="total-row"><td class="ps-3 py-2">Total Liabilities</td><td class="text-end py-2 text-danger" id="lblTotalLiabilities">$0.00</td></tr>
+
+                    <tr><td colspan="2" class="fw-bold text-success fs-6 pt-4 pb-2">Equity</td></tr>
+                    <tbody id="equityBody"></tbody>
+                    <tr class="total-row"><td class="ps-3 py-2">Total Equity</td><td class="text-end py-2 text-success" id="lblTotalEquity">$0.00</td></tr>
+
+                    <tr class="grand-total-row mt-3"><td class="py-3">TOTAL LIABILITIES & EQUITY</td><td class="text-end py-3 text-dark" id="lblTotalLiabilitiesAndEquity">$0.00</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="~/js/finance/balance-sheet.js" asp-append-version="true"></script>
+}

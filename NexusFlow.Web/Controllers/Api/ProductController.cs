@@ -62,6 +62,13 @@ namespace NexusFlow.Web.Controllers.Api
             return result.Succeeded ? Ok(result) : BadRequest(result);
         }
 
+        [HttpPut("bulk-update")]
+        public async Task<IActionResult> BulkUpdate([FromBody] BulkUpdateVariantsCommand command)
+        {
+            var result = await _mediator.Send(command);
+            return result.Succeeded ? Ok(result) : BadRequest(result);
+        }
+
         // 5. DELETE (DELETE api/product/{id})
         // Used to soft-delete or remove a product
         [HttpDelete("{id}")]
