@@ -11,7 +11,6 @@ namespace NexusFlow.Domain.Entities.Inventory
     [Table("StockTake", Schema = "Inventory")]
     public class StockTake : AuditableEntity
     {
-        public int Id { get; set; }
         public string StockTakeNumber { get; set; } = string.Empty;
         public DateTime Date { get; set; }
 

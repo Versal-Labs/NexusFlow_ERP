@@ -7,7 +7,6 @@ namespace NexusFlow.Domain.Entities.Sales
 {
     public class CreditNote : AuditableEntity
     {
-        public int Id { get; set; }
         public string CreditNoteNumber { get; set; } = string.Empty;
         public DateTime Date { get; set; }
 

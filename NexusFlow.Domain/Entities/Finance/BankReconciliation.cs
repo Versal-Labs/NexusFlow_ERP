@@ -9,8 +9,6 @@ namespace NexusFlow.Domain.Entities.Finance
     [Table("BankReconciliations", Schema = "Finance")]
     public class BankReconciliation : AuditableEntity
     {
-        public int Id { get; set; }
-
         public int BankAccountId { get; set; }
         public Account BankAccount { get; set; } = null!;
 

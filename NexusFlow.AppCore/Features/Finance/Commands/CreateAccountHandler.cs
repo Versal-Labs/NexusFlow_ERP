@@ -20,28 +20,19 @@ namespace NexusFlow.AppCore.Features.Finance.Commands
 
         public async Task<Result<int>> Handle(CreateAccountCommand request, CancellationToken cancellationToken)
         {
-            // 1. Validation: Check if Code already exists
-            bool codeExists = await _context.Accounts
-                .AnyAsync(a => a.Code == request.Code, cancellationToken);
-
-            if (codeExists)
-            {
+            if (await _context.Accounts.AnyAsync(a => a.Code == request.Code, cancellationToken))
                 return Result<int>.Failure($"Account Code '{request.Code}' already exists.");
-            }
 
-            // 2. Validation: Check Parent Existence (if not null)
             if (request.ParentAccountId.HasValue)
             {
-                bool parentExists = await _context.Accounts
-                    .AnyAsync(a => a.Id == request.ParentAccountId.Value, cancellationToken);
+                var parent = await _context.Accounts.FindAsync(new object[] { request.ParentAccountId.Value }, cancellationToken);
+                if (parent == null) return Result<int>.Failure("Parent Account not found.");
 
-                if (!parentExists)
-                {
-                    return Result<int>.Failure($"Parent Account ID {request.ParentAccountId} not found.");
-                }
+                // ARCHITECTURAL RULE: Child MUST inherit Parent's Account Type
+                if (parent.Type != request.Type)
+                    return Result<int>.Failure($"Hierarchy Violation: Account Type ({request.Type}) must match Parent Account Type ({parent.Type}).");
             }
 
-            // 3. Create Entity
             var account = new Account
             {
                 Code = request.Code,
@@ -49,11 +40,11 @@ namespace NexusFlow.AppCore.Features.Finance.Commands
                 Type = request.Type,
                 ParentAccountId = request.ParentAccountId,
                 IsTransactionAccount = request.IsTransactionAccount,
-                // Audit fields are handled by DbContext if using AuditableEntity interceptors, 
-                // otherwise might need manual setting or current user service.
+                RequiresReconciliation = request.RequiresReconciliation,
+                IsActive = true,
+                IsSystemAccount = false // Can only be set via DB seed/migrations
             };
 
-            // 4. Save
             _context.Accounts.Add(account);
             await _context.SaveChangesAsync(cancellationToken);
 

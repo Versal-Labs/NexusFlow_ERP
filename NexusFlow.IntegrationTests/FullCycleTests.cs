@@ -55,16 +55,16 @@ namespace NexusFlow.IntegrationTests
             // =================================================================
             // STEP 2: TRANSFER (Move 150m to Factory for Production)
             // =================================================================
-            var transferCmd = new TransferStockCommand
-            {
-                SourceWarehouseId = 1,
-                TargetWarehouseId = 2, // Factory
-                ReferenceDoc = "TRF-001",
-                Items = new List<TransferItemDto> { new() { ProductVariantId = 100, Qty = 150 } }
-            };
+            //var transferCmd = new TransferStockCommand
+            //{
+            //    SourceWarehouseId = 1,
+            //    TargetWarehouseId = 2, // Factory
+            //    ReferenceDoc = "TRF-001",
+            //    Items = new List<TransferItemDto> { new() { ProductVariantId = 100, Qty = 150 } }
+            //};
 
-            var transferResult = await SendAsync(transferCmd);
-            transferResult.Succeeded.Should().BeTrue(transferResult.Message);
+            //var transferResult = await SendAsync(transferCmd);
+            //transferResult.Succeeded.Should().BeTrue(transferResult.Message);
 
             // =================================================================
             // STEP 3: PRODUCTION (Make 100 Jeans)

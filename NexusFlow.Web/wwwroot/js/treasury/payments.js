@@ -24,7 +24,7 @@
                 { data: 'date', render: d => d ? new Date(d).toLocaleDateString() : '-' },
                 { data: 'partyName', className: 'fw-bold text-dark' },
                 { data: 'accountName' },
-                { data: 'amount', className: 'text-end pe-4 fw-bold text-danger', render: d => parseFloat(d).toLocaleString(undefined, { minimumFractionDigits: 2 }) }
+                { data: 'amount', className: 'text-end pe-4 fw-bold text-danger', render: d => 'LKR ' + parseFloat(d).toLocaleString(undefined, { minimumFractionDigits: 2 }) }
             ],
             order: [[1, 'desc']],
             dom: '<"d-flex justify-content-between align-items-center mb-3"f>rt<"d-flex justify-content-between align-items-center mt-3"ip>'

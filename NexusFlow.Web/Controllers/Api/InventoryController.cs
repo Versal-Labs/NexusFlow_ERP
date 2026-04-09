@@ -153,5 +153,70 @@ namespace NexusFlow.Web.Controllers.Api
             var result = await _mediator.Send(command, cancellationToken);
             return result.Succeeded ? Ok(result) : BadRequest(result);
         }
+
+        [HttpGet("valuation")]
+        public async Task<IActionResult> GetStockValuation([FromQuery] int? warehouseId, [FromQuery] int? categoryId, [FromQuery] string? search)
+        {
+            var result = await _mediator.Send(new GetStockValuationQuery
+            {
+                WarehouseId = warehouseId,
+                CategoryId = categoryId,
+                SearchTerm = search
+            });
+            return Ok(result);
+        }
+
+        [HttpGet("transfers")]
+        public async Task<IActionResult> GetTransfers()
+        {
+            var result = await _mediator.Send(new GetTransfersQuery());
+            return Ok(result);
+        }
+
+        [HttpPost("transfers")]
+        public async Task<IActionResult> ExecuteTransfer([FromBody] TransferStockCommand command)
+        {
+            var result = await _mediator.Send(command);
+            return result.Succeeded ? Ok(result) : BadRequest(result);
+        }
+
+        [HttpGet("stock-level")]
+        public async Task<IActionResult> GetStockLevel([FromQuery] int variantId, [FromQuery] int warehouseId)
+        {
+            var result = await _mediator.Send(new GetVariantStockLevelQuery
+            {
+                VariantId = variantId,
+                WarehouseId = warehouseId
+            });
+
+            return Ok(result);
+        }
+
+        [HttpGet("transfers/{refNo}")]
+        public async Task<IActionResult> GetTransferByRef(string refNo)
+        {
+            var result = await _mediator.Send(new GetTransferByRefQuery { ReferenceNo = refNo });
+            return result.Succeeded ? Ok(result.Data) : NotFound();
+        }
+
+        [HttpPost("transfers/{refNo}/reverse")]
+        public async Task<IActionResult> ReverseTransfer(string refNo)
+        {
+            var result = await _mediator.Send(new ReverseTransferCommand { ReferenceNo = refNo });
+            return result.Succeeded ? Ok(result) : BadRequest(result);
+        }
+
+        [HttpGet("adjustments")]
+        public async Task<IActionResult> GetAdjustments()
+        {
+            return Ok(await _mediator.Send(new GetAdjustmentsQuery()));
+        }
+
+        [HttpPost("adjustments")]
+        public async Task<IActionResult> ExecuteAdjustment([FromBody] AdjustStockCommand command)
+        {
+            var result = await _mediator.Send(command);
+            return result.Succeeded ? Ok(result) : BadRequest(result);
+        }
     }
 }

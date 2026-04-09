@@ -13,6 +13,10 @@ namespace NexusFlow.AppCore.DTOs.Finance
         public bool IsTransactionAccount { get; set; }
         public decimal Balance { get; set; }
 
+        public bool IsActive { get; set; }
+        public bool IsSystemAccount { get; set; }
+        public bool RequiresReconciliation { get; set; }
+
         // For Tree Structure
         public int? ParentAccountId { get; set; }
         public List<AccountDto> Children { get; set; } = new();

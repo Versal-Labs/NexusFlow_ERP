@@ -16,5 +16,6 @@ namespace NexusFlow.AppCore.Features.Finance.Commands
 
         // If true, we can post invoices to it. If false, it's a folder.
         public bool IsTransactionAccount { get; set; }
+        public bool RequiresReconciliation { get; set; }
     }
 }

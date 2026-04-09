@@ -11,7 +11,6 @@ namespace NexusFlow.Domain.Entities.Finance
     [Table("ChequeRegister", Schema = "Finance")]
     public class ChequeRegister : AuditableEntity
     {
-        public int Id { get; set; }
         public string ChequeNumber { get; set; } = string.Empty;
         public int BankBranchId { get; set; }
         public BankBranch BankBranch { get; set; } = null!;
