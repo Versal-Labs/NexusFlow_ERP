@@ -6,6 +6,7 @@ namespace NexusFlow.AppCore.DTOs.Purchasing
 {
     public class CreateSupplierBillRequest
     {
+        public int Id { get; set; }
         public DateTime BillDate { get; set; }
         public DateTime DueDate { get; set; }
         public int SupplierId { get; set; }

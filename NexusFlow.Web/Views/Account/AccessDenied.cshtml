@@ -1,0 +1,22 @@
+﻿@{
+    ViewData["Title"] = "Access Denied";
+    Layout = "_Layout"; // Or null if you don't want the sidebar to show
+}
+
+<div class="container d-flex justify-content-center align-items-center" style="min-height: 80vh;">
+    <div class="text-center">
+        <i class="fa-solid fa-shield-halved text-danger mb-4" style="font-size: 5rem; opacity: 0.8;"></i>
+        
+        <h1 class="display-4 fw-bold text-dark mb-2">403 Forbidden</h1>
+        <h4 class="text-muted mb-4">You do not have permission to view this module.</h4>
+        
+        <p class="text-secondary mb-4" style="max-width: 500px; margin: 0 auto;">
+            Your current security role does not grant you access to this specific area of NexusFlow ERP.
+            If you believe you need access to perform your job, please contact your System Administrator.
+        </p>
+
+        <a href="/" class="btn btn-primary px-4 fw-bold shadow-sm">
+            <i class="fa-solid fa-arrow-left me-2"></i> Return to Dashboard
+        </a>
+    </div>
+</div>

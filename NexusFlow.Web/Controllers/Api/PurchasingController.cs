@@ -53,6 +53,20 @@ namespace NexusFlow.Web.Controllers.Api
             return result.Succeeded ? Ok(result) : BadRequest(result);
         }
 
+        [HttpPut("purchase-orders/{id}")]
+        public async Task<IActionResult> UpdatePurchaseOrder(int id, [FromBody] UpdatePurchaseOrderCommand command)
+        {
+            // Standard REST API security check: Ensure the URL ID matches the Payload ID
+            if (id != command.Id)
+            {
+                return BadRequest("The ID in the URL does not match the ID in the payload.");
+            }
+
+            var result = await _mediator.Send(command);
+
+            return result.Succeeded ? Ok(result) : BadRequest(result);
+        }
+
         // ==========================================
         // 2. GOODS RECEIPT NOTES (GRN)
         // ==========================================
@@ -68,6 +82,13 @@ namespace NexusFlow.Web.Controllers.Api
         public async Task<IActionResult> CreateGrn([FromBody] CreateGrnCommand command)
         {
             var result = await _mediator.Send(command);
+            return result.Succeeded ? Ok(result) : BadRequest(result);
+        }
+
+        [HttpGet("grns/{id}")]
+        public async Task<IActionResult> GetGrnsById(int id)
+        {
+            var result = await _mediator.Send(new GetGrnByIdQuery { Id = id });
             return result.Succeeded ? Ok(result) : BadRequest(result);
         }
 
@@ -101,6 +122,23 @@ namespace NexusFlow.Web.Controllers.Api
         {
             var result = await _mediator.Send(new GetUnpaidSupplierBillsQuery { SupplierId = supplierId });
             return Ok(result);
+        }
+
+        [HttpGet("supplier-bills/{id}")]
+        public async Task<IActionResult> GetSupplierBillById(int id)
+        {
+            var result = await _mediator.Send(new GetSupplierBillByIdQuery { Id = id });
+            return result.Succeeded ? Ok(result) : BadRequest(result);
+        }
+
+        [HttpPut("supplier-bills/{id}")]
+        public async Task<IActionResult> UpdateSupplierBill(int id, [FromBody] UpdateSupplierBillCommand command)
+        {
+            // Ensure the handler knows exactly which Bill ID it is operating on
+            command.Bill.Id = id;
+
+            var result = await _mediator.Send(command);
+            return result.Succeeded ? Ok(result) : BadRequest(result);
         }
 
         // ==========================================

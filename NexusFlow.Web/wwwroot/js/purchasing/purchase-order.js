@@ -1,251 +1,436 @@
-﻿/**
- * Nexus ERP - Purchase Order Controller
- * Handles Header-Detail creation with dynamic calculations.
- */
-var poApp = (function () {
-    "use strict";
+﻿window.poApp = {
+    _table: null,
+    _modal: null,
+    _viewModal: null,
+    _products: [], // Only Raw Materials will be stored here
+    _suppliers: [],
 
-    var table, drawer;
-    var _itemList = []; // Local state for items
-    var _productsCache = []; // To store product details (Price, Name)
+    init: function () {
+        var modalEl = document.getElementById('poModal');
+        if (modalEl) this._modal = new bootstrap.Modal(modalEl, { backdrop: 'static', keyboard: false });
 
-    var init = function () {
-        _initGrid();
-        _loadMasterData();
-        _setupEventHandlers();
+        var viewEl = document.getElementById('poViewModal');
+        if (viewEl) this._viewModal = new bootstrap.Modal(viewEl);
 
-        var el = document.getElementById('poDrawer');
-        if (el) drawer = new bootstrap.Offcanvas(el);
-    };
+        document.getElementById('Date').valueAsDate = new Date();
 
-    var _initGrid = function () {
-        table = $('#poGrid').DataTable({
-            ajax: {
-                url: "/api/purchasing/purchase-orders",
-                type: "GET",
-                dataSrc: function (json) { return json.data || json || []; },
-                headers: { "Authorization": "Bearer " + localStorage.getItem("jwtToken") }
+        this._initFilters();
+        this._initGrid();
+        this._loadMasterData();
+
+        $('#frmPO').on('input change', '.calc-trigger', () => this.calculateTotals());
+    },
+
+    _initFilters: function () {
+        api.get('/api/Supplier').then(res => {
+            let suppliers = Array.isArray(res) ? res : (res?.data || []);
+            let $sup = $('#filterSupplier').empty().append('<option value="">All Suppliers</option>');
+            suppliers.forEach(s => $sup.append($('<option></option>').val(s.name).text(s.name)));
+        }).catch(err => console.error(err));
+
+        $('#filterSupplier, #filterStatus, #filterStartDate, #filterEndDate').on('change', () => this.reloadGrid());
+
+        $.fn.dataTable.ext.search.push((settings, data, dataIndex) => {
+            if (settings.nTable.id !== 'poGrid') return true;
+
+            const filterSup = ($('#filterSupplier').val() || '').toLowerCase();
+            const filterStatus = $('#filterStatus').val();
+            const filterStart = $('#filterStartDate').val();
+            const filterEnd = $('#filterEndDate').val();
+
+            const rowDateStr = data[1] || '';
+            const rowSup = (data[2] || '').toLowerCase();
+            const rowStatusBadge = data[3] || ''; // Contains the raw HTML of the badge
+
+            if (filterSup && !rowSup.includes(filterSup)) return false;
+
+            // Map Enum values to badge text
+            if (filterStatus) {
+                const statusMap = { '1': 'Draft', '2': 'Approved', '6': 'Partial', '3': 'Received', '4': 'Closed', '5': 'Cancelled' };
+                if (!rowStatusBadge.includes(statusMap[filterStatus])) return false;
+            }
+
+            if (filterStart || filterEnd) {
+                if (!rowDateStr) return false;
+                const rowDate = new Date(rowDateStr);
+                if (filterStart && rowDate < new Date(filterStart)) return false;
+                if (filterEnd && rowDate > new Date(filterEnd + 'T23:59:59')) return false;
+            }
+            return true;
+        });
+    },
+
+    resetFilters: function () {
+        $('#filterSupplier').val(''); $('#filterStatus').val('');
+        $('#filterStartDate').val(''); $('#filterEndDate').val('');
+        this.reloadGrid();
+    },
+
+    reloadGrid: function () { this._table.ajax.reload(); },
+
+    _initGrid: function () {
+        this._table = $('#poGrid').DataTable({
+            ajax: function (data, callback, settings) {
+                (async () => {
+                    try {
+                        const response = await api.get('/api/purchasing/purchase-orders');
+                        callback({ data: response.data || response || [] });
+                    } catch (e) { callback({ data: [] }); }
+                })();
+                return { abort: function () { } };
             },
             columns: [
-                { data: "poNumber", className: "font-monospace fw-semibold text-primary" },
+                { data: "poNumber", className: "font-monospace fw-bold text-primary" },
+                { data: "date", render: d => d ? new Date(d).toLocaleDateString() : '-' },
+                { data: "supplierName", className: "fw-bold" },
                 {
-                    data: "date",
-                    render: function (d) { return new Date(d).toLocaleDateString(); }
-                },
-                { data: "supplierName" },
-                {
-                    data: "status",
+                    data: "status", className: "text-center",
                     render: function (d) {
-                        var color = d === 'Draft' ? 'secondary' : (d === 'Closed' ? 'success' : 'primary');
-                        return `<span class="badge bg-${color}">${d}</span>`;
+                        if (d === 'Draft') return '<span class="badge bg-secondary">Draft</span>';
+                        if (d === 'Approved') return '<span class="badge bg-primary">Approved</span>';
+                        if (d === 'Partial') return '<span class="badge bg-info text-dark">Partial Receipt</span>';
+                        if (d === 'Received') return '<span class="badge bg-success">Fully Received</span>';
+                        if (d === 'Closed') return '<span class="badge bg-dark">Closed</span>';
+                        return `<span class="badge bg-danger">${d}</span>`;
                     }
                 },
+                { data: "totalAmount", className: "text-end fw-bold", render: d => parseFloat(d || 0).toLocaleString(undefined, { minimumFractionDigits: 2 }) },
                 {
-                    data: "totalAmount", className: "text-end fw-semibold",
-                    render: $.fn.dataTable.render.number(',', '.', 2)
-                },
-                {
-                    data: null, className: "text-end",
+                    data: null, className: "text-end pe-3", orderable: false,
                     render: function (data, type, row) {
-                        let btns = '';
+                        let btns = `<button class="btn btn-sm btn-outline-dark shadow-sm me-1" onclick="poApp.viewDocument(${row.id})" title="View Document"><i class="fa-solid fa-eye"></i></button>`;
 
-                        // If PO is not closed, show the deep-link to the GRN module
-                        if (row.status !== 'Closed') {
-                            btns += `<a href="/Purchasing/GRN?poId=${row.id}" class="btn btn-sm btn-success shadow-sm me-1">
-                                        <i class="fa-solid fa-truck-ramp-box me-1"></i> Receive
-                                     </a>`;
+                        // TIER-1 WORKFLOW: Allow Editing if it is a Draft!
+                        if (row.status === 'Draft') {
+                            btns += `<button class="btn btn-sm btn-outline-primary shadow-sm me-1" onclick="poApp.edit(${row.id})" title="Edit Draft"><i class="fa-solid fa-pen-to-square"></i></button>`;
                         }
 
-                        btns += `<button class="btn btn-sm btn-light border shadow-sm"><i class="fa-solid fa-eye text-secondary"></i></button>`;
+                        // Allow receiving if Approved or Partial
+                        if (row.status === 'Approved' || row.status === 'Partial') {
+                            btns += `<a href="/Purchasing/GRN?poId=${row.id}" class="btn btn-sm btn-success shadow-sm" title="Receive Stock">
+                                        <i class="fa-solid fa-truck-ramp-box"></i> Receive
+                                     </a>`;
+                        }
                         return btns;
                     }
                 }
             ],
-            order: [[0, 'desc']] // Newest first
+            order: [[0, 'desc']],
+            dom: '<"d-flex justify-content-between align-items-center mb-3"f>rt<"d-flex justify-content-between align-items-center mt-3"ip>',
+            pageLength: 20
         });
-    };
+    },
 
-    var _loadMasterData = async function () {
-        // 1. Load Suppliers
+    _loadMasterData: async function () {
         try {
-            const suppliers = await api.get('/api/Supplier'); // Use SupplierController
-            let opts = '<option value="">Select Supplier...</option>';
-            if (suppliers.data) {
-                suppliers.data.forEach(s => opts += `<option value="${s.id}">${s.name}</option>`);
-            }
-            $('#ddlSupplier').html(opts).select2({
-                theme: 'bootstrap-5',
-                dropdownParent: $('#poDrawer')
-            });
+            const [supRes, prodRes] = await Promise.all([
+                api.get('/api/Supplier'), api.get('/api/Product')
+            ]);
 
-            // 2. Load Products for Search (Optimized: Get variants directly)
-            // In a real app, this should be an AJAX Select2 search. 
-            // For now, we load all active variants.
-            const products = await api.get('/api/Product'); // Ensure this returns Variant info or use a dedicated endpoint
+            this._suppliers = Array.isArray(supRes) ? supRes : (supRes?.data || []);
+            const allProducts = Array.isArray(prodRes) ? prodRes : (prodRes?.data || []);
 
-            // Transform Product DTO to flat Variant list for dropdown
-            let prodOpts = '<option value="">Search Product...</option>';
-            if (products.data) {
-                products.data.forEach(p => {
-                    p.variants.forEach(v => {
-                        // Store in cache for quick lookup of price/name
-                        _productsCache.push({
-                            id: v.id, // Variant ID
-                            name: `${p.name} (${v.size}/${v.color})`,
-                            sku: v.sku,
-                            cost: v.costPrice
-                        });
-                        prodOpts += `<option value="${v.id}">${v.sku} - ${p.name} (${v.size}/${v.color})</option>`;
-                    });
-                });
-            }
-            $('#ddlProductSearch').html(prodOpts).select2({
-                theme: 'bootstrap-5',
-                dropdownParent: $('#poDrawer'),
-                placeholder: "Type to search SKU or Name..."
-            });
+            // TIER-1 FEATURE: Filter strictly to Raw Materials (ProductType = 1)
+            this._products = allProducts.filter(p => p.type === 1 || p.type === 'RawMaterial');
+
+            let $sup = $('#SupplierId').empty().append('<option value="">-- Select Supplier --</option>');
+            this._suppliers.forEach(s => $sup.append($('<option></option>').val(s.id).text(s.name)));
+
+            if ($('#SupplierId').hasClass('select2-hidden-accessible')) $('#SupplierId').select2('destroy');
+            $('#SupplierId').select2({ dropdownParent: $('#poModal') });
 
         } catch (e) {
-            console.error("Master data error", e);
+            console.error("[PO App] Master data error", e);
         }
-    };
+    },
 
-    var _setupEventHandlers = function () {
-        // Add Line Button
-        $('#btnAddLine').on('click', function () {
-            var variantId = parseInt($('#ddlProductSearch').val());
-            if (!variantId) return;
-
-            // Check if already exists
-            if (_itemList.find(x => x.productVariantId === variantId)) {
-                toastr.warning("Item already added.");
-                return;
-            }
-
-            var product = _productsCache.find(x => x.id === variantId);
-            if (product) {
-                _addItemRow(product);
-                $('#ddlProductSearch').val(null).trigger('change'); // Reset dropdown
-            }
-        });
-    };
-
-    var _addItemRow = function (product) {
-        var rowId = Date.now();
-
-        var item = {
-            rowId: rowId,
-            productVariantId: product.id,
-            productName: product.name,
-            sku: product.sku,
-            unitCost: product.cost,
-            quantity: 1
-        };
-        _itemList.push(item);
-        _renderTable();
-    };
-
-    var _renderTable = function () {
-        var tbody = $('#poItemsBody');
-        tbody.empty();
-        var grandTotal = 0;
-
-        _itemList.forEach((item, index) => {
-            var lineTotal = item.quantity * item.unitCost;
-            grandTotal += lineTotal;
-
-            var html = `
-                <tr>
-                    <td>
-                        <div class="fw-semibold">${item.productName}</div>
-                        <div class="small text-muted font-monospace">${item.sku}</div>
-                    </td>
-                    <td>
-                        <input type="number" class="form-control form-control-sm text-end" 
-                               value="${item.unitCost}" step="0.01"
-                               onchange="poApp.updateItem(${index}, 'cost', this.value)">
-                    </td>
-                    <td>
-                        <input type="number" class="form-control form-control-sm text-center" 
-                               value="${item.quantity}" min="1"
-                               onchange="poApp.updateItem(${index}, 'qty', this.value)">
-                    </td>
-                    <td class="text-end fw-semibold align-middle">
-                        ${lineTotal.toFixed(2)}
-                    </td>
-                    <td class="text-end">
-                        <button class="btn btn-sm text-danger" onclick="poApp.removeItem(${index})">
-                            <i class="bi bi-trash"></i>
-                        </button>
-                    </td>
-                </tr>
-            `;
-            tbody.append(html);
-        });
-
-        $('#lblGrandTotal').text(grandTotal.toFixed(2));
-    };
-
-    // --- Public Actions ---
-
-    var openCreatePanel = function () {
+    openCreateModal: function () {
         $('#frmPO')[0].reset();
-        $('#ddlSupplier').val(null).trigger('change');
-        $('#ddlProductSearch').val(null).trigger('change');
-        // Set Today's Date
-        document.getElementById('txtDate').valueAsDate = new Date();
+        $('#Id').val(0); // Reset ID to 0 for New PO
+        $('#poItemsBody').empty();
+        $('#SupplierId').val('').trigger('change');
+        this.addLine();
+        this.calculateTotals();
+        this._modal.show();
+    },
 
-        _itemList = [];
-        _renderTable();
+    addLine: function () {
+        const id = Date.now();
+        let productOptions = '<option value="">-- Search Raw Material --</option>';
 
-        drawer.show();
-    };
+        this._products.forEach(p => {
+            if (p.variants && p.variants.length > 0) {
+                productOptions += `<optgroup label="${p.name}">`;
+                p.variants.forEach(v => {
+                    let desc = v.sku;
+                    if (v.size !== 'N/A' || v.color !== 'N/A') desc += ` (${v.size !== 'N/A' ? v.size : ''} ${v.color !== 'N/A' ? v.color : ''})`;
 
-    var updateItem = function (index, field, value) {
-        var val = parseFloat(value) || 0;
-        if (field === 'qty') _itemList[index].quantity = val;
-        if (field === 'cost') _itemList[index].unitCost = val;
-        _renderTable(); // Re-calc totals
-    };
+                    // Injecting the UoM symbol into the data attribute so JS can extract it!
+                    const uom = p.unitOfMeasure?.symbol || 'u';
+                    productOptions += `<option value="${v.id}" data-cost="${v.costPrice}" data-uom="${uom}">${desc}</option>`;
+                });
+                productOptions += `</optgroup>`;
+            }
+        });
 
-    var removeItem = function (index) {
-        _itemList.splice(index, 1);
-        _renderTable();
-    };
+        const html = `
+            <tr id="row_${id}">
+                <td>
+                    <select class="form-select form-select-sm line-variant" style="width: 100%;">
+                        ${productOptions}
+                    </select>
+                </td>
+                <td>
+                    <div class="input-group input-group-sm">
+                        <input type="number" class="form-control text-center line-qty calc-trigger" value="1" min="1" step="1" onclick="this.select()">
+                        <span class="input-group-text fw-bold text-muted line-uom" style="width:50px; justify-content:center;">-</span>
+                    </div>
+                </td>
+                <td><input type="number" class="form-control form-control-sm text-end line-cost calc-trigger" value="0.00" step="0.01" onclick="this.select()"></td>
+                <td class="text-end fw-bold align-middle line-total">0.00</td>
+                <td class="text-center align-middle">
+                    <button type="button" class="btn btn-sm text-danger" onclick="$('#row_${id}').remove(); poApp.calculateTotals();">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                </td>
+            </tr>`;
 
-    var save = async function () {
-        var supplierId = $('#ddlSupplier').val();
-        if (!supplierId) { toastr.warning("Please select a Supplier."); return; }
-        if (_itemList.length === 0) { toastr.warning("Please add at least one product."); return; }
+        const newRow = $(html);
+        $('#poItemsBody').append(newRow);
 
-        var payload = {
-            SupplierId: parseInt(supplierId),
-            Date: $('#txtDate').val(),
-            ExpectedDate: $('#txtExpectedDate').val(),
-            Note: $('#txtNotes').val(),
-            Items: _itemList.map(i => ({
-                ProductVariantId: i.productVariantId,
-                QuantityOrdered: i.quantity,
-                UnitCost: i.unitCost
-            }))
+        newRow.find('.line-variant').select2({
+            dropdownParent: $('#poModal'), width: '100%'
+        }).on('change', function () {
+            poApp.onVariantSelect(this);
+        });
+    },
+
+    onVariantSelect: function (selectEl) {
+        const selectedOption = $(selectEl).find('option:selected');
+        const cost = selectedOption.data('cost') || 0;
+        const uom = selectedOption.data('uom') || '-';
+
+        const row = $(selectEl).closest('tr');
+        row.find('.line-cost').val(parseFloat(cost).toFixed(2));
+        row.find('.line-uom').text(uom);
+
+        // TIER-1 FEATURE: Smart UoM Validation
+        const qtyInput = row.find('.line-qty');
+        if (uom.toLowerCase() === 'pcs' || uom.toLowerCase() === 'doz' || uom.toLowerCase() === 'box') {
+            qtyInput.attr('step', '1');
+            qtyInput.val(Math.round(qtyInput.val() || 1)); // Force whole number
+        } else {
+            qtyInput.attr('step', '0.01'); // Allow decimals for m, kg, ltr
+        }
+
+        this.calculateTotals();
+    },
+
+    calculateTotals: function () {
+        let grandTotal = 0;
+        $('#poItemsBody tr').each(function () {
+            const qty = parseFloat($(this).find('.line-qty').val()) || 0;
+            const cost = parseFloat($(this).find('.line-cost').val()) || 0;
+            let lineTotal = qty * cost;
+            $(this).find('.line-total').text(lineTotal.toFixed(2));
+            grandTotal += lineTotal;
+        });
+        $('#lblGrandTotal').text(grandTotal.toLocaleString(undefined, { minimumFractionDigits: 2 }));
+    },
+
+    edit: async function (id) {
+        try {
+            const res = await api.get(`/api/purchasing/purchase-orders/${id}`);
+            const po = res.data || res;
+
+            $('#frmPO')[0].reset();
+            $('#poItemsBody').empty();
+
+            $('#Id').val(po.id);
+            $('#SupplierId').val(po.supplierId).trigger('change');
+
+            if (po.date) $('#Date').val(po.date.split('T')[0]);
+            if (po.expectedDate) $('#ExpectedDate').val(po.expectedDate.split('T')[0]);
+            $('#Note').val(po.note);
+
+            // Rebuild the dynamic grid lines
+            if (po.items && po.items.length > 0) {
+                po.items.forEach(item => {
+                    this._addExistingLine(item);
+                });
+            } else {
+                this.addLine(); // Fallback if empty
+            }
+
+            this.calculateTotals();
+            this._modal.show();
+        } catch (e) {
+            toastr.error("Could not load PO for editing.");
+        }
+    },
+
+    // Helper to rebuild existing lines with Select2 and UOM logic
+    _addExistingLine: function (item) {
+        const id = Date.now() + Math.floor(Math.random() * 1000);
+        let productOptions = '<option value="">-- Search Raw Material --</option>';
+        let uomSymbol = '-';
+
+        this._products.forEach(p => {
+            if (p.variants && p.variants.length > 0) {
+                productOptions += `<optgroup label="${p.name}">`;
+                p.variants.forEach(v => {
+                    let desc = v.sku;
+                    if (v.size !== 'N/A' || v.color !== 'N/A') desc += ` (${v.size !== 'N/A' ? v.size : ''} ${v.color !== 'N/A' ? v.color : ''})`;
+                    const uom = p.unitOfMeasure?.symbol || 'u';
+
+                    // Mark as selected if it matches the saved item
+                    let isSelected = (v.id === item.productVariantId) ? 'selected' : '';
+                    if (isSelected) uomSymbol = uom;
+
+                    productOptions += `<option value="${v.id}" data-cost="${v.costPrice}" data-uom="${uom}" ${isSelected}>${desc}</option>`;
+                });
+                productOptions += `</optgroup>`;
+            }
+        });
+
+        let step = (uomSymbol.toLowerCase() === 'pcs' || uomSymbol.toLowerCase() === 'doz' || uomSymbol.toLowerCase() === 'box') ? '1' : '0.01';
+
+        const html = `
+            <tr id="row_${id}">
+                <td>
+                    <select class="form-select form-select-sm line-variant" style="width: 100%;">
+                        ${productOptions}
+                    </select>
+                </td>
+                <td>
+                    <div class="input-group input-group-sm">
+                        <input type="number" class="form-control text-center line-qty calc-trigger" value="${item.quantityOrdered}" min="0.01" step="${step}" onclick="this.select()">
+                        <span class="input-group-text fw-bold text-muted line-uom" style="width:50px; justify-content:center;">${uomSymbol}</span>
+                    </div>
+                </td>
+                <td><input type="number" class="form-control form-control-sm text-end line-cost calc-trigger" value="${item.unitCost.toFixed(2)}" step="0.01" onclick="this.select()"></td>
+                <td class="text-end fw-bold align-middle line-total">0.00</td>
+                <td class="text-center align-middle">
+                    <button type="button" class="btn btn-sm text-danger" onclick="$('#row_${id}').remove(); poApp.calculateTotals();">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                </td>
+            </tr>`;
+
+        const newRow = $(html);
+        $('#poItemsBody').append(newRow);
+
+        newRow.find('.line-variant').select2({
+            dropdownParent: $('#poModal'), width: '100%'
+        }).on('change', function () {
+            poApp.onVariantSelect(this);
+        });
+    },
+
+    savePO: async function (isDraft) {
+        var form = document.getElementById('frmPO');
+        var poId = parseInt($('#Id').val()) || 0; // TIER-1 FIX: Grab ID
+
+        var dateVal = $('#Date').val();
+        var expDateVal = $('#ExpectedDate').val();
+        if (expDateVal && new Date(expDateVal) < new Date(dateVal)) {
+            toastr.warning("Expected Delivery Date cannot be earlier than the Order Date.");
+            return;
+        }
+
+        var supplierId = parseInt($('#SupplierId').val()) || 0;
+        if (supplierId === 0) { toastr.warning("Select a Supplier."); return; }
+        if (!form.checkValidity()) { form.reportValidity(); return; }
+
+        const payload = {
+            Id: poId, // Add ID to payload
+            SupplierId: supplierId,
+            Date: dateVal,
+            ExpectedDate: expDateVal,
+            Note: $('#Note').val(),
+            IsDraft: isDraft,
+            Items: []
         };
 
-        // In the save function:
-        var res = await api.post('/api/purchasing/purchase-orders', payload);
-        if (res && res.succeeded) {
-            toastr.success(res.message);
-            drawer.hide();
-            table.ajax.reload();
+        $('#poItemsBody tr').each(function () {
+            const varId = $(this).find('.line-variant').val();
+            if (varId) {
+                payload.Items.push({
+                    ProductVariantId: parseInt(varId),
+                    QuantityOrdered: parseFloat($(this).find('.line-qty').val()) || 0,
+                    UnitCost: parseFloat($(this).find('.line-cost').val()) || 0
+                });
+            }
+        });
+
+        if (payload.Items.length === 0) { toastr.warning("Add at least one raw material."); return; }
+
+        var $btn = $(event.currentTarget);
+        var originalText = $btn.html();
+        $btn.prop('disabled', true).html('<i class="spinner-border spinner-border-sm me-2"></i>Processing...');
+
+        try {
+            // TIER-1 FIX: Smart Routing (POST for New, PUT for Edit)
+            const res = poId === 0
+                ? await api.post('/api/purchasing/purchase-orders', payload)
+                : await api.put(`/api/purchasing/purchase-orders/${poId}`, payload);
+
+            if (res && res.succeeded) {
+                toastr.success(res.message || "Purchase Order saved.");
+                this._modal.hide();
+                this._table.ajax.reload(null, false);
+            } else {
+                toastr.error(res?.messages?.[0] || "Failed to save PO.");
+            }
+        } catch (e) { console.error(e); }
+        finally { $btn.prop('disabled', false).html(originalText); }
+    },
+
+    viewDocument: async function (id) {
+        try {
+            const res = await api.get(`/api/purchasing/purchase-orders/${id}`);
+            const doc = res.data || res;
+
+            $('#docPoNo').text(doc.poNumber);
+            $('#docDate').text(new Date(doc.date).toLocaleDateString());
+
+            if (doc.expectedDate) $('#docExpectedDate').text(new Date(doc.expectedDate).toLocaleDateString());
+            else $('#docExpectedDate').text('TBA');
+
+            $('#docSupplier').text(doc.supplierName);
+            $('#docNotes').text(doc.note || '-');
+            $('#docTotal, #docTotalLarge').text(parseFloat(doc.totalAmount || 0).toLocaleString(undefined, { minimumFractionDigits: 2 }));
+
+            // Map Status to colored badge inside the viewer
+            const sMap = { 'Draft': 'bg-secondary', 'Approved': 'bg-primary', 'Partial': 'bg-info text-dark', 'Received': 'bg-success', 'Closed': 'bg-dark', 'Cancelled': 'bg-danger' };
+            $('#docStatusBadge').removeClass().addClass(`badge ${sMap[doc.status] || 'bg-secondary'}`).text(doc.status);
+
+            let tbody = '';
+            if (doc.items) {
+                doc.items.forEach(i => {
+                    let qtyOrdered = parseFloat(i.quantityOrdered || 0);
+                    let qtyReceived = parseFloat(i.quantityReceived || 0);
+                    let cost = parseFloat(i.unitCost || 0);
+                    let lineGross = qtyOrdered * cost;
+
+                    let recHtml = qtyReceived >= qtyOrdered ? `<span class="text-success fw-bold">${qtyReceived}</span>` : qtyReceived;
+
+                    tbody += `
+                        <tr>
+                            <td class="fw-bold">${i.productName}</td>
+                            <td class="text-center font-monospace">${qtyOrdered}</td>
+                            <td class="text-center">${recHtml}</td>
+                            <td class="text-end">${cost.toFixed(2)}</td>
+                            <td class="text-end fw-bold">${lineGross.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                        </tr>`;
+                });
+            }
+            $('#docItemsBody').html(tbody);
+            this._viewModal.show();
+        } catch (e) {
+            toastr.error("Failed to load PO document.");
         }
-    };
+    }
+};
 
-    return {
-        init: init,
-        openCreatePanel: openCreatePanel,
-        updateItem: updateItem,
-        removeItem: removeItem,
-        save: save
-    };
-})();
-
-$(document).ready(function () { poApp.init(); });
+$(document).ready(function () { window.poApp.init(); });

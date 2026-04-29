@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NexusFlow.Domain.Common;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
@@ -6,19 +7,13 @@ using System.Text;
 namespace NexusFlow.Domain.Entities.System
 {
     [Table("AuditLogs", Schema = "System")]
-    public class AuditLog
+    public class AuditLog : BaseEntity
     {
-        public int Id { get; set; }
-        public string UserId { get; set; } = string.Empty; // e.g., "admin@nexusflow.com"
-        public string Type { get; set; } = string.Empty;   // "Create", "Update", "Delete"
-        public string TableName { get; set; } = string.Empty;
-        public DateTime DateTime { get; set; }
-
-        public string PrimaryKey { get; set; } = string.Empty; // The ID of the row changed
-
-        // We store the data as JSON strings
-        public string? OldValues { get; set; }
-        public string? NewValues { get; set; }
-        public string? AffectedColumns { get; set; }
+        public string Action { get; set; } = string.Empty;       // e.g., "STORAGE_FAILURE_FALLBACK", "LOGIN_FAILED", "STOCK_TAKE_APPROVED"
+        public string EntityName { get; set; } = string.Empty;   // e.g., "Product-Images", "StockTake"
+        public string UserId { get; set; } = "SYSTEM";           // The user who triggered the event
+        public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+        public string Details { get; set; } = string.Empty;      // Human-readable details or specific error messages
+        public string? IPAddress { get; set; }                   // Optional security tracking
     }
 }

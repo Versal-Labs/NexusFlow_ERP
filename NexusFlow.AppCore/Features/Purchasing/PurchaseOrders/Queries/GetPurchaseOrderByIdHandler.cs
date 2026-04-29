@@ -27,7 +27,7 @@ namespace NexusFlow.AppCore.Features.Purchasing.PurchaseOrders.Queries
                 .Include(p => p.Supplier)
                 .Include(p => p.Items)
                     .ThenInclude(i => i.ProductVariant)
-                        .ThenInclude(pv => pv.Product) // To get Product Name
+                        .ThenInclude(pv => pv.Product)
                 .FirstOrDefaultAsync(p => p.Id == request.Id, cancellationToken);
 
             if (po == null) return Result<PurchaseOrderDto>.Failure("PO not found.");
@@ -37,20 +37,25 @@ namespace NexusFlow.AppCore.Features.Purchasing.PurchaseOrders.Queries
                 Id = po.Id,
                 PoNumber = po.PoNumber,
                 Date = po.Date,
+                ExpectedDate = po.ExpectedDate ?? po.Date, // Fallback
                 SupplierId = po.SupplierId,
-                SupplierName = po.Supplier.Name,
+                SupplierName = po.Supplier?.Name ?? "Unknown",
                 Status = po.Status.ToString(),
                 TotalAmount = po.TotalAmount,
-                Note = po.Note,
+                Note = po.Note ?? string.Empty,
                 Items = po.Items.Select(i => new PurchaseOrderItemDto
                 {
                     Id = i.Id,
                     ProductVariantId = i.ProductVariantId,
-                    // Format: "Nike Shirt (Red/XL)"
-                    ProductName = $"{i.ProductVariant.Product.Name} ({i.ProductVariant.Size}/{i.ProductVariant.Color})",
-                    SKU = i.ProductVariant.SKU,
+
+                    // TIER-1 FIX: Safe null navigation using '?.' and fallback string
+                    ProductName = i.ProductVariant?.Product != null
+                        ? $"{i.ProductVariant.Product.Name} ({i.ProductVariant.Size}/{i.ProductVariant.Color})"
+                        : "Unknown Product",
+
+                    SKU = i.ProductVariant?.SKU ?? "N/A",
                     QuantityOrdered = i.QuantityOrdered,
-                    QuantityReceived = i.QuantityReceived, // Critical for GRN logic
+                    QuantityReceived = i.QuantityReceived,
                     UnitCost = i.UnitCost
                 }).ToList()
             };

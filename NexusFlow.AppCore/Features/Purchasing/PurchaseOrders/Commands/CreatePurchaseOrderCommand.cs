@@ -14,15 +14,16 @@ namespace NexusFlow.AppCore.Features.Purchasing.PurchaseOrders.Commands
     {
         public int SupplierId { get; set; }
         public DateTime Date { get; set; }
-        public DateTime ExpectedDate { get; set; }
-        public string Note { get; set; }
+        public DateTime? ExpectedDate { get; set; }
+        public string Note { get; set; } = string.Empty;
+        public bool IsDraft { get; set; } // TIER-1 FIX: Added IsDraft flag
         public List<PurchaseOrderItemDto> Items { get; set; } = new();
     }
 
     public class CreatePurchaseOrderHandler : IRequestHandler<CreatePurchaseOrderCommand, Result<int>>
     {
         private readonly IErpDbContext _context;
-        private readonly INumberSequenceService _sequenceService; // <--- The Sequence Manager
+        private readonly INumberSequenceService _sequenceService;
 
         public CreatePurchaseOrderHandler(IErpDbContext context, INumberSequenceService sequenceService)
         {
@@ -35,38 +36,35 @@ namespace NexusFlow.AppCore.Features.Purchasing.PurchaseOrders.Commands
             if (request.Items == null || !request.Items.Any())
                 return Result<int>.Failure("Cannot create an empty Purchase Order.");
 
-            // 1. Generate PO Number (e.g. "PO-2024-001")
             string poNumber = await _sequenceService.GenerateNextNumberAsync("Purchasing", cancellationToken);
 
-            // 2. Create Header
             var po = new PurchaseOrder
             {
                 PoNumber = poNumber,
                 Date = request.Date,
-                // ExpectedDate = request.ExpectedDate, // Add property to Entity if missing
+                ExpectedDate = request.ExpectedDate,
                 SupplierId = request.SupplierId,
-                Status = PurchaseOrderStatus.Draft,
+
+                // TIER-1 FIX: Respect the UI button clicked!
+                Status = request.IsDraft ? PurchaseOrderStatus.Draft : PurchaseOrderStatus.Approved,
+
                 Items = new List<PurchaseOrderItem>(),
                 Note = request.Note
             };
 
             decimal grandTotal = 0;
 
-            // 3. Create Lines
             foreach (var item in request.Items)
             {
                 if (item.QuantityOrdered <= 0) continue;
 
-                var line = new PurchaseOrderItem
+                po.Items.Add(new PurchaseOrderItem
                 {
                     ProductVariantId = item.ProductVariantId,
                     QuantityOrdered = item.QuantityOrdered,
                     UnitCost = item.UnitCost,
                     QuantityReceived = 0
-                };
-
-                // Add to collection
-                po.Items.Add(line);
+                });
 
                 grandTotal += (item.QuantityOrdered * item.UnitCost);
             }

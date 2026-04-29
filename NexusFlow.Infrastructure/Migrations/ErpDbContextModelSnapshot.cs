@@ -199,12 +199,33 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.Property<string>("Suffix")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime>("ValidFrom")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidFrom");
+
+                    b.Property<DateTime>("ValidTo")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidTo");
+
                     b.HasKey("Id");
 
                     b.HasIndex("Module", "Prefix")
                         .IsUnique();
 
                     b.ToTable("NumberSequences", "Config");
+
+                    b.ToTable(tb => tb.IsTemporal(ttb =>
+                            {
+                                ttb.UseHistoryTable("NumberSequences_History", "Config");
+                                ttb
+                                    .HasPeriodStart("ValidFrom")
+                                    .HasColumnName("ValidFrom");
+                                ttb
+                                    .HasPeriodEnd("ValidTo")
+                                    .HasColumnName("ValidTo");
+                            }));
                 });
 
             modelBuilder.Entity("NexusFlow.Domain.Entities.Config.SystemConfig", b =>
@@ -240,6 +261,16 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.Property<string>("LastModifiedBy")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime>("ValidFrom")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidFrom");
+
+                    b.Property<DateTime>("ValidTo")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidTo");
+
                     b.Property<string>("Value")
                         .IsRequired()
                         .HasMaxLength(500)
@@ -251,6 +282,17 @@ namespace NexusFlow.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("SystemConfigs", "Config");
+
+                    b.ToTable(tb => tb.IsTemporal(ttb =>
+                            {
+                                ttb.UseHistoryTable("SystemConfigs_History", "Config");
+                                ttb
+                                    .HasPeriodStart("ValidFrom")
+                                    .HasColumnName("ValidFrom");
+                                ttb
+                                    .HasPeriodEnd("ValidTo")
+                                    .HasColumnName("ValidTo");
+                            }));
                 });
 
             modelBuilder.Entity("NexusFlow.Domain.Entities.Config.SystemLookup", b =>
@@ -289,6 +331,16 @@ namespace NexusFlow.Infrastructure.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
+                    b.Property<DateTime>("ValidFrom")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidFrom");
+
+                    b.Property<DateTime>("ValidTo")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidTo");
+
                     b.Property<string>("Value")
                         .IsRequired()
                         .HasMaxLength(200)
@@ -302,6 +354,17 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.HasIndex("Type", "IsActive");
 
                     b.ToTable("SystemLookups", "Config");
+
+                    b.ToTable(tb => tb.IsTemporal(ttb =>
+                            {
+                                ttb.UseHistoryTable("SystemLookups_History", "Config");
+                                ttb
+                                    .HasPeriodStart("ValidFrom")
+                                    .HasColumnName("ValidFrom");
+                                ttb
+                                    .HasPeriodEnd("ValidTo")
+                                    .HasColumnName("ValidTo");
+                            }));
                 });
 
             modelBuilder.Entity("NexusFlow.Domain.Entities.Finance.Account", b =>
@@ -362,6 +425,16 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.Property<int>("Type")
                         .HasColumnType("int");
 
+                    b.Property<DateTime>("ValidFrom")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidFrom");
+
+                    b.Property<DateTime>("ValidTo")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidTo");
+
                     b.HasKey("Id");
 
                     b.HasIndex("Code")
@@ -370,6 +443,17 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.HasIndex("ParentAccountId");
 
                     b.ToTable("Accounts", "Finance");
+
+                    b.ToTable(tb => tb.IsTemporal(ttb =>
+                            {
+                                ttb.UseHistoryTable("Accounts_History", "Finance");
+                                ttb
+                                    .HasPeriodStart("ValidFrom")
+                                    .HasColumnName("ValidFrom");
+                                ttb
+                                    .HasPeriodEnd("ValidTo")
+                                    .HasColumnName("ValidTo");
+                            }));
 
                     b.HasData(
                         new
@@ -826,9 +910,30 @@ namespace NexusFlow.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime>("ValidFrom")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidFrom");
+
+                    b.Property<DateTime>("ValidTo")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidTo");
+
                     b.HasKey("Id");
 
                     b.ToTable("Banks", "Finance");
+
+                    b.ToTable(tb => tb.IsTemporal(ttb =>
+                            {
+                                ttb.UseHistoryTable("Banks_History", "Finance");
+                                ttb
+                                    .HasPeriodStart("ValidFrom")
+                                    .HasColumnName("ValidFrom");
+                                ttb
+                                    .HasPeriodEnd("ValidTo")
+                                    .HasColumnName("ValidTo");
+                            }));
                 });
 
             modelBuilder.Entity("NexusFlow.Domain.Entities.Finance.BankBranch", b =>
@@ -865,11 +970,32 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.Property<string>("LastModifiedBy")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime>("ValidFrom")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidFrom");
+
+                    b.Property<DateTime>("ValidTo")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidTo");
+
                     b.HasKey("Id");
 
                     b.HasIndex("BankId");
 
                     b.ToTable("BankBranches", "Finance");
+
+                    b.ToTable(tb => tb.IsTemporal(ttb =>
+                            {
+                                ttb.UseHistoryTable("BankBranches_History", "Finance");
+                                ttb
+                                    .HasPeriodStart("ValidFrom")
+                                    .HasColumnName("ValidFrom");
+                                ttb
+                                    .HasPeriodEnd("ValidTo")
+                                    .HasColumnName("ValidTo");
+                            }));
                 });
 
             modelBuilder.Entity("NexusFlow.Domain.Entities.Finance.BankReconciliation", b =>
@@ -904,11 +1030,32 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.Property<decimal>("StatementEndingBalance")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<DateTime>("ValidFrom")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidFrom");
+
+                    b.Property<DateTime>("ValidTo")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidTo");
+
                     b.HasKey("Id");
 
                     b.HasIndex("BankAccountId");
 
                     b.ToTable("BankReconciliations", "Finance");
+
+                    b.ToTable(tb => tb.IsTemporal(ttb =>
+                            {
+                                ttb.UseHistoryTable("BankReconciliations_History", "Finance");
+                                ttb
+                                    .HasPeriodStart("ValidFrom")
+                                    .HasColumnName("ValidFrom");
+                                ttb
+                                    .HasPeriodEnd("ValidTo")
+                                    .HasColumnName("ValidTo");
+                            }));
                 });
 
             modelBuilder.Entity("NexusFlow.Domain.Entities.Finance.ChequeRegister", b =>
@@ -962,6 +1109,16 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
+                    b.Property<DateTime>("ValidFrom")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidFrom");
+
+                    b.Property<DateTime>("ValidTo")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidTo");
+
                     b.HasKey("Id");
 
                     b.HasIndex("BankBranchId");
@@ -975,6 +1132,17 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.HasIndex("OriginalReceiptId");
 
                     b.ToTable("ChequeRegister", "Finance");
+
+                    b.ToTable(tb => tb.IsTemporal(ttb =>
+                            {
+                                ttb.UseHistoryTable("ChequeRegister_History", "Finance");
+                                ttb
+                                    .HasPeriodStart("ValidFrom")
+                                    .HasColumnName("ValidFrom");
+                                ttb
+                                    .HasPeriodEnd("ValidTo")
+                                    .HasColumnName("ValidTo");
+                            }));
                 });
 
             modelBuilder.Entity("NexusFlow.Domain.Entities.Finance.FinancialPeriod", b =>
@@ -1013,12 +1181,33 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.Property<DateTime>("StartDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<DateTime>("ValidFrom")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidFrom");
+
+                    b.Property<DateTime>("ValidTo")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidTo");
+
                     b.Property<int>("Year")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
                     b.ToTable("FinancialPeriods", "Finance");
+
+                    b.ToTable(tb => tb.IsTemporal(ttb =>
+                            {
+                                ttb.UseHistoryTable("FinancialPeriods_History", "Finance");
+                                ttb
+                                    .HasPeriodStart("ValidFrom")
+                                    .HasColumnName("ValidFrom");
+                                ttb
+                                    .HasPeriodEnd("ValidTo")
+                                    .HasColumnName("ValidTo");
+                            }));
                 });
 
             modelBuilder.Entity("NexusFlow.Domain.Entities.Finance.JournalEntry", b =>
@@ -1059,9 +1248,30 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.Property<decimal>("TotalAmount")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<DateTime>("ValidFrom")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidFrom");
+
+                    b.Property<DateTime>("ValidTo")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidTo");
+
                     b.HasKey("Id");
 
                     b.ToTable("JournalEntries", "Finance");
+
+                    b.ToTable(tb => tb.IsTemporal(ttb =>
+                            {
+                                ttb.UseHistoryTable("JournalEntries_History", "Finance");
+                                ttb
+                                    .HasPeriodStart("ValidFrom")
+                                    .HasColumnName("ValidFrom");
+                                ttb
+                                    .HasPeriodEnd("ValidTo")
+                                    .HasColumnName("ValidTo");
+                            }));
                 });
 
             modelBuilder.Entity("NexusFlow.Domain.Entities.Finance.JournalLine", b =>
@@ -1105,6 +1315,16 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.Property<string>("LastModifiedBy")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime>("ValidFrom")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidFrom");
+
+                    b.Property<DateTime>("ValidTo")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidTo");
+
                     b.HasKey("Id");
 
                     b.HasIndex("AccountId");
@@ -1114,6 +1334,17 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.HasIndex("JournalEntryId");
 
                     b.ToTable("JournalLines", "Finance");
+
+                    b.ToTable(tb => tb.IsTemporal(ttb =>
+                            {
+                                ttb.UseHistoryTable("JournalLines_History", "Finance");
+                                ttb
+                                    .HasPeriodStart("ValidFrom")
+                                    .HasColumnName("ValidFrom");
+                                ttb
+                                    .HasPeriodEnd("ValidTo")
+                                    .HasColumnName("ValidTo");
+                            }));
                 });
 
             modelBuilder.Entity("NexusFlow.Domain.Entities.Finance.PaymentAllocation", b =>
@@ -1148,6 +1379,16 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.Property<int?>("SupplierBillId")
                         .HasColumnType("int");
 
+                    b.Property<DateTime>("ValidFrom")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidFrom");
+
+                    b.Property<DateTime>("ValidTo")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidTo");
+
                     b.HasKey("Id");
 
                     b.HasIndex("PaymentTransactionId");
@@ -1157,6 +1398,17 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.HasIndex("SupplierBillId");
 
                     b.ToTable("PaymentAllocations", "Finance");
+
+                    b.ToTable(tb => tb.IsTemporal(ttb =>
+                            {
+                                ttb.UseHistoryTable("PaymentAllocations_History", "Finance");
+                                ttb
+                                    .HasPeriodStart("ValidFrom")
+                                    .HasColumnName("ValidFrom");
+                                ttb
+                                    .HasPeriodEnd("ValidTo")
+                                    .HasColumnName("ValidTo");
+                            }));
                 });
 
             modelBuilder.Entity("NexusFlow.Domain.Entities.Finance.PaymentTransaction", b =>
@@ -1210,6 +1462,16 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.Property<int>("Type")
                         .HasColumnType("int");
 
+                    b.Property<DateTime>("ValidFrom")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidFrom");
+
+                    b.Property<DateTime>("ValidTo")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidTo");
+
                     b.HasKey("Id");
 
                     b.HasIndex("CustomerId");
@@ -1217,6 +1479,17 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.HasIndex("SupplierId");
 
                     b.ToTable("PaymentTransactions", "Finance");
+
+                    b.ToTable(tb => tb.IsTemporal(ttb =>
+                            {
+                                ttb.UseHistoryTable("PaymentTransactions_History", "Finance");
+                                ttb
+                                    .HasPeriodStart("ValidFrom")
+                                    .HasColumnName("ValidFrom");
+                                ttb
+                                    .HasPeriodEnd("ValidTo")
+                                    .HasColumnName("ValidTo");
+                            }));
                 });
 
             modelBuilder.Entity("NexusFlow.Domain.Entities.Finance.TaxRate", b =>
@@ -1251,11 +1524,32 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.Property<int>("TaxTypeId")
                         .HasColumnType("int");
 
+                    b.Property<DateTime>("ValidFrom")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidFrom");
+
+                    b.Property<DateTime>("ValidTo")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidTo");
+
                     b.HasKey("Id");
 
                     b.HasIndex("TaxTypeId");
 
                     b.ToTable("TaxRates", "Finance");
+
+                    b.ToTable(tb => tb.IsTemporal(ttb =>
+                            {
+                                ttb.UseHistoryTable("TaxRates_History", "Finance");
+                                ttb
+                                    .HasPeriodStart("ValidFrom")
+                                    .HasColumnName("ValidFrom");
+                                ttb
+                                    .HasPeriodEnd("ValidTo")
+                                    .HasColumnName("ValidTo");
+                            }));
                 });
 
             modelBuilder.Entity("NexusFlow.Domain.Entities.Finance.TaxType", b =>
@@ -1290,11 +1584,32 @@ namespace NexusFlow.Infrastructure.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
+                    b.Property<DateTime>("ValidFrom")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidFrom");
+
+                    b.Property<DateTime>("ValidTo")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidTo");
+
                     b.HasKey("Id");
 
                     b.HasIndex("AccountId");
 
                     b.ToTable("TaxTypes", "Finance");
+
+                    b.ToTable(tb => tb.IsTemporal(ttb =>
+                            {
+                                ttb.UseHistoryTable("TaxTypes_History", "Finance");
+                                ttb
+                                    .HasPeriodStart("ValidFrom")
+                                    .HasColumnName("ValidFrom");
+                                ttb
+                                    .HasPeriodEnd("ValidTo")
+                                    .HasColumnName("ValidTo");
+                            }));
                 });
 
             modelBuilder.Entity("NexusFlow.Domain.Entities.HR.Employee", b =>
@@ -1365,6 +1680,16 @@ namespace NexusFlow.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime>("ValidFrom")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidFrom");
+
+                    b.Property<DateTime>("ValidTo")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidTo");
+
                     b.HasKey("Id");
 
                     b.HasIndex("ApplicationUserId");
@@ -1376,6 +1701,17 @@ namespace NexusFlow.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("Employees", "HR");
+
+                    b.ToTable(tb => tb.IsTemporal(ttb =>
+                            {
+                                ttb.UseHistoryTable("Employees_History", "HR");
+                                ttb
+                                    .HasPeriodStart("ValidFrom")
+                                    .HasColumnName("ValidFrom");
+                                ttb
+                                    .HasPeriodEnd("ValidTo")
+                                    .HasColumnName("ValidTo");
+                            }));
                 });
 
             modelBuilder.Entity("NexusFlow.Domain.Entities.Inventory.StockLayer", b =>
@@ -1420,6 +1756,16 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.Property<decimal>("UnitCost")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<DateTime>("ValidFrom")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidFrom");
+
+                    b.Property<DateTime>("ValidTo")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidTo");
+
                     b.Property<int>("WarehouseId")
                         .HasColumnType("int");
 
@@ -1430,6 +1776,17 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.HasIndex("ProductVariantId", "WarehouseId", "DateReceived");
 
                     b.ToTable("StockLayers", "Inventory");
+
+                    b.ToTable(tb => tb.IsTemporal(ttb =>
+                            {
+                                ttb.UseHistoryTable("StockLayers_History", "Inventory");
+                                ttb
+                                    .HasPeriodStart("ValidFrom")
+                                    .HasColumnName("ValidFrom");
+                                ttb
+                                    .HasPeriodEnd("ValidTo")
+                                    .HasColumnName("ValidTo");
+                            }));
                 });
 
             modelBuilder.Entity("NexusFlow.Domain.Entities.Inventory.StockTake", b =>
@@ -1475,6 +1832,16 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.Property<decimal>("TotalVarianceValue")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<DateTime>("ValidFrom")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidFrom");
+
+                    b.Property<DateTime>("ValidTo")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidTo");
+
                     b.Property<int>("WarehouseId")
                         .HasColumnType("int");
 
@@ -1483,6 +1850,17 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.HasIndex("WarehouseId");
 
                     b.ToTable("StockTakes", "Inventory");
+
+                    b.ToTable(tb => tb.IsTemporal(ttb =>
+                            {
+                                ttb.UseHistoryTable("StockTakes_History", "Inventory");
+                                ttb
+                                    .HasPeriodStart("ValidFrom")
+                                    .HasColumnName("ValidFrom");
+                                ttb
+                                    .HasPeriodEnd("ValidTo")
+                                    .HasColumnName("ValidTo");
+                            }));
                 });
 
             modelBuilder.Entity("NexusFlow.Domain.Entities.Inventory.StockTakeItem", b =>
@@ -1569,6 +1947,16 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.Property<decimal>("UnitCost")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<DateTime>("ValidFrom")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidFrom");
+
+                    b.Property<DateTime>("ValidTo")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidTo");
+
                     b.Property<int>("WarehouseId")
                         .HasColumnType("int");
 
@@ -1579,6 +1967,17 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.HasIndex("WarehouseId");
 
                     b.ToTable("StockTransactions", "Inventory");
+
+                    b.ToTable(tb => tb.IsTemporal(ttb =>
+                            {
+                                ttb.UseHistoryTable("StockTransactions_History", "Inventory");
+                                ttb
+                                    .HasPeriodStart("ValidFrom")
+                                    .HasColumnName("ValidFrom");
+                                ttb
+                                    .HasPeriodEnd("ValidTo")
+                                    .HasColumnName("ValidTo");
+                            }));
                 });
 
             modelBuilder.Entity("NexusFlow.Domain.Entities.Master.BillOfMaterial", b =>
@@ -1611,11 +2010,32 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.Property<int>("ProductVariantId")
                         .HasColumnType("int");
 
+                    b.Property<DateTime>("ValidFrom")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidFrom");
+
+                    b.Property<DateTime>("ValidTo")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidTo");
+
                     b.HasKey("Id");
 
                     b.HasIndex("ProductVariantId");
 
                     b.ToTable("BillOfMaterials", "Master");
+
+                    b.ToTable(tb => tb.IsTemporal(ttb =>
+                            {
+                                ttb.UseHistoryTable("BillOfMaterials_History", "Master");
+                                ttb
+                                    .HasPeriodStart("ValidFrom")
+                                    .HasColumnName("ValidFrom");
+                                ttb
+                                    .HasPeriodEnd("ValidTo")
+                                    .HasColumnName("ValidTo");
+                            }));
                 });
 
             modelBuilder.Entity("NexusFlow.Domain.Entities.Master.BomComponent", b =>
@@ -1647,6 +2067,16 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.Property<decimal>("Quantity")
                         .HasColumnType("decimal(18,4)");
 
+                    b.Property<DateTime>("ValidFrom")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidFrom");
+
+                    b.Property<DateTime>("ValidTo")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidTo");
+
                     b.HasKey("Id");
 
                     b.HasIndex("BillOfMaterialId");
@@ -1654,6 +2084,17 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.HasIndex("MaterialVariantId");
 
                     b.ToTable("BomComponents", "Master");
+
+                    b.ToTable(tb => tb.IsTemporal(ttb =>
+                            {
+                                ttb.UseHistoryTable("BomComponents_History", "Master");
+                                ttb
+                                    .HasPeriodStart("ValidFrom")
+                                    .HasColumnName("ValidFrom");
+                                ttb
+                                    .HasPeriodEnd("ValidTo")
+                                    .HasColumnName("ValidTo");
+                            }));
                 });
 
             modelBuilder.Entity("NexusFlow.Domain.Entities.Master.Brand", b =>
@@ -1683,9 +2124,30 @@ namespace NexusFlow.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime>("ValidFrom")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidFrom");
+
+                    b.Property<DateTime>("ValidTo")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidTo");
+
                     b.HasKey("Id");
 
                     b.ToTable("Brands", "Master");
+
+                    b.ToTable(tb => tb.IsTemporal(ttb =>
+                            {
+                                ttb.UseHistoryTable("Brands_History", "Master");
+                                ttb
+                                    .HasPeriodStart("ValidFrom")
+                                    .HasColumnName("ValidFrom");
+                                ttb
+                                    .HasPeriodEnd("ValidTo")
+                                    .HasColumnName("ValidTo");
+                            }));
                 });
 
             modelBuilder.Entity("NexusFlow.Domain.Entities.Master.Category", b =>
@@ -1728,6 +2190,16 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.Property<int?>("SalesAccountId")
                         .HasColumnType("int");
 
+                    b.Property<DateTime>("ValidFrom")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidFrom");
+
+                    b.Property<DateTime>("ValidTo")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidTo");
+
                     b.HasKey("Id");
 
                     b.HasIndex("CogsAccountId");
@@ -1739,6 +2211,103 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.HasIndex("SalesAccountId");
 
                     b.ToTable("Categories", "Master");
+
+                    b.ToTable(tb => tb.IsTemporal(ttb =>
+                            {
+                                ttb.UseHistoryTable("Categories_History", "Master");
+                                ttb
+                                    .HasPeriodStart("ValidFrom")
+                                    .HasColumnName("ValidFrom");
+                                ttb
+                                    .HasPeriodEnd("ValidTo")
+                                    .HasColumnName("ValidTo");
+                            }));
+                });
+
+            modelBuilder.Entity("NexusFlow.Domain.Entities.Master.City", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("DistrictId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("ValidFrom")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidFrom");
+
+                    b.Property<DateTime>("ValidTo")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidTo");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DistrictId");
+
+                    b.ToTable("Cities", "Master");
+
+                    b.ToTable(tb => tb.IsTemporal(ttb =>
+                            {
+                                ttb.UseHistoryTable("Cities_History", "Master");
+                                ttb
+                                    .HasPeriodStart("ValidFrom")
+                                    .HasColumnName("ValidFrom");
+                                ttb
+                                    .HasPeriodEnd("ValidTo")
+                                    .HasColumnName("ValidTo");
+                            }));
+                });
+
+            modelBuilder.Entity("NexusFlow.Domain.Entities.Master.District", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("ProvinceId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("ValidFrom")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidFrom");
+
+                    b.Property<DateTime>("ValidTo")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidTo");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProvinceId");
+
+                    b.ToTable("Districts", "Master");
+
+                    b.ToTable(tb => tb.IsTemporal(ttb =>
+                            {
+                                ttb.UseHistoryTable("Districts_History", "Master");
+                                ttb
+                                    .HasPeriodStart("ValidFrom")
+                                    .HasColumnName("ValidFrom");
+                                ttb
+                                    .HasPeriodEnd("ValidTo")
+                                    .HasColumnName("ValidTo");
+                            }));
                 });
 
             modelBuilder.Entity("NexusFlow.Domain.Entities.Master.Product", b =>
@@ -1785,6 +2354,16 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.Property<int>("UnitOfMeasureId")
                         .HasColumnType("int");
 
+                    b.Property<DateTime>("ValidFrom")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidFrom");
+
+                    b.Property<DateTime>("ValidTo")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidTo");
+
                     b.HasKey("Id");
 
                     b.HasIndex("BrandId");
@@ -1794,6 +2373,17 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.HasIndex("UnitOfMeasureId");
 
                     b.ToTable("Products", "Master");
+
+                    b.ToTable(tb => tb.IsTemporal(ttb =>
+                            {
+                                ttb.UseHistoryTable("Products_History", "Master");
+                                ttb
+                                    .HasPeriodStart("ValidFrom")
+                                    .HasColumnName("ValidFrom");
+                                ttb
+                                    .HasPeriodEnd("ValidTo")
+                                    .HasColumnName("ValidTo");
+                            }));
                 });
 
             modelBuilder.Entity("NexusFlow.Domain.Entities.Master.ProductVariant", b =>
@@ -1857,6 +2447,16 @@ namespace NexusFlow.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime>("ValidFrom")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidFrom");
+
+                    b.Property<DateTime>("ValidTo")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidTo");
+
                     b.HasKey("Id");
 
                     b.HasIndex("ProductId");
@@ -1865,6 +2465,55 @@ namespace NexusFlow.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("ProductVariants", "Master");
+
+                    b.ToTable(tb => tb.IsTemporal(ttb =>
+                            {
+                                ttb.UseHistoryTable("ProductVariants_History", "Master");
+                                ttb
+                                    .HasPeriodStart("ValidFrom")
+                                    .HasColumnName("ValidFrom");
+                                ttb
+                                    .HasPeriodEnd("ValidTo")
+                                    .HasColumnName("ValidTo");
+                            }));
+                });
+
+            modelBuilder.Entity("NexusFlow.Domain.Entities.Master.Province", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("ValidFrom")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidFrom");
+
+                    b.Property<DateTime>("ValidTo")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidTo");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Provinces", "Master");
+
+                    b.ToTable(tb => tb.IsTemporal(ttb =>
+                            {
+                                ttb.UseHistoryTable("Provinces_History", "Master");
+                                ttb
+                                    .HasPeriodStart("ValidFrom")
+                                    .HasColumnName("ValidFrom");
+                                ttb
+                                    .HasPeriodEnd("ValidTo")
+                                    .HasColumnName("ValidTo");
+                            }));
                 });
 
             modelBuilder.Entity("NexusFlow.Domain.Entities.Master.UnitOfMeasure", b =>
@@ -1895,9 +2544,30 @@ namespace NexusFlow.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime>("ValidFrom")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidFrom");
+
+                    b.Property<DateTime>("ValidTo")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidTo");
+
                     b.HasKey("Id");
 
                     b.ToTable("UnitOfMeasures", "Master");
+
+                    b.ToTable(tb => tb.IsTemporal(ttb =>
+                            {
+                                ttb.UseHistoryTable("UnitOfMeasures_History", "Master");
+                                ttb
+                                    .HasPeriodStart("ValidFrom")
+                                    .HasColumnName("ValidFrom");
+                                ttb
+                                    .HasPeriodEnd("ValidTo")
+                                    .HasColumnName("ValidTo");
+                            }));
                 });
 
             modelBuilder.Entity("NexusFlow.Domain.Entities.Master.Warehouse", b =>
@@ -1949,11 +2619,32 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.Property<int>("Type")
                         .HasColumnType("int");
 
+                    b.Property<DateTime>("ValidFrom")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidFrom");
+
+                    b.Property<DateTime>("ValidTo")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidTo");
+
                     b.HasKey("Id");
 
                     b.HasIndex("LinkedSupplierId");
 
                     b.ToTable("Warehouses", "Master");
+
+                    b.ToTable(tb => tb.IsTemporal(ttb =>
+                            {
+                                ttb.UseHistoryTable("Warehouses_History", "Master");
+                                ttb
+                                    .HasPeriodStart("ValidFrom")
+                                    .HasColumnName("ValidFrom");
+                                ttb
+                                    .HasPeriodEnd("ValidTo")
+                                    .HasColumnName("ValidTo");
+                            }));
                 });
 
             modelBuilder.Entity("NexusFlow.Domain.Entities.Purchasing.GRN", b =>
@@ -1999,6 +2690,16 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.Property<decimal>("TotalAmount")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<DateTime>("ValidFrom")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidFrom");
+
+                    b.Property<DateTime>("ValidTo")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidTo");
+
                     b.Property<int>("WarehouseId")
                         .HasColumnType("int");
 
@@ -2008,7 +2709,20 @@ namespace NexusFlow.Infrastructure.Migrations
 
                     b.HasIndex("SupplierBillId");
 
+                    b.HasIndex("WarehouseId");
+
                     b.ToTable("GRNs", "Purchasing");
+
+                    b.ToTable(tb => tb.IsTemporal(ttb =>
+                            {
+                                ttb.UseHistoryTable("GRNs_History", "Purchasing");
+                                ttb
+                                    .HasPeriodStart("ValidFrom")
+                                    .HasColumnName("ValidFrom");
+                                ttb
+                                    .HasPeriodEnd("ValidTo")
+                                    .HasColumnName("ValidTo");
+                            }));
                 });
 
             modelBuilder.Entity("NexusFlow.Domain.Entities.Purchasing.GRNItem", b =>
@@ -2046,6 +2760,16 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.Property<decimal>("UnitCost")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<DateTime>("ValidFrom")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidFrom");
+
+                    b.Property<DateTime>("ValidTo")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidTo");
+
                     b.HasKey("Id");
 
                     b.HasIndex("GrnId");
@@ -2053,94 +2777,17 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.HasIndex("ProductVariantId");
 
                     b.ToTable("GRNItems", "Purchasing");
-                });
 
-            modelBuilder.Entity("NexusFlow.Domain.Entities.Purchasing.GoodsReceipt", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("GrnNumber")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsPosted")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime?>("LastModifiedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("LastModifiedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("ReceiptDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("ReferenceNo")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Remarks")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("SupplierId")
-                        .HasColumnType("int");
-
-                    b.Property<decimal>("TotalValue")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("WarehouseId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("SupplierId");
-
-                    b.HasIndex("WarehouseId");
-
-                    b.ToTable("GoodsReceipts", "Purchasing");
-                });
-
-            modelBuilder.Entity("NexusFlow.Domain.Entities.Purchasing.GoodsReceiptItem", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("GoodsReceiptId")
-                        .HasColumnType("int");
-
-                    b.Property<decimal>("LineTotal")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("ProductVariantId")
-                        .HasColumnType("int");
-
-                    b.Property<decimal>("QuantityReceived")
-                        .HasColumnType("decimal(18,4)");
-
-                    b.Property<decimal>("UnitCost")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("GoodsReceiptId");
-
-                    b.HasIndex("ProductVariantId");
-
-                    b.ToTable("GoodsReceiptItems", "Purchasing");
+                    b.ToTable(tb => tb.IsTemporal(ttb =>
+                            {
+                                ttb.UseHistoryTable("GRNItems_History", "Purchasing");
+                                ttb
+                                    .HasPeriodStart("ValidFrom")
+                                    .HasColumnName("ValidFrom");
+                                ttb
+                                    .HasPeriodEnd("ValidTo")
+                                    .HasColumnName("ValidTo");
+                            }));
                 });
 
             modelBuilder.Entity("NexusFlow.Domain.Entities.Purchasing.PurchaseOrder", b =>
@@ -2158,6 +2805,9 @@ namespace NexusFlow.Infrastructure.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("Date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("ExpectedDate")
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime?>("LastModifiedAt")
@@ -2183,11 +2833,32 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.Property<decimal>("TotalAmount")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<DateTime>("ValidFrom")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidFrom");
+
+                    b.Property<DateTime>("ValidTo")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidTo");
+
                     b.HasKey("Id");
 
                     b.HasIndex("SupplierId");
 
                     b.ToTable("PurchaseOrders", "Purchasing");
+
+                    b.ToTable(tb => tb.IsTemporal(ttb =>
+                            {
+                                ttb.UseHistoryTable("PurchaseOrders_History", "Purchasing");
+                                ttb
+                                    .HasPeriodStart("ValidFrom")
+                                    .HasColumnName("ValidFrom");
+                                ttb
+                                    .HasPeriodEnd("ValidTo")
+                                    .HasColumnName("ValidTo");
+                            }));
                 });
 
             modelBuilder.Entity("NexusFlow.Domain.Entities.Purchasing.PurchaseOrderItem", b =>
@@ -2225,6 +2896,16 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.Property<decimal>("UnitCost")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<DateTime>("ValidFrom")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidFrom");
+
+                    b.Property<DateTime>("ValidTo")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidTo");
+
                     b.HasKey("Id");
 
                     b.HasIndex("ProductVariantId");
@@ -2232,6 +2913,17 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.HasIndex("PurchaseOrderId");
 
                     b.ToTable("PurchaseOrderItems", "Purchasing");
+
+                    b.ToTable(tb => tb.IsTemporal(ttb =>
+                            {
+                                ttb.UseHistoryTable("PurchaseOrderItems_History", "Purchasing");
+                                ttb
+                                    .HasPeriodStart("ValidFrom")
+                                    .HasColumnName("ValidFrom");
+                                ttb
+                                    .HasPeriodEnd("ValidTo")
+                                    .HasColumnName("ValidTo");
+                            }));
                 });
 
             modelBuilder.Entity("NexusFlow.Domain.Entities.Purchasing.Supplier", b =>
@@ -2243,9 +2935,7 @@ namespace NexusFlow.Infrastructure.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("AccountsEmail")
-                        .IsRequired()
-                        .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("AddressLine1")
                         .IsRequired()
@@ -2262,20 +2952,16 @@ namespace NexusFlow.Infrastructure.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<string>("BankBranch")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                    b.Property<int?>("BankBranchId")
+                        .HasColumnType("int");
 
                     b.Property<string>("BankIBAN")
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
-                    b.Property<string>("BankName")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                    b.Property<int?>("BankId")
+                        .HasColumnType("int");
 
                     b.Property<string>("BankSwiftCode")
                         .IsRequired()
@@ -2322,6 +3008,11 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.Property<int?>("DefaultPayableAccountId")
                         .HasColumnType("int");
 
+                    b.Property<string>("District")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasMaxLength(150)
@@ -2359,13 +3050,13 @@ namespace NexusFlow.Infrastructure.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<int?>("RatingId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("State")
+                    b.Property<string>("Province")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
+
+                    b.Property<int?>("RatingId")
+                        .HasColumnType("int");
 
                     b.Property<int>("SupplierGroupId")
                         .HasColumnType("int");
@@ -2380,6 +3071,16 @@ namespace NexusFlow.Infrastructure.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
+                    b.Property<DateTime>("ValidFrom")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidFrom");
+
+                    b.Property<DateTime>("ValidTo")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidTo");
+
                     b.Property<string>("Website")
                         .IsRequired()
                         .HasMaxLength(200)
@@ -2391,6 +3092,10 @@ namespace NexusFlow.Infrastructure.Migrations
                         .HasColumnType("nvarchar(20)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BankBranchId");
+
+                    b.HasIndex("BankId");
 
                     b.HasIndex("DefaultPayableAccountId");
 
@@ -2404,6 +3109,17 @@ namespace NexusFlow.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("Suppliers", "Purchasing");
+
+                    b.ToTable(tb => tb.IsTemporal(ttb =>
+                            {
+                                ttb.UseHistoryTable("Suppliers_History", "Purchasing");
+                                ttb
+                                    .HasPeriodStart("ValidFrom")
+                                    .HasColumnName("ValidFrom");
+                                ttb
+                                    .HasPeriodEnd("ValidTo")
+                                    .HasColumnName("ValidTo");
+                            }));
                 });
 
             modelBuilder.Entity("NexusFlow.Domain.Entities.Purchasing.SupplierBill", b =>
@@ -2468,11 +3184,32 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.Property<decimal>("TaxAmount")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<DateTime>("ValidFrom")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidFrom");
+
+                    b.Property<DateTime>("ValidTo")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidTo");
+
                     b.HasKey("Id");
 
                     b.HasIndex("SupplierId");
 
                     b.ToTable("SupplierBills", "Purchasing");
+
+                    b.ToTable(tb => tb.IsTemporal(ttb =>
+                            {
+                                ttb.UseHistoryTable("SupplierBills_History", "Purchasing");
+                                ttb
+                                    .HasPeriodStart("ValidFrom")
+                                    .HasColumnName("ValidFrom");
+                                ttb
+                                    .HasPeriodEnd("ValidTo")
+                                    .HasColumnName("ValidTo");
+                            }));
                 });
 
             modelBuilder.Entity("NexusFlow.Domain.Entities.Purchasing.SupplierBillItem", b =>
@@ -2505,6 +3242,16 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.Property<decimal>("UnitPrice")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<DateTime>("ValidFrom")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidFrom");
+
+                    b.Property<DateTime>("ValidTo")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidTo");
+
                     b.HasKey("Id");
 
                     b.HasIndex("ExpenseAccountId");
@@ -2514,6 +3261,17 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.HasIndex("SupplierBillId");
 
                     b.ToTable("SupplierBillItems", "Purchasing");
+
+                    b.ToTable(tb => tb.IsTemporal(ttb =>
+                            {
+                                ttb.UseHistoryTable("SupplierBillItems_History", "Purchasing");
+                                ttb
+                                    .HasPeriodStart("ValidFrom")
+                                    .HasColumnName("ValidFrom");
+                                ttb
+                                    .HasPeriodEnd("ValidTo")
+                                    .HasColumnName("ValidTo");
+                            }));
                 });
 
             modelBuilder.Entity("NexusFlow.Domain.Entities.Sales.CommissionLedger", b =>
@@ -2549,6 +3307,16 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
+                    b.Property<DateTime>("ValidFrom")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidFrom");
+
+                    b.Property<DateTime>("ValidTo")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidTo");
+
                     b.HasKey("Id");
 
                     b.HasIndex("SalesInvoiceId");
@@ -2556,6 +3324,17 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.HasIndex("SalesRepId");
 
                     b.ToTable("CommissionLedger", "Sales");
+
+                    b.ToTable(tb => tb.IsTemporal(ttb =>
+                            {
+                                ttb.UseHistoryTable("CommissionLedger_History", "Sales");
+                                ttb
+                                    .HasPeriodStart("ValidFrom")
+                                    .HasColumnName("ValidFrom");
+                                ttb
+                                    .HasPeriodEnd("ValidTo")
+                                    .HasColumnName("ValidTo");
+                            }));
                 });
 
             modelBuilder.Entity("NexusFlow.Domain.Entities.Sales.CommissionRule", b =>
@@ -2578,6 +3357,12 @@ namespace NexusFlow.Infrastructure.Migrations
 
                     b.Property<string>("CreatedBy")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("EffectiveFrom")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("EffectiveTo")
+                        .HasColumnType("datetime2");
 
                     b.Property<int?>("EmployeeId")
                         .HasColumnType("int");
@@ -2602,11 +3387,15 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.Property<int>("RuleType")
                         .HasColumnType("int");
 
-                    b.Property<DateTime?>("ValidFrom")
-                        .HasColumnType("datetime2");
+                    b.Property<DateTime>("ValidFrom")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidFrom");
 
-                    b.Property<DateTime?>("ValidTo")
-                        .HasColumnType("datetime2");
+                    b.Property<DateTime>("ValidTo")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidTo");
 
                     b.HasKey("Id");
 
@@ -2615,6 +3404,17 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.HasIndex("EmployeeId");
 
                     b.ToTable("CommissionRules", "Sales");
+
+                    b.ToTable(tb => tb.IsTemporal(ttb =>
+                            {
+                                ttb.UseHistoryTable("CommissionRules_History", "Sales");
+                                ttb
+                                    .HasPeriodStart("ValidFrom")
+                                    .HasColumnName("ValidFrom");
+                                ttb
+                                    .HasPeriodEnd("ValidTo")
+                                    .HasColumnName("ValidTo");
+                            }));
                 });
 
             modelBuilder.Entity("NexusFlow.Domain.Entities.Sales.CreditNote", b =>
@@ -2669,6 +3469,16 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.Property<decimal>("TotalTax")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<DateTime>("ValidFrom")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidFrom");
+
+                    b.Property<DateTime>("ValidTo")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidTo");
+
                     b.HasKey("Id");
 
                     b.HasIndex("CustomerId");
@@ -2676,6 +3486,17 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.HasIndex("SalesInvoiceId");
 
                     b.ToTable("CreditNotes", "Sales");
+
+                    b.ToTable(tb => tb.IsTemporal(ttb =>
+                            {
+                                ttb.UseHistoryTable("CreditNotes_History", "Sales");
+                                ttb
+                                    .HasPeriodStart("ValidFrom")
+                                    .HasColumnName("ValidFrom");
+                                ttb
+                                    .HasPeriodEnd("ValidTo")
+                                    .HasColumnName("ValidTo");
+                            }));
                 });
 
             modelBuilder.Entity("NexusFlow.Domain.Entities.Sales.CreditNoteItem", b =>
@@ -2736,20 +3557,11 @@ namespace NexusFlow.Infrastructure.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<string>("BankBranch")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                    b.Property<int?>("BankBranchId")
+                        .HasColumnType("int");
 
-                    b.Property<string>("BankName")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("BankSwiftCode")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                    b.Property<int?>("BankId")
+                        .HasColumnType("int");
 
                     b.Property<string>("City")
                         .IsRequired()
@@ -2792,6 +3604,11 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.Property<int>("DefaultRevenueAccountId")
                         .HasColumnType("int");
 
+                    b.Property<string>("District")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasMaxLength(150)
@@ -2832,6 +3649,11 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.Property<int>("PriceLevelId")
                         .HasColumnType("int");
 
+                    b.Property<string>("Province")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
                     b.Property<int?>("SalesRepId")
                         .HasColumnType("int");
 
@@ -2845,9 +3667,34 @@ namespace NexusFlow.Infrastructure.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
+                    b.Property<DateTime>("ValidFrom")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidFrom");
+
+                    b.Property<DateTime>("ValidTo")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidTo");
+
                     b.HasKey("Id");
 
+                    b.HasIndex("BankBranchId");
+
+                    b.HasIndex("BankId");
+
                     b.ToTable("Customers", "Sales");
+
+                    b.ToTable(tb => tb.IsTemporal(ttb =>
+                            {
+                                ttb.UseHistoryTable("Customers_History", "Sales");
+                                ttb
+                                    .HasPeriodStart("ValidFrom")
+                                    .HasColumnName("ValidFrom");
+                                ttb
+                                    .HasPeriodEnd("ValidTo")
+                                    .HasColumnName("ValidTo");
+                            }));
                 });
 
             modelBuilder.Entity("NexusFlow.Domain.Entities.Sales.SalesInvoice", b =>
@@ -2872,6 +3719,11 @@ namespace NexusFlow.Infrastructure.Migrations
 
                     b.Property<int>("CustomerId")
                         .HasColumnType("int");
+
+                    b.Property<string>("CustomerPoNumber")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<DateTime>("DueDate")
                         .HasColumnType("datetime2");
@@ -2914,6 +3766,16 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.Property<decimal>("TotalTax")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<DateTime>("ValidFrom")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidFrom");
+
+                    b.Property<DateTime>("ValidTo")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidTo");
+
                     b.HasKey("Id");
 
                     b.HasIndex("CustomerId");
@@ -2921,7 +3783,20 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.HasIndex("InvoiceNumber")
                         .IsUnique();
 
+                    b.HasIndex("SalesRepId");
+
                     b.ToTable("SalesInvoices", "Sales");
+
+                    b.ToTable(tb => tb.IsTemporal(ttb =>
+                            {
+                                ttb.UseHistoryTable("SalesInvoices_History", "Sales");
+                                ttb
+                                    .HasPeriodStart("ValidFrom")
+                                    .HasColumnName("ValidFrom");
+                                ttb
+                                    .HasPeriodEnd("ValidTo")
+                                    .HasColumnName("ValidTo");
+                            }));
                 });
 
             modelBuilder.Entity("NexusFlow.Domain.Entities.Sales.SalesInvoiceItem", b =>
@@ -2966,6 +3841,16 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.Property<decimal>("UnitPrice")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<DateTime>("ValidFrom")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidFrom");
+
+                    b.Property<DateTime>("ValidTo")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidTo");
+
                     b.HasKey("Id");
 
                     b.HasIndex("ProductVariantId");
@@ -2973,6 +3858,17 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.HasIndex("SalesInvoiceId");
 
                     b.ToTable("SalesInvoiceItems", "Sales");
+
+                    b.ToTable(tb => tb.IsTemporal(ttb =>
+                            {
+                                ttb.UseHistoryTable("SalesInvoiceItems_History", "Sales");
+                                ttb
+                                    .HasPeriodStart("ValidFrom")
+                                    .HasColumnName("ValidFrom");
+                                ttb
+                                    .HasPeriodEnd("ValidTo")
+                                    .HasColumnName("ValidTo");
+                            }));
                 });
 
             modelBuilder.Entity("NexusFlow.Domain.Entities.Sales.SalesOrder", b =>
@@ -3020,6 +3916,16 @@ namespace NexusFlow.Infrastructure.Migrations
                         .HasPrecision(18, 4)
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<DateTime>("ValidFrom")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidFrom");
+
+                    b.Property<DateTime>("ValidTo")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidTo");
+
                     b.HasKey("Id");
 
                     b.HasIndex("CustomerId");
@@ -3030,6 +3936,17 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.HasIndex("SalesRepId");
 
                     b.ToTable("SalesOrders", "Sales");
+
+                    b.ToTable(tb => tb.IsTemporal(ttb =>
+                            {
+                                ttb.UseHistoryTable("SalesOrders_History", "Sales");
+                                ttb
+                                    .HasPeriodStart("ValidFrom")
+                                    .HasColumnName("ValidFrom");
+                                ttb
+                                    .HasPeriodEnd("ValidTo")
+                                    .HasColumnName("ValidTo");
+                            }));
                 });
 
             modelBuilder.Entity("NexusFlow.Domain.Entities.Sales.SalesOrderItem", b =>
@@ -3074,6 +3991,16 @@ namespace NexusFlow.Infrastructure.Migrations
                         .HasPrecision(18, 4)
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<DateTime>("ValidFrom")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidFrom");
+
+                    b.Property<DateTime>("ValidTo")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidTo");
+
                     b.HasKey("Id");
 
                     b.HasIndex("ProductVariantId");
@@ -3081,6 +4008,17 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.HasIndex("SalesOrderId");
 
                     b.ToTable("SalesOrderItems", "Sales");
+
+                    b.ToTable(tb => tb.IsTemporal(ttb =>
+                            {
+                                ttb.UseHistoryTable("SalesOrderItems_History", "Sales");
+                                ttb
+                                    .HasPeriodStart("ValidFrom")
+                                    .HasColumnName("ValidFrom");
+                                ttb
+                                    .HasPeriodEnd("ValidTo")
+                                    .HasColumnName("ValidTo");
+                            }));
                 });
 
             modelBuilder.Entity("NexusFlow.Domain.Entities.System.ApplicationUser", b =>
@@ -3163,29 +4101,23 @@ namespace NexusFlow.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("AffectedColumns")
+                    b.Property<string>("Action")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("DateTime")
+                    b.Property<string>("Details")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("EntityName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("IPAddress")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("Timestamp")
                         .HasColumnType("datetime2");
-
-                    b.Property<string>("NewValues")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("OldValues")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PrimaryKey")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("TableName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("UserId")
                         .IsRequired()
@@ -3586,6 +4518,28 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.Navigation("SalesAccount");
                 });
 
+            modelBuilder.Entity("NexusFlow.Domain.Entities.Master.City", b =>
+                {
+                    b.HasOne("NexusFlow.Domain.Entities.Master.District", "District")
+                        .WithMany("Cities")
+                        .HasForeignKey("DistrictId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("District");
+                });
+
+            modelBuilder.Entity("NexusFlow.Domain.Entities.Master.District", b =>
+                {
+                    b.HasOne("NexusFlow.Domain.Entities.Master.Province", "Province")
+                        .WithMany("Districts")
+                        .HasForeignKey("ProvinceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Province");
+                });
+
             modelBuilder.Entity("NexusFlow.Domain.Entities.Master.Product", b =>
                 {
                     b.HasOne("NexusFlow.Domain.Entities.Master.Brand", "Brand")
@@ -3645,9 +4599,17 @@ namespace NexusFlow.Infrastructure.Migrations
                         .WithMany("Grns")
                         .HasForeignKey("SupplierBillId");
 
+                    b.HasOne("NexusFlow.Domain.Entities.Master.Warehouse", "Warehouse")
+                        .WithMany()
+                        .HasForeignKey("WarehouseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("PurchaseOrder");
 
                     b.Navigation("SupplierBill");
+
+                    b.Navigation("Warehouse");
                 });
 
             modelBuilder.Entity("NexusFlow.Domain.Entities.Purchasing.GRNItem", b =>
@@ -3665,44 +4627,6 @@ namespace NexusFlow.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Grn");
-
-                    b.Navigation("ProductVariant");
-                });
-
-            modelBuilder.Entity("NexusFlow.Domain.Entities.Purchasing.GoodsReceipt", b =>
-                {
-                    b.HasOne("NexusFlow.Domain.Entities.Purchasing.Supplier", "Supplier")
-                        .WithMany()
-                        .HasForeignKey("SupplierId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("NexusFlow.Domain.Entities.Master.Warehouse", "Warehouse")
-                        .WithMany()
-                        .HasForeignKey("WarehouseId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Supplier");
-
-                    b.Navigation("Warehouse");
-                });
-
-            modelBuilder.Entity("NexusFlow.Domain.Entities.Purchasing.GoodsReceiptItem", b =>
-                {
-                    b.HasOne("NexusFlow.Domain.Entities.Purchasing.GoodsReceipt", "GoodsReceipt")
-                        .WithMany("Items")
-                        .HasForeignKey("GoodsReceiptId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("NexusFlow.Domain.Entities.Master.ProductVariant", "ProductVariant")
-                        .WithMany()
-                        .HasForeignKey("ProductVariantId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("GoodsReceipt");
 
                     b.Navigation("ProductVariant");
                 });
@@ -3739,10 +4663,22 @@ namespace NexusFlow.Infrastructure.Migrations
 
             modelBuilder.Entity("NexusFlow.Domain.Entities.Purchasing.Supplier", b =>
                 {
+                    b.HasOne("NexusFlow.Domain.Entities.Finance.BankBranch", "BankBranch")
+                        .WithMany()
+                        .HasForeignKey("BankBranchId");
+
+                    b.HasOne("NexusFlow.Domain.Entities.Finance.Bank", "Bank")
+                        .WithMany()
+                        .HasForeignKey("BankId");
+
                     b.HasOne("NexusFlow.Domain.Entities.Finance.Account", null)
                         .WithMany()
                         .HasForeignKey("DefaultPayableAccountId")
                         .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Bank");
+
+                    b.Navigation("BankBranch");
                 });
 
             modelBuilder.Entity("NexusFlow.Domain.Entities.Purchasing.SupplierBill", b =>
@@ -3853,6 +4789,21 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.Navigation("ProductVariant");
                 });
 
+            modelBuilder.Entity("NexusFlow.Domain.Entities.Sales.Customer", b =>
+                {
+                    b.HasOne("NexusFlow.Domain.Entities.Finance.BankBranch", "BankBranch")
+                        .WithMany()
+                        .HasForeignKey("BankBranchId");
+
+                    b.HasOne("NexusFlow.Domain.Entities.Finance.Bank", "Bank")
+                        .WithMany()
+                        .HasForeignKey("BankId");
+
+                    b.Navigation("Bank");
+
+                    b.Navigation("BankBranch");
+                });
+
             modelBuilder.Entity("NexusFlow.Domain.Entities.Sales.SalesInvoice", b =>
                 {
                     b.HasOne("NexusFlow.Domain.Entities.Sales.Customer", "Customer")
@@ -3861,7 +4812,13 @@ namespace NexusFlow.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("NexusFlow.Domain.Entities.HR.Employee", "SalesRep")
+                        .WithMany()
+                        .HasForeignKey("SalesRepId");
+
                     b.Navigation("Customer");
+
+                    b.Navigation("SalesRep");
                 });
 
             modelBuilder.Entity("NexusFlow.Domain.Entities.Sales.SalesInvoiceItem", b =>
@@ -3966,17 +4923,22 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.Navigation("SubCategories");
                 });
 
+            modelBuilder.Entity("NexusFlow.Domain.Entities.Master.District", b =>
+                {
+                    b.Navigation("Cities");
+                });
+
             modelBuilder.Entity("NexusFlow.Domain.Entities.Master.Product", b =>
                 {
                     b.Navigation("Variants");
                 });
 
-            modelBuilder.Entity("NexusFlow.Domain.Entities.Purchasing.GRN", b =>
+            modelBuilder.Entity("NexusFlow.Domain.Entities.Master.Province", b =>
                 {
-                    b.Navigation("Items");
+                    b.Navigation("Districts");
                 });
 
-            modelBuilder.Entity("NexusFlow.Domain.Entities.Purchasing.GoodsReceipt", b =>
+            modelBuilder.Entity("NexusFlow.Domain.Entities.Purchasing.GRN", b =>
                 {
                     b.Navigation("Items");
                 });

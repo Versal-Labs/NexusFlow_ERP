@@ -1,4 +1,7 @@
-﻿<div id="sidebar-wrapper" style="width: 250px; min-height: 100vh;">
+﻿@using NexusFlow.AppCore.Constants
+@inject NexusFlow.AppCore.Interfaces.ICurrentUserService CurrentUser
+
+<div id="sidebar-wrapper" style="width: 250px; min-height: 100vh;">
     <div class="sidebar-heading d-flex align-items-center justify-content-center">
         <a href="/" class="text-decoration-none d-flex align-items-center justify-content-center w-100 h-100">
             <img src="~/Assets/Asset 4@3x.png" alt="NexusFlow ERP" class="sidebar-brand-full" style="max-height: 35px; width: auto;">
@@ -13,169 +16,355 @@
                     <span class="fw-semibold">Dashboard</span>
                 </a>
 
-                <div class="small fw-semibold text-uppercase px-3 mt-4 mb-2 sidebar-section-header">Master Data</div>
+                @if (CurrentUser.HasPermission(Permissions.MasterData.ViewProducts) ||
+                             CurrentUser.HasPermission(Permissions.MasterData.ViewCustomers) ||
+                             CurrentUser.HasPermission(Permissions.MasterData.ViewSuppliers) ||
+                             CurrentUser.HasPermission(Permissions.MasterData.ManageWarehouses))
+                {
+                    <div class="small fw-semibold text-uppercase px-3 mt-4 mb-2 sidebar-section-header">Master Data</div>
 
-                <a class="list-group-item list-group-item-action border-0 d-flex justify-content-between align-items-center py-2 px-3"
-                       data-bs-toggle="collapse" href="#menuMasterData" role="button" aria-expanded="false">
-                    <div class="d-flex align-items-center">
-                        <i class="fas fa-database fa-fw me-3"></i>
-                        <span class="fw-semibold">Global Registries</span>
+                    <a class="list-group-item list-group-item-action border-0 d-flex justify-content-between align-items-center py-2 px-3"
+                           data-bs-toggle="collapse" href="#menuMasterData" role="button" aria-expanded="false">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-database fa-fw me-3"></i>
+                            <span class="fw-semibold">Global Registries</span>
+                        </div>
+                        <i class="fas fa-chevron-down small transition-icon"></i>
+                    </a>
+                    <div class="collapse" id="menuMasterData">
+                        <nav class="nav flex-column py-1 ps-4">
+                            @if (CurrentUser.HasPermission(Permissions.MasterData.ViewProducts))
+                            {
+                                <a href="/Product" class="nav-link py-1 small">Item Master</a>
+                            }
+                            @if (CurrentUser.HasPermission(Permissions.MasterData.ViewCustomers))
+                            {
+                                <a href="/Customer" class="nav-link py-1 small">Customer Registry</a>
+                            }
+                            @if (CurrentUser.HasPermission(Permissions.MasterData.ViewSuppliers))
+                            {
+                                <a href="/Supplier" class="nav-link py-1 small">Supplier Registry</a>
+                            }
+                            @if (CurrentUser.HasPermission(Permissions.MasterData.ManageProducts))
+                            {
+                                <a href="/MasterData/Definitions" class="nav-link py-1 small">Item Classifications</a>
+                            }
+                            @if (CurrentUser.HasPermission(Permissions.MasterData.ManageWarehouses))
+                            {
+                                <a href="/MasterData/Warehouses" class="nav-link py-1 small">Warehouse Locations</a>
+                            }
+                        </nav>
                     </div>
-                    <i class="fas fa-chevron-down small transition-icon"></i>
-                </a>
-                <div class="collapse" id="menuMasterData">
-                    <nav class="nav flex-column py-1 ps-4">
-                        <a href="/Product" class="nav-link py-1 small">Item Master</a>
-                        <a href="/Customer" class="nav-link py-1 small">Customer Registry</a>
-                        <a href="/Supplier" class="nav-link py-1 small">Supplier Registry</a>
-                        <a href="/MasterData/Definitions" class="nav-link py-1 small">Item Classifications</a>
-                        <a href="/MasterData/Warehouses" class="nav-link py-1 small">Warehouse Locations</a>
-                    </nav>
-                </div>
+                }
 
+                @if (CurrentUser.HasPermission(Permissions.Sales.ViewOrders) ||
+                             CurrentUser.HasPermission(Permissions.Sales.ViewInvoices) ||
+                             CurrentUser.HasPermission(Permissions.Sales.ViewCreditNotes))
+                {
+                    <div class="small fw-semibold text-uppercase px-3 mt-4 mb-2 sidebar-section-header">Operations</div>
 
-                <div class="small fw-semibold text-uppercase px-3 mt-4 mb-2 sidebar-section-header">Operations</div>
-
-                <a class="list-group-item list-group-item-action border-0 d-flex justify-content-between align-items-center py-2 px-3"
-                       data-bs-toggle="collapse" href="#menuSales" role="button" aria-expanded="false">
-                    <div class="d-flex align-items-center">
-                        <i class="fas fa-file-invoice-dollar fa-fw me-3"></i>
-                        <span class="fw-semibold">Sales (O2C)</span>
+                    <a class="list-group-item list-group-item-action border-0 d-flex justify-content-between align-items-center py-2 px-3"
+                           data-bs-toggle="collapse" href="#menuSales" role="button" aria-expanded="false">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-file-invoice-dollar fa-fw me-3"></i>
+                            <span class="fw-semibold">Sales (O2C)</span>
+                        </div>
+                        <i class="fas fa-chevron-down small transition-icon"></i>
+                    </a>
+                    <div class="collapse" id="menuSales">
+                        <nav class="nav flex-column py-1 ps-4">
+                            @if (CurrentUser.HasPermission(Permissions.Sales.ViewOrders))
+                            {
+                                <a href="/SalesOrder" class="nav-link py-1 small">Sales Orders</a>
+                                <a href="/Fulfillment" class="nav-link py-1 small">Outbound Deliveries</a>
+                            }
+                            @if (CurrentUser.HasPermission(Permissions.Sales.ViewInvoices))
+                            {
+                                <a href="/Sales/Invoices" class="nav-link py-1 small">AR Invoices</a>
+                            }
+                            @if (CurrentUser.HasPermission(Permissions.Sales.ViewCreditNotes))
+                            {
+                                <a href="/Sales/CreditNotes" class="nav-link py-1 small">Credit Notes (Returns)</a>
+                            }
+                            @if (CurrentUser.HasPermission(Permissions.HR.ViewCommissionsOwn) || CurrentUser.HasPermission(Permissions.HR.ViewCommissionsAll))
+                            {
+                                <a href="/CommissionRule" class="nav-link py-1 small">Sales Commissions</a>
+                            }
+                        </nav>
                     </div>
-                    <i class="fas fa-chevron-down small transition-icon"></i>
-                </a>
-                <div class="collapse" id="menuSales">
-                    <nav class="nav flex-column py-1 ps-4">
-                        <a href="/SalesOrder" class="nav-link py-1 small">Sales Orders</a>
-                        <a href="/Fulfillment" class="nav-link py-1 small">Outbound Deliveries</a>
-                        <a href="/Sales/Invoices" class="nav-link py-1 small">AR Invoices</a>
-                        <a href="/Sales/CreditNotes" class="nav-link py-1 small">Credit Notes (Returns)</a>
-                        <a href="/CommissionRule" class="nav-link py-1 small">Sales Commissions</a>
-                    </nav>
-                </div>
+                }
 
-                <a class="list-group-item list-group-item-action border-0 d-flex justify-content-between align-items-center py-2 px-3"
-                       data-bs-toggle="collapse" href="#menuProcurement" role="button" aria-expanded="false">
-                    <div class="d-flex align-items-center">
-                        <i class="fas fa-shopping-cart fa-fw me-3"></i>
-                        <span class="fw-semibold">Purchasing (P2P)</span>
+                @if (CurrentUser.HasPermission(Permissions.Purchasing.ViewPOs) ||
+                             CurrentUser.HasPermission(Permissions.Purchasing.ViewGRNs) ||
+                             CurrentUser.HasPermission(Permissions.Purchasing.ViewBills) ||
+                             CurrentUser.HasPermission(Permissions.Purchasing.ViewDebitNotes))
+                {
+                    <a class="list-group-item list-group-item-action border-0 d-flex justify-content-between align-items-center py-2 px-3"
+                           data-bs-toggle="collapse" href="#menuProcurement" role="button" aria-expanded="false">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-shopping-cart fa-fw me-3"></i>
+                            <span class="fw-semibold">Purchasing (P2P)</span>
+                        </div>
+                        <i class="fas fa-chevron-down small transition-icon"></i>
+                    </a>
+                    <div class="collapse" id="menuProcurement">
+                        <nav class="nav flex-column py-1 ps-4">
+                            @if (CurrentUser.HasPermission(Permissions.Purchasing.ViewPOs))
+                            {
+                                <a href="/Purchasing" class="nav-link py-1 small">Purchase Orders</a>
+                            }
+                            @if (CurrentUser.HasPermission(Permissions.Purchasing.ViewGRNs))
+                            {
+                                <a href="/Purchasing/GRN" class="nav-link py-1 small">Goods Receipt (GRN)</a>
+                            }
+                            @if (CurrentUser.HasPermission(Permissions.Purchasing.ViewBills))
+                            {
+                                <a href="/Purchasing/SupplierBills" class="nav-link py-1 small">AP Bills</a>
+                            }
+                            @if (CurrentUser.HasPermission(Permissions.Purchasing.ViewDebitNotes))
+                            {
+                                <a href="/Purchasing/DebitNotes" class="nav-link py-1 small">Debit Notes (Returns)</a>
+                            }
+                        </nav>
                     </div>
-                    <i class="fas fa-chevron-down small transition-icon"></i>
-                </a>
-                <div class="collapse" id="menuProcurement">
-                    <nav class="nav flex-column py-1 ps-4">
-                        <a href="/Purchasing" class="nav-link py-1 small">Purchase Orders</a>
-                        <a href="/Purchasing/GRN" class="nav-link py-1 small">Goods Receipt (GRN)</a>
-                        <a href="/Purchasing/SupplierBills" class="nav-link py-1 small">AP Bills</a>
-                        <a href="/Purchasing/DebitNotes" class="nav-link py-1 small">Debit Notes (Returns)</a>
-                    </nav>
-                </div>
+                }
 
-                <a class="list-group-item list-group-item-action border-0 d-flex justify-content-between align-items-center py-2 px-3"
-                       data-bs-toggle="collapse" href="#menuInventory" role="button" aria-expanded="false">
-                    <div class="d-flex align-items-center">
-                        <i class="fas fa-boxes fa-fw me-3"></i>
-                        <span class="fw-semibold">Inventory & Mfg</span>
+                @if (CurrentUser.HasPermission(Permissions.Inventory.ViewStock) ||
+                             CurrentUser.HasPermission(Permissions.Inventory.ViewStockTakes) ||
+                             CurrentUser.HasPermission(Permissions.MasterData.ManageBOMs))
+                {
+                    <a class="list-group-item list-group-item-action border-0 d-flex justify-content-between align-items-center py-2 px-3"
+                           data-bs-toggle="collapse" href="#menuInventory" role="button" aria-expanded="false">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-boxes fa-fw me-3"></i>
+                            <span class="fw-semibold">Inventory & Mfg</span>
+                        </div>
+                        <i class="fas fa-chevron-down small transition-icon"></i>
+                    </a>
+                    <div class="collapse" id="menuInventory">
+                        <nav class="nav flex-column py-1 ps-4">
+                            <span class="nav-link py-1 small fw-bold opacity-75 text-uppercase mt-1" style="font-size:10px;">Execution</span>
+                            @if (CurrentUser.HasPermission(Permissions.Inventory.ViewStockTakes))
+                            {
+                                <a href="/StockTake" class="nav-link py-1 small">Physical Count (Stock Take)</a>
+                            }
+                            @if (CurrentUser.HasPermission(Permissions.Inventory.TransferStock))
+                            {
+                                <a href="/Inventory/Transfers" class="nav-link py-1 small">Warehouse Transfers</a>
+                            }
+                            @if (CurrentUser.HasPermission(Permissions.Inventory.AdjustStock))
+                            {
+                                <a href="/Inventory/Adjustments" class="nav-link py-1 small">Stock Adjustments</a>
+                            }
+                            @if (CurrentUser.HasPermission(Permissions.SuperAdmin))
+                            {
+                                <a href="/InventoryImport" class="nav-link py-1 small">Opening Balances Wizard</a>
+                            }
+
+                            <span class="nav-link py-1 small fw-bold opacity-75 text-uppercase mt-2" style="font-size:10px;">Manufacturing</span>
+                            @if (CurrentUser.HasPermission(Permissions.MasterData.ManageBOMs))
+                            {
+                                <a href="/Bom" class="nav-link py-1 small">Bill of Materials (BOM)</a>
+                            }
+                            @if (CurrentUser.HasPermission(Permissions.Inventory.RunProduction))
+                            {
+                                <a href="/Inventory/MaterialIssue" class="nav-link py-1 small">Material Issues (WIP)</a>
+                                <a href="/Inventory/ProductionReceipt" class="nav-link py-1 small">Production Receipts</a>
+                            }
+
+                            <span class="nav-link py-1 small fw-bold opacity-75 text-uppercase mt-2" style="font-size:10px;">Analytics</span>
+                            @if (CurrentUser.HasPermission(Permissions.Inventory.ViewStock))
+                            {
+                                <a href="/Inventory/StockValuation" class="nav-link py-1 small">Stock Valuation FIFO</a>
+                            }
+                        </nav>
                     </div>
-                    <i class="fas fa-chevron-down small transition-icon"></i>
-                </a>
-                <div class="collapse" id="menuInventory">
-                    <nav class="nav flex-column py-1 ps-4">
-                        <span class="nav-link py-1 small fw-bold opacity-75 text-uppercase mt-1" style="font-size:10px;">Execution</span>
-                        <a href="/StockTake" class="nav-link py-1 small">Physical Count (Stock Take)</a>
-                        <a href="/Inventory/Transfers" class="nav-link py-1 small">Warehouse Transfers</a>
-                        <a href="/Inventory/Adjustments" class="nav-link py-1 small">Stock Adjustments</a>
-                        <a href="/InventoryImport" class="nav-link py-1 small">Opening Balances Wizard</a>
-                
-                        <span class="nav-link py-1 small fw-bold opacity-75 text-uppercase mt-2" style="font-size:10px;">Manufacturing</span>
-                        <a href="/Bom" class="nav-link py-1 small">Bill of Materials (BOM)</a>
-                        <a href="/Inventory/MaterialIssue" class="nav-link py-1 small">Material Issues (WIP)</a>
-                        <a href="/Inventory/ProductionReceipt" class="nav-link py-1 small">Production Receipts</a>
+                }
 
-                        <span class="nav-link py-1 small fw-bold opacity-75 text-uppercase mt-2" style="font-size:10px;">Analytics</span>
-                        <a href="/Inventory/StockValuation" class="nav-link py-1 small">Stock Valuation FIFO</a>
-                    </nav>
-                </div>
+                @if (CurrentUser.HasPermission(Permissions.Treasury.ViewReceipts) ||
+                             CurrentUser.HasPermission(Permissions.Finance.ViewJournals) ||
+                             CurrentUser.HasPermission(Permissions.Finance.ViewReports))
+                {
+                    <div class="small fw-semibold text-uppercase px-3 mt-4 mb-2 sidebar-section-header">Financials</div>
 
+                    @if (CurrentUser.HasPermission(Permissions.Treasury.ViewReceipts) || CurrentUser.HasPermission(Permissions.Treasury.ViewPayments))
+                    {
+                        <a class="list-group-item list-group-item-action border-0 d-flex justify-content-between align-items-center py-2 px-3"
+                               data-bs-toggle="collapse" href="#menuTreasury" role="button" aria-expanded="false">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-vault fa-fw me-3"></i>
+                                <span class="fw-semibold">Treasury</span>
+                            </div>
+                            <i class="fas fa-chevron-down small transition-icon"></i>
+                        </a>
+                        <div class="collapse" id="menuTreasury">
+                            <nav class="nav flex-column py-1 ps-4">
+                                @if (CurrentUser.HasPermission(Permissions.Treasury.ViewReceipts))
+                                {
+                                    <a href="/Treasury/Receipts" class="nav-link py-1 small">Incoming Payments (AR)</a>
+                                }
+                                @if (CurrentUser.HasPermission(Permissions.Treasury.ViewPayments))
+                                {
+                                    <a href="/Treasury/Payments" class="nav-link py-1 small">Outgoing Payments (AP)</a>
+                                }
+                                @if (CurrentUser.HasPermission(Permissions.Treasury.ManageCheques))
+                                {
+                                    <a href="/Finance/ChequeVault" class="nav-link py-1 small">Cheque Vault (PDCs)</a>
+                                }
+                                @if (CurrentUser.HasPermission(Permissions.Finance.BankReconciliation))
+                                {
+                                    <a href="/Finance/BankReconciliation" class="nav-link py-1 small">Bank Reconciliation</a>
+                                }
+                            </nav>
+                        </div>
+                    }
 
-                <div class="small fw-semibold text-uppercase px-3 mt-4 mb-2 sidebar-section-header">Financials</div>
+                    @if (CurrentUser.HasPermission(Permissions.Finance.ViewJournals) || CurrentUser.HasPermission(Permissions.Finance.ViewReports))
+                    {
+                        <a class="list-group-item list-group-item-action border-0 d-flex justify-content-between align-items-center py-2 px-3"
+                               data-bs-toggle="collapse" href="#menuFinance" role="button" aria-expanded="false">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-chart-line fa-fw me-3"></i>
+                                <span class="fw-semibold">Accounting & GL</span>
+                            </div>
+                            <i class="fas fa-chevron-down small transition-icon"></i>
+                        </a>
+                        <div class="collapse" id="menuFinance">
+                            <nav class="nav flex-column py-1 ps-4">
+                                @if (CurrentUser.HasPermission(Permissions.Finance.ViewChartOfAccounts))
+                                {
+                                    <a href="/ChartOfAccounts" class="nav-link py-1 small">Chart of Accounts</a>
+                                }
+                                @if (CurrentUser.HasPermission(Permissions.Finance.ViewJournals))
+                                {
+                                    <a href="/Finance/JournalAudit" class="nav-link py-1 small">Journal Entries</a>
+                                }
+                                @if (CurrentUser.HasPermission(Permissions.Finance.ViewReports))
+                                {
+                                    <a href="/Finance/TrialBalance" class="nav-link py-1 small">Trial Balance</a>
+                                }
+                                @if (CurrentUser.HasPermission(Permissions.Finance.ManagePeriods))
+                                {
+                                    <a href="/FinancialPeriod" class="nav-link py-1 small">Financial Periods</a>
+                                }
+                        
+                                @if (CurrentUser.HasPermission(Permissions.Finance.ViewReports))
+                                {
+                                    <a href="#" class="nav-link py-1 small opacity-50">Financial Statements (WIP)</a>
+                                    <a href="/Finance/ProfitAndLoss" class="nav-link py-1 small">Profit & Loss</a>
+                                    <a href="/Finance/BalanceSheet" class="nav-link py-1 small">Balance Sheet</a>
+                                }
+                        
+                                @if (CurrentUser.HasPermission(Permissions.SuperAdmin))
+                                {
+                                    <span class="nav-link py-1 small fw-bold opacity-75 text-uppercase mt-2" style="font-size:10px;">Import Opening Balance</span>
+                                    <a href="/Finance/ImportOpenInvoices" class="nav-link py-1 small">Import AR AP</a>
+                                    <a href="/Finance/ImportTrialBalance" class="nav-link py-1 small">Import Trial Balance</a>
+                                }
+                            </nav>
+                        </div>
+                    }
+                }
 
-                <a class="list-group-item list-group-item-action border-0 d-flex justify-content-between align-items-center py-2 px-3"
-                       data-bs-toggle="collapse" href="#menuTreasury" role="button" aria-expanded="false">
-                    <div class="d-flex align-items-center">
-                        <i class="fas fa-vault fa-fw me-3"></i>
-                        <span class="fw-semibold">Treasury</span>
+                @if (CurrentUser.HasPermission(Permissions.HR.ViewEmployees))
+                {
+                    <div class="small fw-semibold text-uppercase px-3 mt-4 mb-2 sidebar-section-header">Human Resources</div>
+
+                    <a class="list-group-item list-group-item-action border-0 d-flex justify-content-between align-items-center py-2 px-3"
+                           data-bs-toggle="collapse" href="#menuHR" role="button" aria-expanded="false">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-users fa-fw me-3"></i>
+                            <span class="fw-semibold">HR & Payroll</span>
+                        </div>
+                        <i class="fas fa-chevron-down small transition-icon"></i>
+                    </a>
+                    <div class="collapse" id="menuHR">
+                        <nav class="nav flex-column py-1 ps-4">
+                            <a href="/Employee" class="nav-link py-1 small">Employee Directory</a>
+                        </nav>
                     </div>
-                    <i class="fas fa-chevron-down small transition-icon"></i>
-                </a>
-                <div class="collapse" id="menuTreasury">
-                    <nav class="nav flex-column py-1 ps-4">
-                        <a href="/Treasury/Receipts" class="nav-link py-1 small">Incoming Payments (AR)</a>
-                        <a href="/Treasury/Payments" class="nav-link py-1 small">Outgoing Payments (AP)</a>
-                        <a href="/Finance/ChequeVault" class="nav-link py-1 small">Cheque Vault (PDCs)</a>
-                        <a href="/Finance/BankReconciliation" class="nav-link py-1 small">Bank Reconciliation</a>
-                    </nav>
-                </div>
+                }
 
-                <a class="list-group-item list-group-item-action border-0 d-flex justify-content-between align-items-center py-2 px-3"
-                       data-bs-toggle="collapse" href="#menuFinance" role="button" aria-expanded="false">
-                    <div class="d-flex align-items-center">
-                        <i class="fas fa-chart-line fa-fw me-3"></i>
-                        <span class="fw-semibold">Accounting & GL</span>
+                @if (CurrentUser.HasPermission(Permissions.System.ViewUsers) || CurrentUser.HasPermission(Permissions.System.ManageConfigs))
+                {
+                    <div class="small fw-semibold text-uppercase px-3 mt-4 mb-2 sidebar-section-header">Administration</div>
+
+                    <a class="list-group-item list-group-item-action border-0 d-flex justify-content-between align-items-center py-2 px-3"
+                           data-bs-toggle="collapse" href="#menuConfig" role="button" aria-expanded="false">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-cogs fa-fw me-3"></i>
+                            <span class="fw-semibold">Settings & Security</span>
+                        </div>
+                        <i class="fas fa-chevron-down small transition-icon"></i>
+                    </a>
+                    <div class="collapse" id="menuConfig">
+                        <nav class="nav flex-column py-1 ps-4">
+                            @if (CurrentUser.HasPermission(Permissions.System.ViewUsers))
+                            {
+                                <a href="/System/Users" class="nav-link py-1 small">Identity & Access (IAM)</a>
+                            }
+                            @if (CurrentUser.HasPermission(Permissions.System.ViewAuditLogs))
+                            {
+                                <a href="/System/AuditExplorer" class="nav-link py-1 small">System Audit Explorer</a>
+                            }
+                            @if (CurrentUser.HasPermission(Permissions.System.ManageConfigs))
+                            {
+                                <a href="/Config" class="nav-link py-1 small">System Parameters</a>
+                                <a href="#" class="nav-link py-1 small opacity-50">Tax Engine (WIP)</a>
+                            }
+                        </nav>
                     </div>
-                    <i class="fas fa-chevron-down small transition-icon"></i>
-                </a>
-                <div class="collapse" id="menuFinance">
-                    <nav class="nav flex-column py-1 ps-4">
-                        <a href="/ChartOfAccounts" class="nav-link py-1 small">Chart of Accounts</a>
-                        <a href="/Finance/JournalAudit" class="nav-link py-1 small">Journal Entries</a>
-                        <a href="/Finance/TrialBalance" class="nav-link py-1 small">Trial Balance</a>
-                        <a href="/FinancialPeriod" class="nav-link py-1 small">Financial Periods</a>
-                        <a href="#" class="nav-link py-1 small opacity-50">Financial Statements (WIP)</a>
-                        <a href="/Finance/ProfitAndLoss" class="nav-link py-1 small">Profit & Loss</a>
-                        <a href="/Finance/BalanceSheet" class="nav-link py-1 small">Balance Sheet</a>
-                        <span class="nav-link py-1 small fw-bold opacity-75 text-uppercase mt-2" style="font-size:10px;">Import Opening Balance</span>
+                }
 
-                        <a href="/Finance/ImportOpenInvoices" class="nav-link py-1 small">Import AR AP</a>
-                        <a href="/Finance/ImportTrialBalance" class="nav-link py-1 small">Import Trial Balance</a>
-                    </nav>
-                </div>
+                @if (CurrentUser.HasPermission(Permissions.Reporting.ViewSalesRegister))
+                {
+                    <div class="small fw-semibold text-uppercase px-3 mt-4 mb-2 sidebar-section-header">Reporting</div>
 
-
-                <div class="small fw-semibold text-uppercase px-3 mt-4 mb-2 sidebar-section-header">Human Resources</div>
-
-                <a class="list-group-item list-group-item-action border-0 d-flex justify-content-between align-items-center py-2 px-3"
-                       data-bs-toggle="collapse" href="#menuHR" role="button" aria-expanded="false">
-                    <div class="d-flex align-items-center">
-                        <i class="fas fa-users fa-fw me-3"></i>
-                        <span class="fw-semibold">HR & Payroll</span>
+                    <a class="list-group-item list-group-item-action border-0 d-flex justify-content-between align-items-center py-2 px-3"
+                           data-bs-toggle="collapse" href="#menuReporting" role="button" aria-expanded="false">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-chart-bar fa-fw me-3"></i>
+                            <span class="fw-semibold">Reporting</span>
+                        </div>
+                        <i class="fas fa-chevron-down small transition-icon"></i>
+                    </a>
+                    <div class="collapse" id="menuReporting">
+                        <nav class="nav flex-column py-1 ps-4">
+                            @if (CurrentUser.HasPermission(Permissions.Reporting.ViewSalesRegister))
+                            {
+                                <a href="/Reporting/SalesRegister" class="nav-link py-1 small">Sales Register</a>
+                            }
+                            @if (CurrentUser.HasPermission(Permissions.Reporting.ViewArAging))
+                            {
+                                <a href="/Reporting/ArAging" class="nav-link py-1 small">AR Aging</a>
+                            }
+                            @if (CurrentUser.HasPermission(Permissions.Reporting.ViewCustomerStatement))
+                            {
+                                <a href="/Reporting/CustomerStatement" class="nav-link py-1 small">Customer Statement</a>
+                            }
+                            @if (CurrentUser.HasPermission(Permissions.Reporting.ViewSupplierStatement))
+                            {
+                                <a href="/Reporting/SupplierStatement" class="nav-link py-1 small">Supplier Statement</a>
+                            }
+                            @if (CurrentUser.HasPermission(Permissions.Reporting.ViewApAging))
+                            {
+                                <a href="/Reporting/ApAging" class="nav-link py-1 small">AP Aging</a>
+                            }
+                            @if (CurrentUser.HasPermission(Permissions.Reporting.ViewInventoryAnalytics))
+                            {
+                                <a href="/Reporting/InventoryAnalytics" class="nav-link py-1 small">Inventory Analytics</a>
+                            }
+                            @if (CurrentUser.HasPermission(Permissions.Reporting.ViewChequeVaultAnalytics))
+                            {
+                        <a href="/Reporting/ChequeVaultAnalytics" class="nav-link py-1 small">Cheque Vault Analytics</a>
+                            }
+                    @if (CurrentUser.HasPermission(Permissions.Reporting.ViewGeneralLedger))
+                    {
+                        <a href="/Reporting/GeneralLedger" class="nav-link py-1 small">General Ledger</a>
+                    }
+                        </nav>
                     </div>
-                    <i class="fas fa-chevron-down small transition-icon"></i>
-                </a>
-                <div class="collapse" id="menuHR">
-                    <nav class="nav flex-column py-1 ps-4">
-                        <a href="/Employee" class="nav-link py-1 small">Employee Directory</a>
-                    </nav>
-                </div>
-
-
-                <div class="small fw-semibold text-uppercase px-3 mt-4 mb-2 sidebar-section-header">Administration</div>
-
-                <a class="list-group-item list-group-item-action border-0 d-flex justify-content-between align-items-center py-2 px-3"
-                       data-bs-toggle="collapse" href="#menuConfig" role="button" aria-expanded="false">
-                    <div class="d-flex align-items-center">
-                        <i class="fas fa-cogs fa-fw me-3"></i>
-                        <span class="fw-semibold">Settings & Security</span>
-                    </div>
-                    <i class="fas fa-chevron-down small transition-icon"></i>
-                </a>
-                <div class="collapse" id="menuConfig">
-                    <nav class="nav flex-column py-1 ps-4">
-                        <a href="/System/Users" class="nav-link py-1 small fw-bold text-white">Identity & Access (IAM)</a>
-                        <a href="/Config" class="nav-link py-1 small">System Parameters</a>
-                        <a href="#" class="nav-link py-1 small opacity-50">Tax Engine (WIP)</a>
-                    </nav>
-                </div>
+                }
 
             </div>
         </div>

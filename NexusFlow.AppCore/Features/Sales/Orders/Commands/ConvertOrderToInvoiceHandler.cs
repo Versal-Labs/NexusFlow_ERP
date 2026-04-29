@@ -204,8 +204,8 @@ namespace NexusFlow.AppCore.Features.Sales.Orders.Commands
             var activeRules = await _context.CommissionRules
                 .AsNoTracking()
                 .Where(r => r.IsActive
-                         && (!r.ValidFrom.HasValue || r.ValidFrom <= now)
-                         && (!r.ValidTo.HasValue || r.ValidTo >= now))
+                         && (!r.EffectiveFrom.HasValue || r.EffectiveFrom <= now)
+                         && (!r.EffectiveTo.HasValue || r.EffectiveTo >= now))
                 .ToListAsync(cancellationToken);
 
             if (!activeRules.Any()) return 0;

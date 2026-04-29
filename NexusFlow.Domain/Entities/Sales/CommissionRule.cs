@@ -35,8 +35,8 @@ namespace NexusFlow.Domain.Entities.Sales
         // DIMENSION 3: THE "WHEN" (Temporal Scope)
         // ==========================================
         // Nullable! Allows admins to set temporary promotional rates.
-        public DateTime? ValidFrom { get; set; }
-        public DateTime? ValidTo { get; set; }
+        public DateTime? EffectiveFrom { get; set; }
+        public DateTime? EffectiveTo { get; set; }
 
         // The actual mathematical rate (e.g., 5.00 for 5%)
         public decimal CommissionPercentage { get; set; }

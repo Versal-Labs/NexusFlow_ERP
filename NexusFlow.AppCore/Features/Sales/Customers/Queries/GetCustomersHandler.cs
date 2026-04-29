@@ -11,6 +11,7 @@ namespace NexusFlow.AppCore.Features.Sales.Customers.Queries
 {
     public class GetCustomersQuery : IRequest<Result<List<CustomerDto>>> { }
 
+    // 2. UPDATE THE HANDLER PROJECTION
     public class GetCustomersHandler : IRequestHandler<GetCustomersQuery, Result<List<CustomerDto>>>
     {
         private readonly IErpDbContext _context;
@@ -29,7 +30,7 @@ namespace NexusFlow.AppCore.Features.Sales.Customers.Queries
                     Id = c.Id,
                     Name = c.Name,
                     TradeName = c.TradeName,
-                    TaxRegNo = c.TaxRegNo, // Mapped to JSON 'taxRegNo'
+                    TaxRegNo = c.TaxRegNo,
                     CustomerGroupId = c.CustomerGroupId,
                     PriceLevelId = c.PriceLevelId,
                     SalesRepId = c.SalesRepId,
@@ -39,18 +40,25 @@ namespace NexusFlow.AppCore.Features.Sales.Customers.Queries
                     Mobile = c.Mobile,
                     AddressLine1 = c.AddressLine1,
                     AddressLine2 = c.AddressLine2,
+
+                    // Mapped new Location fields
+                    Province = c.Province,
+                    District = c.District,
                     City = c.City,
                     Country = c.Country,
+
                     DefaultReceivableAccountId = c.DefaultReceivableAccountId,
                     DefaultRevenueAccountId = c.DefaultRevenueAccountId,
                     PaymentTermId = c.PaymentTermId,
                     CurrencyCode = c.CurrencyCode,
                     CreditLimit = c.CreditLimit,
                     CreditPeriodDays = c.CreditPeriodDays,
-                    BankName = c.BankName,
-                    BankBranch = c.BankBranch,
+
+                    // Mapped new Bank fields
+                    BankId = c.BankId,
+                    BankBranchId = c.BankBranchId,
                     BankAccountNumber = c.BankAccountNumber,
-                    BankSwiftCode = c.BankSwiftCode,
+
                     IsActive = c.IsActive,
                     InternalNotes = c.InternalNotes
                 })

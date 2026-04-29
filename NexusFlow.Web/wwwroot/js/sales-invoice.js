@@ -3,6 +3,7 @@
     _modal: null,
     _rmaModal: null,
     _products: [],
+    _customers: [],
     _currentDocId: null,
 
     init: function () {
@@ -19,10 +20,21 @@
             this._initGrid();
             this._loadMasterData();
 
-            // FIX 1: Attach calc-trigger to the entire FORM to catch VAT checkbox and Global Discount changes
             $('#invoiceForm').on('input change', '.calc-trigger', () => this.calculateTotals());
-            
-            // Viewer Modal Buttons
+
+            // TIER-1 FEATURE: Auto-Assign Sales Rep when Customer is selected
+            $('#CustomerId').on('change', function () {
+                const custId = parseInt($(this).val());
+                if (custId) {
+                    const cust = window.invoiceApp._customers.find(c => c.id === custId);
+                    if (cust && cust.salesRepId) {
+                        $('#SalesRepId').val(cust.salesRepId);
+                    } else {
+                        $('#SalesRepId').val('');
+                    }
+                }
+            });
+
             $('#btnModalVoid').click(() => this.voidInvoice(this._currentDocId));
             $('#btnModalReceive').click(() => {
                 window.location.href = `/Treasury/Receipts?invoiceId=${this._currentDocId}`;
@@ -30,7 +42,7 @@
             $('#btnModalPrint').click(() => {
                 window.open(`/api/sales/invoices/${this._currentDocId}/pdf`, '_blank');
             });
-            
+
         } catch (e) {
             console.error("[InvoiceApp] Init Error:", e);
         }
@@ -38,88 +50,166 @@
 
     _initFilters: function () {
         api.get('/api/customer').then(res => {
-            const customers = res.data || res || [];
+            let customers = Array.isArray(res) ? res : (res?.data || []);
+            if (!Array.isArray(customers)) customers = [];
+
             let $cust = $('#filterCustomer').empty().append('<option value="">All Customers</option>');
-            customers.forEach(c => $cust.append($('<option></option>').val(c.id).text(c.name)));
-        });
+            customers.forEach(c => $cust.append($('<option></option>').val(c.name).text(c.name)));
+        }).catch(err => console.error("Failed to load customers for filter", err));
+
         $('#filterCustomer, #filterStatus, #filterStartDate, #filterEndDate').on('change', () => this.reloadGrid());
+
+        // Setup Custom DataTables Filter Logic
+        $.fn.dataTable.ext.search.push((settings, data, dataIndex) => {
+            if (settings.nTable.id !== 'invoiceGrid') return true;
+
+            const filterCust = ($('#filterCustomer').val() || '').toLowerCase();
+            const filterStatus = ($('#filterStatus').val() || '').toLowerCase();
+            const filterStart = $('#filterStartDate').val();
+            const filterEnd = $('#filterEndDate').val();
+
+            const rowDateStr = data[1] || '';
+            const rowCust = (data[3] || '').toLowerCase();
+            const rowStatus = (data[5] || '').toLowerCase(); // Status is at index 5
+
+            if (filterCust && !rowCust.includes(filterCust)) return false;
+
+            // Advanced Status Filtering based on badges
+            if (filterStatus) {
+                if (filterStatus === 'open' && !rowStatus.includes('open')) return false;
+                if (filterStatus === 'partial' && !rowStatus.includes('partial')) return false;
+                if (filterStatus === 'paid' && !rowStatus.includes('paid')) return false;
+                if (filterStatus === 'voided' && !rowStatus.includes('voided')) return false;
+            }
+
+            if (filterStart || filterEnd) {
+                if (!rowDateStr) return false;
+                const rowDate = new Date(rowDateStr);
+                if (filterStart && rowDate < new Date(filterStart)) return false;
+                if (filterEnd && rowDate > new Date(filterEnd + 'T23:59:59')) return false;
+            }
+
+            return true;
+        });
     },
 
-    resetFilters: function() {
+    resetFilters: function () {
         $('#filterCustomer').val(''); $('#filterStatus').val('');
         $('#filterStartDate').val(''); $('#filterEndDate').val('');
         this.reloadGrid();
     },
 
-    reloadGrid: function() { this._table.ajax.reload(); },
+    reloadGrid: function () { this._table.ajax.reload(); },
 
     _initGrid: function () {
         this._table = $('#invoiceGrid').DataTable({
-            ajax: {
-                url: '/api/sales/invoices',
-                data: function (d) {
-                    d.customerId = $('#filterCustomer').val();
-                    d.status = $('#filterStatus').val();
-                    d.startDate = $('#filterStartDate').val();
-                    d.endDate = $('#filterEndDate').val();
-                },
-                dataSrc: function (json) { return json.data || json || []; },
-                headers: { "Authorization": "Bearer " + localStorage.getItem("jwtToken") }
+            ajax: function (data, callback, settings) {
+                (async () => {
+                    try {
+                        const response = await api.get('/api/sales/invoices');
+                        let rowData = response.data || response || [];
+
+                        // Apply UI Filters (Preserved from earlier!)
+                        const distFilter = $('#filterDistrict').val();
+                        const cityFilter = $('#filterCity').val();
+
+                        if (distFilter) rowData = rowData.filter(d => d.district === distFilter);
+                        if (cityFilter) rowData = rowData.filter(d => d.city === cityFilter);
+
+                        callback({ data: rowData });
+                        console.log(rowData);
+                    } catch (e) {
+                        console.error("Grid Load Error", e);
+                        callback({ data: [] });
+                    }
+                })();
+                return { abort: function () { } }; // TIER-1 FIX
             },
             columns: [
-                { data: 'invoiceNumber', className: 'fw-bold text-primary font-monospace' },
+                {
+                    data: 'invoiceNumber', className: 'fw-bold text-primary font-monospace',
+                    render: function (data, type, row) {
+                        let html = data;
+                        if (row.customerPoNumber) html += `<br><small class="text-muted"><i class="fa-solid fa-hashtag"></i> PO: ${row.customerPoNumber}</small>`;
+                        return html;
+                    }
+                },
                 { data: 'invoiceDate', render: d => d ? new Date(d).toLocaleDateString() : '-' },
                 { data: 'dueDate', render: d => d ? new Date(d).toLocaleDateString() : '-' },
                 { data: 'customerName', className: 'fw-bold' },
-                { data: 'grandTotal', className: 'text-end fw-bold text-dark', render: d => parseFloat(d).toLocaleString(undefined, { minimumFractionDigits: 2 }) },
+                { data: 'grandTotal', className: 'text-end fw-bold text-dark', render: d => parseFloat(d || 0).toLocaleString(undefined, { minimumFractionDigits: 2 }) },
+
+                // Paid Column
+                { data: 'amountPaid', className: 'text-end text-success fw-bold', render: d => parseFloat(d || 0).toLocaleString(undefined, { minimumFractionDigits: 2 }) },
+
+                // Balance Due Column
                 {
-                    data: null, 
-                    className: 'text-center',
-                    render: function(data, type, row) {
-                        if (!row.isPosted) return '<span class="badge bg-secondary">Draft</span>';
-                        if (row.paymentStatus === 'Unpaid') return '<span class="badge bg-warning text-dark">Open</span>';
-                        if (row.paymentStatus === 'Partial') return '<span class="badge bg-info text-dark">Partial</span>';
-                        if (row.paymentStatus === 'Paid') return '<span class="badge bg-success">Paid</span>';
-                        if (row.paymentStatus === 'Voided') return '<span class="badge bg-danger">Voided</span>';
-                        return '<span class="badge bg-success">Posted</span>'; 
+                    data: null, className: 'text-end text-danger fw-bold',
+                    render: function (data, type, row) {
+                        let balance = (parseFloat(row.grandTotal) || 0) - (parseFloat(row.amountPaid) || 0);
+                        return balance.toLocaleString(undefined, { minimumFractionDigits: 2 });
                     }
                 },
+
+                // COLUMN 8: Document Status (Draft / Posted / Voided)
                 {
                     data: null,
-                    className: 'text-end pe-3',
-                    orderable: false,
+                    className: 'text-center',
+                    render: function (data, type, row) {
+                        if (row.paymentStatus === '3' || row.paymentStatus === 'Voided') return '<span class="badge bg-danger">Voided</span>';
+                        if (!row.isPosted) return '<span class="badge bg-secondary">Draft</span>';
+                        return '<span class="badge bg-primary">Posted</span>';
+                    }
+                },
+
+                // COLUMN 9: Payment Status (Unpaid / Partial / Paid)
+                {
+                    data: null,
+                    className: 'text-center',
+                    render: function (data, type, row) {
+                        if (row.paymentStatus === '3' || row.paymentStatus === 'Voided') return '<span class="badge bg-light text-muted border">-</span>';
+                        if (!row.isPosted) return '<span class="badge bg-light text-muted border">-</span>'; // Drafts don't have payment status
+
+                        if (row.paymentStatus === '0' || row.paymentStatus === 'Unpaid') return '<span class="badge bg-warning text-dark">Unpaid</span>';
+                        if (row.paymentStatus === '1' || row.paymentStatus === 'Partial') return '<span class="badge bg-info text-dark">Partial</span>';
+                        if (row.paymentStatus === '2' || row.paymentStatus === 'Paid') return '<span class="badge bg-success">Paid</span>';
+
+                        return '-';
+                    }
+                },
+
+                // COLUMN 10: Actions
+                {
+                    data: null, className: 'text-end pe-3', orderable: false,
                     render: function (data, type, row) {
                         let btns = `<button class="btn btn-sm btn-outline-dark shadow-sm me-1" onclick="window.invoiceApp.viewDocument(${row.id})" title="View Document"><i class="fa-solid fa-eye"></i></button>`;
-                        
-                        if (row.isPosted && row.paymentStatus !== 'Voided') {
+
+                        if (row.isPosted && row.paymentStatus !== 3 && row.paymentStatus !== 'Voided') {
                             btns += `<button class="btn btn-sm btn-outline-danger shadow-sm" title="Process Return" onclick="invoiceApp.openReturnModal(${row.id}, '${row.invoiceNumber}')"><i class="fa-solid fa-arrow-rotate-left"></i> RMA</button>`;
                         }
-                        return btns; 
+                        return btns;
                     }
                 }
             ],
-            order: [[0, 'desc']],
+            order: [[1, 'desc'], [0, 'desc']],
             dom: '<"d-flex justify-content-between align-items-center mb-3"f>rt<"d-flex justify-content-between align-items-center mt-3"ip>',
             pageLength: 20
         });
     },
 
-    // ==========================================
-    // CREATE INVOICE LOGIC
-    // ==========================================
     _loadMasterData: async function () {
         try {
             const [custRes, whRes, prodRes, empRes] = await Promise.all([
-                api.get('/api/customer'), api.get('/api/masterdata/warehouses'), 
+                api.get('/api/customer'), api.get('/api/masterdata/warehouses'),
                 api.get('/api/product'), api.get('/api/employee')
             ]);
 
-            const customers = Array.isArray(custRes) ? custRes : (custRes?.data || []);
+            this._customers = Array.isArray(custRes) ? custRes : (custRes?.data || []);
             const warehouses = Array.isArray(whRes) ? whRes : (whRes?.data || []);
             this._products = Array.isArray(prodRes) ? prodRes : (prodRes?.data || []);
             const employees = Array.isArray(empRes) ? empRes : (empRes?.data || []);
 
-            this._populateSelect('CustomerId', customers, 'id', 'name');
+            this._populateSelect('CustomerId', this._customers, 'id', 'name');
             this._populateSelect('WarehouseId', warehouses, 'id', 'name');
             this._populateSelect('RmaWarehouseId', warehouses, 'id', 'name');
 
@@ -147,33 +237,34 @@
 
     openCreateModal: function () {
         document.getElementById('invoiceForm').reset();
+        $('#CustomerPoNumber').val('');
         $('#linesBody').empty();
         $('#CustomerId').val('').trigger('change');
-        this.addLine(); 
+        this.addLine();
         this.calculateTotals();
         if (this._modal) this._modal.show();
     },
 
     addLine: function () {
         const id = Date.now();
-        let productOptions = '<option value="">-- Select Item --</option>';
+        let productOptions = '<option value="">-- Search & Select Item --</option>';
+
         this._products.forEach(p => {
             if (p.variants && p.variants.length > 0) {
                 productOptions += `<optgroup label="${p.name}">`;
                 p.variants.forEach(v => {
                     let desc = v.sku;
-                    if (v.size || v.color) desc += ` (${v.size || ''} ${v.color || ''})`;
+                    if (v.size !== 'N/A' || v.color !== 'N/A') desc += ` (${v.size !== 'N/A' ? v.size : ''} ${v.color !== 'N/A' ? v.color : ''})`;
                     productOptions += `<option value="${v.id}" data-price="${v.sellingPrice}" data-type="${p.type}">${desc}</option>`;
                 });
                 productOptions += `</optgroup>`;
             }
         });
 
-        // FIX 2: Added onclick="this.select()" and fixed the discount select class layout
         const html = `
             <tr id="row_${id}" data-absolute-discount="0" data-stock="999999">
                 <td>
-                    <select class="form-select form-select-sm line-variant" onchange="invoiceApp.onVariantSelect(this)">
+                    <select class="form-select form-select-sm line-variant" style="width: 100%;">
                         ${productOptions}
                     </select>
                 </td>
@@ -198,13 +289,23 @@
                     </button>
                 </td>
             </tr>`;
-        $('#linesBody').append(html);
+
+        const newRow = $(html);
+        $('#linesBody').append(newRow);
+
+        // TIER-1 FEATURE: Initialize Select2 inside the grid dynamically
+        newRow.find('.line-variant').select2({
+            dropdownParent: $('#invoiceModal'),
+            width: '100%'
+        }).on('change', function () {
+            window.invoiceApp.onVariantSelect(this);
+        });
     },
 
-    onWarehouseChange: function() {
+    onWarehouseChange: function () {
         var linesCount = $('#linesBody tr').length;
         if (linesCount > 0) {
-            toastr.info("Warehouse changed. Line items reset to re-evaluate physical stock.");
+            toastr.info("Warehouse changed. Please re-select items to evaluate stock.");
             $('#linesBody').empty();
             this.addLine();
             this.calculateTotals();
@@ -214,7 +315,7 @@
     onVariantSelect: async function (selectEl) {
         const selectedOption = $(selectEl).find('option:selected');
         const price = selectedOption.data('price') || 0;
-        const pType = selectedOption.data('type'); 
+        const pType = selectedOption.data('type');
         const varId = $(selectEl).val();
         const row = $(selectEl).closest('tr');
         const stockLabel = row.find('.stock-label');
@@ -226,15 +327,16 @@
             const warehouseId = $('#WarehouseId').val();
             if (!warehouseId) {
                 toastr.warning("Please select a Dispatch Warehouse first.");
-                $(selectEl).val('');
+                $(selectEl).val('').trigger('change.select2');
                 return;
             }
 
-            if (pType == 2 || pType === "Service") {
+            // TIER-1 FIX: Service is Type 3
+            if (pType == 3 || pType === "Service") {
                 row.attr('data-stock', 999999);
                 stockLabel.html('<span class="text-primary">Service (No Stock)</span>');
                 qtyInput.attr('max', 999999);
-            } 
+            }
             else {
                 stockLabel.html('<i class="spinner-border spinner-border-sm text-secondary" style="width: 10px; height: 10px;"></i>');
                 try {
@@ -242,7 +344,7 @@
                     const available = res.data !== undefined ? res.data : (res || 0);
 
                     row.attr('data-stock', available);
-                    
+
                     if (available <= 0) {
                         stockLabel.html('<span class="text-danger"><i class="fa-solid fa-triangle-exclamation"></i> Out of Stock</span>');
                         qtyInput.val(0);
@@ -251,7 +353,7 @@
                         qtyInput.attr('max', available);
                         if (qtyInput.val() == 0) qtyInput.val(1);
                     }
-                } catch(e) {
+                } catch (e) {
                     stockLabel.html('<span class="text-danger">Error</span>');
                 }
             }
@@ -274,7 +376,7 @@
             if (qty > availableStock) {
                 toastr.warning(`Quantity exceeds available physical stock (${availableStock}).`);
                 qty = availableStock;
-                qtyInput.val(qty); 
+                qtyInput.val(qty);
             }
 
             const price = parseFloat($(this).find('.line-price').val()) || 0;
@@ -284,12 +386,12 @@
             let lineGross = qty * price;
             let lineDiscAmount = discType === '%' ? (lineGross * (discVal / 100)) : discVal;
             if (lineDiscAmount > lineGross) lineDiscAmount = lineGross;
-            
+
             let lineNet = lineGross - lineDiscAmount;
 
             $(this).find('.line-total').text(lineNet.toFixed(2));
-            $(this).attr('data-absolute-discount', lineDiscAmount); 
-            
+            $(this).attr('data-absolute-discount', lineDiscAmount);
+
             grossSubTotal += lineGross;
             totalLineDiscounts += lineDiscAmount;
         });
@@ -306,12 +408,12 @@
         let totalDiscount = totalLineDiscounts + globDiscAmount;
         let taxableAmount = netSubTotal - globDiscAmount;
         let applyVat = $('#ApplyVat').is(':checked');
-        let tax = applyVat ? (taxableAmount * 0.18) : 0; 
+        let tax = applyVat ? (taxableAmount * 0.18) : 0;
         let grandTotal = taxableAmount + tax;
 
         // UI Updates
         if (applyVat) $('#vatRow').show(); else $('#vatRow').hide();
-        
+
         if (totalDiscount > 0) {
             $('#discountRow').show();
             $('#lblTotalDiscount').text('- ' + totalDiscount.toLocaleString(undefined, { minimumFractionDigits: 2 }));
@@ -327,13 +429,10 @@
 
     saveInvoice: async function (isDraft) {
         var form = document.getElementById('invoiceForm');
-        
-        // FIX 3: Strict Due Date Validation
         var dateVal = $('#Date').val();
         var dueDateVal = $('#DueDate').val();
         if (new Date(dueDateVal) < new Date(dateVal)) {
             toastr.warning("The Due Date cannot be earlier than the Invoice Date.");
-            $('#DueDate').focus();
             return;
         }
 
@@ -341,12 +440,13 @@
         var warehouseId = parseInt($('#WarehouseId').val()) || 0;
         var salesRepId = parseInt($('#SalesRepId').val()) || null;
 
-        if (customerId === 0) { toastr.warning("Select Customer."); $('#CustomerId').select2('open'); return; }
-        if (warehouseId === 0) { toastr.warning("Select Dispatch Warehouse."); $('#WarehouseId').focus(); return; }
+        if (customerId === 0) { toastr.warning("Select Customer."); return; }
+        if (warehouseId === 0) { toastr.warning("Select Dispatch Warehouse."); return; }
         if (!form.checkValidity()) { form.reportValidity(); return; }
 
         const payload = {
             Invoice: {
+                CustomerPoNumber: $('#CustomerPoNumber').val() || '',
                 Date: dateVal, DueDate: dueDateVal, CustomerId: customerId,
                 WarehouseId: warehouseId, SalesRepId: salesRepId, Notes: $('#Notes').val(),
                 ApplyVat: $('#ApplyVat').is(':checked'), IsDraft: isDraft,
@@ -379,8 +479,12 @@
                 toastr.success(res.message || "Invoice saved successfully.");
                 this._modal.hide();
                 this._table.ajax.reload(null, false);
+            } else {
+                toastr.error(res?.messages?.[0] || "Failed to save invoice.");
             }
-        } catch (e) { console.error(e); } 
+        } catch (e) {
+            console.error(e);
+        }
         finally { $btn.prop('disabled', false).html(originalText); }
     },
 
@@ -452,34 +556,45 @@
                 toastr.success(res.message || "RMA processed successfully.");
                 this._rmaModal.hide();
                 this._table.ajax.reload(null, false);
+            } else {
+                toastr.error(res?.messages?.[0] || "Failed to process RMA.");
             }
-        } catch (e) { console.error(e); } 
+        } catch (e) {
+            console.error(e);
+        }
         finally { $btn.prop('disabled', false).html(originalText); }
     },
 
     // ==========================================
     // DOCUMENT VIEWER & ACTIONS
     // ==========================================
-    viewDocument: async function(id) {
+    viewDocument: async function (id) {
         try {
             this._currentDocId = id;
-            const doc = await api.get(`/api/sales/invoices/${id}`); 
-            
+            const res = await api.get(`/api/sales/invoices/${id}`);
+            const doc = res.data || res;
+
             $('#docInvoiceNo').text(doc.invoiceNumber);
+
+            if (doc.customerPoNumber) {
+                $('#docPoWrapper').removeClass('d-none');
+                $('#docPoNo').text(doc.customerPoNumber);
+            } else {
+                $('#docPoWrapper').addClass('d-none');
+            }
+
             $('#docDate').text(new Date(doc.invoiceDate).toLocaleDateString());
             $('#docDueDate').text(new Date(doc.dueDate).toLocaleDateString());
             $('#docCustomer').text(doc.customerName);
             $('#docNotes').text(doc.notes || '-');
-            
+
             let total = parseFloat(doc.grandTotal || 0);
             let paid = parseFloat(doc.amountPaid || 0);
             let balance = total - paid;
-            let totalDiscount = parseFloat(doc.totalDiscount || 0); // Extract Global Discount
+            let totalDiscount = parseFloat(doc.totalDiscount || 0);
 
-            // Subtotal
             $('#docSubtotal').text(parseFloat(doc.subTotal || 0).toLocaleString(undefined, { minimumFractionDigits: 2 }));
-            
-            // Handle Global/Total Discount Display
+
             if (totalDiscount > 0) {
                 $('#docDiscountRow').show();
                 $('#docTotalDiscount').text('- ' + totalDiscount.toLocaleString(undefined, { minimumFractionDigits: 2 }));
@@ -490,36 +605,35 @@
             $('#docTax').text(parseFloat(doc.totalTax || 0).toLocaleString(undefined, { minimumFractionDigits: 2 }));
             $('#docTotal').text(total.toLocaleString(undefined, { minimumFractionDigits: 2 }));
             $('#docPaid').text(`-${paid.toLocaleString(undefined, { minimumFractionDigits: 2 })}`);
-            
+
             const balString = balance.toLocaleString(undefined, { minimumFractionDigits: 2 });
             $('#docBalanceDue').text(balString);
             $('#docBalanceDueLarge').text(`$${balString}`);
 
-            const isVoided = doc.paymentStatus === 'Voided';
+            const isVoided = (doc.paymentStatus === 3 || doc.paymentStatus === 'Voided');
             if (isVoided) {
                 $('#voidStamp').removeClass('d-none');
                 $('#btnModalVoid, #btnModalReceive').hide();
             } else {
                 $('#voidStamp').addClass('d-none');
-                if (paid > 0) $('#btnModalVoid').hide(); // Cannot void paid invoices
+                if (paid > 0) $('#btnModalVoid').hide();
                 else $('#btnModalVoid').show();
-                
-                if (doc.paymentStatus === 'Paid') $('#btnModalReceive').hide();
+
+                if (doc.paymentStatus === 2 || doc.paymentStatus === 'Paid') $('#btnModalReceive').hide();
                 else $('#btnModalReceive').show();
             }
 
             let tbody = '';
             if (doc.items) {
                 doc.items.forEach(i => {
-                    // Dynamic Percentage Reverse-Calculation
                     let qty = parseFloat(i.invoicedQuantity || 0);
                     let price = parseFloat(i.unitPrice || 0);
                     let lineGross = qty * price;
                     let disc = parseFloat(i.discount || 0);
-                    
+
                     let discHtml = '-';
                     if (disc > 0) {
-                        let pct = (disc / lineGross) * 100;
+                        let pct = (lineGross > 0) ? ((disc / lineGross) * 100) : 0;
                         discHtml = `
                             <div class="text-danger fw-bold">-$${disc.toFixed(2)}</div>
                             <small class="text-muted">(${pct.toFixed(1)}%)</small>
@@ -544,7 +658,7 @@
         }
     },
 
-    voidInvoice: async function(id) {
+    voidInvoice: async function (id) {
         const result = await Swal.fire({
             title: 'Void this Invoice?',
             text: "This will reverse the General Ledger entries and put the stock back. This action cannot be undone.",
@@ -564,9 +678,11 @@
                 toastr.success("Invoice voided successfully.");
                 $('#viewerModal').modal('hide');
                 this.reloadGrid();
+            } else {
+                toastr.error(res?.messages?.[0] || "Failed to void invoice.");
             }
         } catch (e) {
-            toastr.error(e.responseJSON?.messages?.[0] || "Failed to void invoice.");
+            toastr.error("Network error during void.");
         }
     }
 };

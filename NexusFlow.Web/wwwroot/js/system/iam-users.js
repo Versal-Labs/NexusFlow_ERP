@@ -3,6 +3,7 @@
     _rolesTable: null,
     _userModal: null,
     _roleModal: null,
+    _permissionsModal: null,
 
     init: function () {
         var uModalEl = document.getElementById('userModal');
@@ -91,7 +92,13 @@
                 {
                     data: null, className: 'text-end pe-3', orderable: false,
                     render: function (data, type, row) {
-                        return `<button class="btn btn-sm btn-outline-dark shadow-sm" onclick="iamApp.editRole('${row.id}', '${row.name}')" title="Edit Role"><i class="fa-solid fa-pen"></i> Edit</button>`;
+                        let btns = `<button class="btn btn-sm btn-outline-dark shadow-sm me-1" onclick="iamApp.editRole('${row.id}', '${row.name}')" title="Edit Role"><i class="fa-solid fa-pen"></i> Edit</button>`;
+
+                        // TIER-1 FEATURE: Manage Permissions Button
+                        if (row.name !== 'SuperAdmin') { // SuperAdmin usually bypasses everything, no need to edit
+                            btns += `<button class="btn btn-sm btn-warning shadow-sm fw-bold text-dark" onclick="iamApp.openPermissionsModal('${row.id}', '${row.name}')" title="Manage Permissions"><i class="fa-solid fa-user-lock"></i> Permissions</button>`;
+                        }
+                        return btns;
                     }
                 }
             ],
@@ -244,6 +251,109 @@
             } else if (res && res.messages) { toastr.error(res.messages[0]); }
         } catch (err) { toastr.error(err.responseJSON?.messages?.[0] || "Operation failed."); } 
         finally { $btn.prop('disabled', false).html(ogText); }
+    },
+
+    
+
+    openPermissionsModal: async function (roleId, roleName) {
+        if (!this._permissionsModal) {
+            this._permissionsModal = new bootstrap.Modal(document.getElementById('permissionsModal'), { backdrop: 'static' });
+        }
+
+        $('#PermRoleId').val(roleId);
+        $('#lblPermRoleName').text(roleName);
+        $('#permissionsContainer').html('<div class="text-center py-4 w-100"><i class="spinner-border text-primary"></i> Loading...</div>');
+        this._permissionsModal.show();
+
+        try {
+            // 1. Fetch ALL possible permissions in the system
+            const allPermsRes = await api.get('/api/iam/permissions');
+            const allPerms = allPermsRes.data || allPermsRes;
+
+            // 2. Fetch assigned permissions for THIS role
+            const rolePermsRes = await api.get(`/api/iam/roles/${roleId}/permissions`);
+            const assignedPerms = rolePermsRes.assignedPermissions || [];
+
+            // 3. Group all permissions by Module (Sales, Purchasing, etc.)
+            const grouped = allPerms.reduce((acc, curr) => {
+                if (!acc[curr.module]) acc[curr.module] = [];
+                acc[curr.module].push(curr.permission);
+                return acc;
+            }, {});
+
+            // 4. Render the UI
+            let html = '';
+            for (const [module, perms] of Object.entries(grouped)) {
+                let moduleIcon = 'fa-cube'; // default
+                if (module === 'Sales') moduleIcon = 'fa-cart-shopping';
+                if (module === 'Purchasing') moduleIcon = 'fa-truck-fast';
+                if (module === 'Inventory') moduleIcon = 'fa-boxes-stacked';
+                if (module === 'Treasury') moduleIcon = 'fa-vault';
+                if (module === 'Reporting') moduleIcon = 'fa-chart-bar';
+
+                html += `
+                    <div class="col-md-6">
+                        <div class="card border shadow-sm h-100">
+                            <div class="card-header bg-white fw-bold text-primary py-2">
+                                <i class="fa-solid ${moduleIcon} me-2"></i>${module}
+                            </div>
+                            <div class="card-body p-3 fs-13">
+                `;
+
+                perms.forEach(p => {
+                    const isChecked = assignedPerms.includes(p) ? 'checked' : '';
+                    // Extract just the action name (e.g. "Permissions.Sales.CreateInvoice" -> "CreateInvoice")
+                    const shortName = p.split('.').pop().replace(/([A-Z])/g, ' $1').trim();
+
+                    html += `
+                        <div class="form-check form-switch mb-2">
+                            <input class="form-check-input perm-checkbox" type="checkbox" id="${p}" value="${p}" ${isChecked} style="cursor:pointer;">
+                            <label class="form-check-label fw-semibold text-dark" for="${p}" style="cursor:pointer;">${shortName}</label>
+                        </div>
+                    `;
+                });
+
+                html += `</div></div></div>`;
+            }
+
+            $('#permissionsContainer').html(html);
+
+        } catch (e) {
+            $('#permissionsContainer').html('<div class="text-danger fw-bold text-center w-100 py-4">Failed to load permissions.</div>');
+            console.error(e);
+        }
+    },
+
+    selectAllPerms: function () {
+        $('.perm-checkbox').prop('checked', true);
+    },
+
+    savePermissions: async function (e) {
+        const roleId = $('#PermRoleId').val();
+
+        // Harvest all checked boxes
+        let selectedPerms = [];
+        $('.perm-checkbox:checked').each(function () {
+            selectedPerms.push($(this).val());
+        });
+
+        var $btn = $(e.currentTarget);
+        var ogText = $btn.html();
+        $btn.prop('disabled', true).html('<i class="spinner-border spinner-border-sm me-2"></i>Saving...');
+
+        try {
+            const res = await api.post(`/api/iam/roles/${roleId}/permissions`, selectedPerms);
+            if (res && res.succeeded) {
+                toastr.success(res.message || "Permissions updated successfully.");
+                this._permissionsModal.hide();
+            } else {
+                toastr.error("Failed to update permissions.");
+            }
+        } catch (err) {
+            toastr.error("Network error saving permissions.");
+        } finally {
+            $btn.prop('disabled', false).html(ogText);
+        }
     }
 };
 

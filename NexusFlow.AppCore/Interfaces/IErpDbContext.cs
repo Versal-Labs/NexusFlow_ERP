@@ -36,6 +36,7 @@ namespace NexusFlow.AppCore.Interfaces
         DbSet<SalesInvoiceItem> SalesInvoiceItems { get; set; }
         DbSet<Supplier> Suppliers { get; set; }
         DbSet<PurchaseOrder> PurchaseOrders { get; set; }
+        DbSet<PurchaseOrderItem> PurchaseOrderItems { get; set; }
         DbSet<GRN> GRNs { get; set; }
         DbSet<AuditLog> AuditLogs { get; set; }
         DbSet<PaymentTransaction> PaymentTransactions { get; set; }
@@ -44,8 +45,6 @@ namespace NexusFlow.AppCore.Interfaces
         DbSet<SupplierBill> SupplierBills { get; set; }
         DbSet<SupplierBillItem> SupplierBillItems { get; set; }
         DbSet<PaymentAllocation> PaymentAllocations { get; set; }
-        DbSet<GoodsReceipt> GoodsReceipts { get; set; }
-        DbSet<GoodsReceiptItem> GoodsReceiptItems { get; set; }
         DbSet<Employee> Employees { get; set; }
         DbSet<SalesOrder> SalesOrders { get; set; }
         DbSet<SalesOrderItem> SalesOrderItems { get; set; }
@@ -59,6 +58,9 @@ namespace NexusFlow.AppCore.Interfaces
         DbSet<Bank> Banks { get; set; }
         DbSet<BankBranch> BankBranches { get; set; }
         DbSet<BankReconciliation> BankReconciliations { get; set; }
+        DbSet<Province> Provinces { get; set; }
+        DbSet<District> Districts { get; set; }
+        DbSet<City> Cities { get; set; }
 
         Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 

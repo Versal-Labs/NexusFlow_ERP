@@ -1,0 +1,320 @@
+{
+  "country": "Sri Lanka",
+  "last_updated": "2025",
+  "total_provinces": 9,
+  "total_districts": 25,
+  "provinces": [
+    {
+      "province": "Western Province",
+      "province_sinhala": "බස්නාහිර පළාත",
+      "province_tamil": "மேல் மாகாணம்",
+      "districts": [
+        {
+          "district": "Colombo",
+          "cities": [
+            "Colombo 01 (Fort)", "Colombo 02 (Slave Island)", "Colombo 03 (Kollupitiya)",
+            "Colombo 04 (Bambalapitiya)", "Colombo 05 (Havelock Town)", "Colombo 06 (Wellawatte)",
+            "Colombo 07 (Cinnamon Gardens)", "Colombo 08 (Borella)", "Colombo 09 (Dematagoda)",
+            "Colombo 10 (Maradana)", "Colombo 11 (Pettah)", "Colombo 12 (Hulftsdorp)",
+            "Colombo 13 (Kotahena)", "Colombo 14 (Grandpass)", "Colombo 15 (Mutwal)",
+            "Dehiwala", "Mount Lavinia", "Moratuwa", "Ratmalana", "Nugegoda",
+            "Sri Jayawardenepura Kotte", "Maharagama", "Kesbewa", "Piliyandala",
+            "Homagama", "Kaduwela", "Kolonnawa", "Padukka", "Hanwella",
+            "Avissawella", "Angoda", "Battaramulla", "Boralesgamuwa", "Nawala",
+            "Rajagiriya", "Wattala", "Hendala", "Ja-Ela", "Ekala",
+            "Kelaniya", "Peliyagoda", "Ragama", "Kandana", "Seeduwa"
+          ]
+        },
+        {
+          "district": "Gampaha",
+          "cities": [
+            "Gampaha", "Negombo", "Katunayake", "Minuwangoda", "Divulapitiya",
+            "Mirigama", "Veyangoda", "Nittambuwa", "Attanagalla", "Dompe",
+            "Biyagama", "Mahara", "Kiribathgoda", "Wattala", "Hendala",
+            "Ja-Ela", "Ekala", "Seeduwa", "Katana", "Madurankuliya",
+            "Ganemulla", "Yakkala", "Kirindiwela", "Pugoda", "Avisawella",
+            "Walpita", "Ihala Kosgama", "Delgoda", "Meerigama"
+          ]
+        },
+        {
+          "district": "Kalutara",
+          "cities": [
+            "Kalutara", "Panadura", "Horana", "Beruwala", "Aluthgama",
+            "Matugama", "Agalawatta", "Bandaragama", "Ingiriya", "Bulathsinhala",
+            "Palindanuwara", "Walallawita", "Millaniya", "Wadduwa", "Payagala",
+            "Dodangoda", "Nagoda", "Baduraliya", "Madurawala", "Poruwadanda",
+            "Bombuwala", "Dharga Town", "Molkawa", "Gonapola", "Katukurunda"
+          ]
+        }
+      ]
+    },
+    {
+      "province": "Central Province",
+      "province_sinhala": "මධ්‍යම පළාත",
+      "province_tamil": "மத்திய மாகாணம்",
+      "districts": [
+        {
+          "district": "Kandy",
+          "cities": [
+            "Kandy", "Peradeniya", "Katugastota", "Gampola", "Nawalapitiya",
+            "Hatton", "Kadugannawa", "Pilimathalawa", "Akurana", "Kundasale",
+            "Teldeniya", "Medamahanuwara", "Udunuwara", "Harispattuwa",
+            "Poojapitiya", "Yatinuwara", "Ududumbara", "Panvila",
+            "Pasbage Korale", "Tumpane", "Gangawata Korale", "Pathahewaheta",
+            "Doluwa", "Udapalatha", "Minipe", "Hataraliyadda",
+            "Hewaheta", "Ambanganga Korale"
+          ]
+        },
+        {
+          "district": "Matale",
+          "cities": [
+            "Matale", "Dambulla", "Sigiriya", "Galewela", "Rattota",
+            "Ukuwela", "Yatawatta", "Pallepola", "Naula", "Wilgamuwa",
+            "Laggala-Pallegama", "Ambanganga Korale", "Kaikawala",
+            "Palapathwela", "Wahacotte", "Nullapitiya", "Panliyadda"
+          ]
+        },
+        {
+          "district": "Nuwara Eliya",
+          "cities": [
+            "Nuwara Eliya", "Hatton", "Talawakele", "Kotagala", "Ginigathena",
+            "Walapane", "Ambagamuwa", "Kotmale", "Hanguranketha",
+            "Nuwara Eliya Town", "Ragala", "Lindula", "Maskeliya",
+            "Bogawantalawa", "Norwood", "Pundaluoya", "Dayagama Bazaar",
+            "Labukele", "Agarapatana", "Udapussellawa"
+          ]
+        }
+      ]
+    },
+    {
+      "province": "Southern Province",
+      "province_sinhala": "දකුණු පළාත",
+      "province_tamil": "தென் மாகாணம்",
+      "districts": [
+        {
+          "district": "Galle",
+          "cities": [
+            "Galle", "Hikkaduwa", "Ambalangoda", "Elpitiya", "Baddegama",
+            "Balapitiya", "Karandeniya", "Akmeemana", "Bentota", "Induruwa",
+            "Koggala", "Unawatuna", "Habaraduwa", "Imaduwa", "Wanduramba",
+            "Thawalama", "Nagoda", "Yakkalamulla", "Neluwa", "Niyagama",
+            "Bope-Poddala", "Welivitiya-Divithura"
+          ]
+        },
+        {
+          "district": "Matara",
+          "cities": [
+            "Matara", "Weligama", "Dickwella", "Hakmana", "Akuressa",
+            "Kamburupitiya", "Kirinda", "Mirissa", "Devinuwara (Dondra)",
+            "Kotapola", "Malimbada", "Mulatiyana", "Pasgoda",
+            "Pitabeddara", "Thihagoda", "Welipitiya", "Athuraliya",
+            "Kekanadura", "Gandara", "Dampahala", "Kottegoda"
+          ]
+        },
+        {
+          "district": "Hambantota",
+          "cities": [
+            "Hambantota", "Tangalle", "Tissamaharama", "Ambalantota",
+            "Walasmulla", "Beliatta", "Kataragama", "Suriyawewa",
+            "Weeraketiya", "Okewela", "Lunugamvehera", "Sooriyawewa",
+            "Angunakolapelessa", "Middeniya", "Kirama", "Hungama",
+            "Ranna", "Bundala", "Siribopura", "Angunukolapelessa"
+          ]
+        }
+      ]
+    },
+    {
+      "province": "Northern Province",
+      "province_sinhala": "උතුරු පළාත",
+      "province_tamil": "வட மாகாணம்",
+      "districts": [
+        {
+          "district": "Jaffna",
+          "cities": [
+            "Jaffna", "Nallur", "Chavakachcheri", "Point Pedro", "Kankesanthurai",
+            "Karainagar", "Kayts", "Tellippalai", "Manipay", "Kopay",
+            "Chankanai", "Uduvil", "Vaddukoddai", "Sandilipay", "Neerveli",
+            "Kaithady", "Kondavil", "Ilavalai", "Inuvil", "Ariyalai",
+            "Thirunelveli", "Mallakam", "Valikamam", "Maruthanamadam",
+            "Mirusuvil", "Kodikamam", "Alaveddy"
+          ]
+        },
+        {
+          "district": "Kilinochchi",
+          "cities": [
+            "Kilinochchi", "Pooneryn", "Kandavalai", "Karachchi",
+            "Pachchilaipalli", "Pallai", "Paranthan", "Tharmapuram",
+            "Akkarayankulam", "Poonakary"
+          ]
+        },
+        {
+          "district": "Mannar",
+          "cities": [
+            "Mannar", "Nanattan", "Madhu", "Nanaddan", "Musali",
+            "Manthai West", "Madu Road", "Thiruketheeswaram",
+            "Pesalai", "Talaimannar"
+          ]
+        },
+        {
+          "district": "Mullaitivu",
+          "cities": [
+            "Mullaitivu", "Oddusuddan", "Puthukkudiyiruppu", "Maritimepattu",
+            "Manthai East", "Welioya", "Thunukkai",
+            "Mallavi", "Visuvamadu", "Puthukudiyiruppu"
+          ]
+        },
+        {
+          "district": "Vavuniya",
+          "cities": [
+            "Vavuniya", "Cheddikulam", "Nedunkerni", "Vavuniya North",
+            "Vavuniya South", "Vengalacheddikulam", "Omanthai",
+            "Iranamadu", "Kovilkulam"
+          ]
+        }
+      ]
+    },
+    {
+      "province": "Eastern Province",
+      "province_sinhala": "නැගෙනහිර පළාත",
+      "province_tamil": "கிழக்கு மாகாணம்",
+      "districts": [
+        {
+          "district": "Ampara",
+          "cities": [
+            "Ampara", "Kalmunai", "Akkaraipattu", "Sammanthurai", "Addalaichenai",
+            "Pottuvil", "Sainthamaruthu", "Ninthavur", "Mahaoya", "Uhana",
+            "Damana", "Dehiattakandiya", "Padiyathalawa", "Lahugala",
+            "Irakkamam", "Karaitivu", "Thirukovil", "Alaiyadi Vembu",
+            "Panama", "Navithanveli"
+          ]
+        },
+        {
+          "district": "Batticaloa",
+          "cities": [
+            "Batticaloa", "Kattankudy", "Eravur", "Valaichenai", "Chenkalady",
+            "Oddamavadi", "Valaichchenai", "Kiran", "Kaluwanchikudy",
+            "Koralai Pattu", "Manmunai North", "Manmunai South",
+            "Manmunai Pattu", "Passara", "Porativu Pattu"
+          ]
+        },
+        {
+          "district": "Trincomalee",
+          "cities": [
+            "Trincomalee", "Kinniya", "Mutur", "Kantale", "Thampalakamam",
+            "Kuchchaveli", "Gomarankadawala", "Padavi Sripura",
+            "Seruwila", "Morawewa", "Nilaveli", "China Bay",
+            "Sampoor", "Uppuveli", "Gravets"
+          ]
+        }
+      ]
+    },
+    {
+      "province": "North Western Province",
+      "province_sinhala": "වයඹ පළාත",
+      "province_tamil": "வடமேல் மாகாணம்",
+      "districts": [
+        {
+          "district": "Kurunegala",
+          "cities": [
+            "Kurunegala", "Kuliyapitiya", "Nikaweratiya", "Pannala",
+            "Wariyapola", "Giriulla", "Narammala", "Alawwa",
+            "Mawathagama", "Ibbagamuwa", "Bingiriya", "Hettipola",
+            "Polgahawela", "Galgamuwa", "Ridigama", "Dodangaslanda",
+            "Udubaddawa", "Kobeigane", "Dummalasuriya", "Kotawehera",
+            "Mallawapitiya", "Medawachchiya", "Ambanpola"
+          ]
+        },
+        {
+          "district": "Puttalam",
+          "cities": [
+            "Puttalam", "Chilaw", "Wennappuwa", "Marawila", "Nattandiya",
+            "Dankotuwa", "Anamaduwa", "Mundel", "Mahawewa", "Madampe",
+            "Karuwalagaswewa", "Arachchikattuwa", "Nawagattegama",
+            "Kalpitiya", "Pallama", "Vanathawilluwa", "Maho",
+            "Bangadeniya", "Lunuwila"
+          ]
+        }
+      ]
+    },
+    {
+      "province": "North Central Province",
+      "province_sinhala": "උතුරු මැද පළාත",
+      "province_tamil": "வட மத்திய மாகாணம்",
+      "districts": [
+        {
+          "district": "Anuradhapura",
+          "cities": [
+            "Anuradhapura", "Medawachchiya", "Kekirawa", "Mihintale",
+            "Nochchiyagama", "Talawa", "Tambuttegama", "Eppawala",
+            "Galenbindunuwewa", "Kahatagasdigiliya", "Horowpothana",
+            "Kebithigollewa", "Padaviya", "Nuwaragam Palatha",
+            "Rajanganaya", "Thirappane", "Rambewa", "Thalawa",
+            "Palagala", "Ipalogama", "Galnewa"
+          ]
+        },
+        {
+          "district": "Polonnaruwa",
+          "cities": [
+            "Polonnaruwa", "Kaduruwela", "Hingurakgoda", "Medirigiriya",
+            "Lankapura", "Dimbulagala", "Elahera", "Welikanda",
+            "Thamankaduwa", "Giritale", "Minneriya", "Aralaganwila",
+            "Bakamuna", "Habarana", "Manampitiya"
+          ]
+        }
+      ]
+    },
+    {
+      "province": "Uva Province",
+      "province_sinhala": "ඌව පළාත",
+      "province_tamil": "ஊவா மாகாணம்",
+      "districts": [
+        {
+          "district": "Badulla",
+          "cities": [
+            "Badulla", "Bandarawela", "Haputale", "Ella", "Welimada",
+            "Mahiyanganaya", "Passara", "Hali-Ela", "Diyatalawa",
+            "Kandaketiya", "Meegahakivula", "Lunugala", "Soranathota",
+            "Uva Paranagama", "Ridimaliyadda", "Rideemaliyadda",
+            "Bibile", "Ampitiya", "Wiarawila"
+          ]
+        },
+        {
+          "district": "Moneragala",
+          "cities": [
+            "Moneragala", "Wellawaya", "Bibile", "Buttala", "Siyambalanduwa",
+            "Kataragama", "Madulla", "Medagama", "Thanamalvila",
+            "Badalkumbura", "Okkampitiya", "Sewanagala", "Kotiyakumbura",
+            "Nilgala"
+          ]
+        }
+      ]
+    },
+    {
+      "province": "Sabaragamuwa Province",
+      "province_sinhala": "සබරගමුව පළාත",
+      "province_tamil": "சபரகமுவ மாகாணம்",
+      "districts": [
+        {
+          "district": "Kegalle",
+          "cities": [
+            "Kegalle", "Mawanella", "Warakapola", "Rambukkana", "Galigamuwa",
+            "Ruwanwella", "Bulathkohupitiya", "Dehiowita", "Yatiyanthota",
+            "Deraniyagala", "Aranayake", "Kegalle Town", "Aranayaka",
+            "Kitulgala", "Bogawantalawa", "Hemmathagama",
+            "Karawanella", "Thumpane"
+          ]
+        },
+        {
+          "district": "Ratnapura",
+          "cities": [
+            "Ratnapura", "Embilipitiya", "Balangoda", "Kahawatta",
+            "Pelmadulla", "Eheliyagoda", "Kuruwita", "Godakawela",
+            "Nivitigala", "Weligepola", "Imbulpe", "Kalawana",
+            "Kolonna", "Rakwana", "Elapatha", "Kiriella",
+            "Ayagama", "Opanayaka", "Pathakada"
+          ]
+        }
+      ]
+    }
+  ]
+}

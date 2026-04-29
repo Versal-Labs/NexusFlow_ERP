@@ -13,6 +13,7 @@ namespace NexusFlow.Domain.Entities.Purchasing
     {
         public string PoNumber { get; set; } = string.Empty; // e.g., "PO-2024-001"
         public DateTime Date { get; set; }
+        public DateTime? ExpectedDate { get; set; }
 
         public int SupplierId { get; set; }
         public Supplier Supplier { get; set; }

@@ -11,56 +11,54 @@ using Microsoft.EntityFrameworkCore;
 
 namespace NexusFlow.AppCore.Features.Sales.Customers.Commands
 {
-    public class CreateCustomerHandler : IRequestHandler<CreateCustomerCommand, Result<int>>
+    public class SaveCustomerHandler : IRequestHandler<SaveCustomerCommand, Result<int>>
     {
         private readonly IErpDbContext _context;
+        public SaveCustomerHandler(IErpDbContext context) => _context = context;
 
-        public CreateCustomerHandler(IErpDbContext context)
+        public async Task<Result<int>> Handle(SaveCustomerCommand request, CancellationToken cancellationToken)
         {
-            _context = context;
-        }
+            Customer customer;
 
-        public async Task<Result<int>> Handle(CreateCustomerCommand request, CancellationToken cancellationToken)
-        {
-            var exists = await _context.Customers.AnyAsync(
-                        c => c.Name == request.Name,    
-                        cancellationToken);
-            if (exists) return Result<int>.Failure($"Customer with name '{request.Name}' already exists.");
-
-            var customer = new Customer
+            if (request.Id == 0) // CREATE
             {
-                Name = request.Name,
-                TaxRegNo = request.TaxRegNo,
-                CustomerGroupId = request.CustomerGroupId,
-                PriceLevelId = request.PriceLevelId,
-                SalesRepId = request.SalesRepId,
+                if (await _context.Customers.AnyAsync(c => c.Name == request.Name, cancellationToken))
+                    return Result<int>.Failure($"Customer '{request.Name}' already exists.");
 
-                ContactPerson = request.ContactPerson,
-                Email = request.Email,
-                Phone = request.Phone,
+                customer = new Customer { IsActive = true };
+                _context.Customers.Add(customer);
+            }
+            else // UPDATE
+            {
+                customer = await _context.Customers.FindAsync(new object[] { request.Id }, cancellationToken);
+                if (customer == null) return Result<int>.Failure("Customer not found.");
+            }
 
-                AddressLine1 = request.AddressLine1,
-                City = request.City,
-                Country = request.Country,
+            // Map Fields
+            customer.Name = request.Name;
+            customer.TaxRegNo = request.TaxRegNo;
+            customer.CustomerGroupId = request.CustomerGroupId;
+            customer.PriceLevelId = request.PriceLevelId;
+            customer.SalesRepId = request.SalesRepId;
+            customer.ContactPerson = request.ContactPerson;
+            customer.Email = request.Email;
+            customer.Phone = request.Phone;
+            customer.AddressLine1 = request.AddressLine1;
+            customer.Province = request.Province;
+            customer.District = request.District;
+            customer.City = request.City;
+            customer.Country = request.Country;
+            customer.DefaultReceivableAccountId = request.DefaultReceivableAccountId;
+            customer.DefaultRevenueAccountId = request.DefaultRevenueAccountId;
+            customer.PaymentTermId = request.PaymentTermId;
+            customer.CreditLimit = request.CreditLimit;
+            customer.CreditPeriodDays = request.CreditPeriodDays;
+            customer.BankId = request.BankId;
+            customer.BankBranchId = request.BankBranchId;
+            customer.BankAccountNumber = request.BankAccountNumber;
 
-                DefaultReceivableAccountId = request.DefaultReceivableAccountId,
-                DefaultRevenueAccountId = request.DefaultRevenueAccountId,
-                PaymentTermId = request.PaymentTermId,
-                CreditLimit = request.CreditLimit,
-                CreditPeriodDays = request.CreditPeriodDays,
-
-                BankName = request.BankName,
-                BankBranch = request.BankBranch,
-                BankAccountNumber = request.BankAccountNumber,
-                BankSwiftCode = request.BankSwiftCode,
-
-                IsActive = true
-            };
-
-            _context.Customers.Add(customer);
             await _context.SaveChangesAsync(cancellationToken);
-
-            return Result<int>.Success(customer.Id, "Customer created successfully.");
+            return Result<int>.Success(customer.Id, $"Customer {(request.Id == 0 ? "created" : "updated")} successfully.");
         }
     }
 }
