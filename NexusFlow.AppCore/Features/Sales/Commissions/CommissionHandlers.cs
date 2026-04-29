@@ -34,8 +34,8 @@ namespace NexusFlow.AppCore.Features.Sales.Commissions
                     CategoryName = c.Category != null ? c.Category.Name : null,
                     EmployeeId = c.EmployeeId,
                     EmployeeName = c.Employee != null ? $"[{c.Employee.EmployeeCode}] {c.Employee.FirstName} {c.Employee.LastName}" : "All Sales Reps",
-                    ValidFrom = c.ValidFrom,
-                    ValidTo = c.ValidTo,
+                    ValidFrom = c.EffectiveFrom,
+                    ValidTo = c.EffectiveTo,
                     CommissionPercentage = c.CommissionPercentage, // This holds the Rate (Value or %)
                     IsPercentage = c.IsPercentage, // <--- ADDED
                     IsActive = c.IsActive
@@ -77,8 +77,8 @@ namespace NexusFlow.AppCore.Features.Sales.Commissions
                                 && r.CategoryId == dto.CategoryId
                                 && r.EmployeeId == dto.EmployeeId
                                 // Timeframe intersection logic (Handles infinite null dates natively):
-                                && (!r.ValidFrom.HasValue || !dto.ValidTo.HasValue || r.ValidFrom <= dto.ValidTo)
-                                && (!r.ValidTo.HasValue || !dto.ValidFrom.HasValue || r.ValidTo >= dto.ValidFrom),
+                                && (!r.EffectiveFrom.HasValue || !dto.ValidTo.HasValue || r.EffectiveFrom <= dto.ValidTo)
+                                && (!r.EffectiveTo.HasValue || !dto.ValidFrom.HasValue || r.EffectiveTo >= dto.ValidFrom),
                         cancellationToken);
 
                 if (overlapExists)
@@ -109,8 +109,8 @@ namespace NexusFlow.AppCore.Features.Sales.Commissions
             entity.RuleType = dto.RuleType;
             entity.CategoryId = dto.CategoryId;
             entity.EmployeeId = dto.EmployeeId;
-            entity.ValidFrom = dto.ValidFrom;
-            entity.ValidTo = dto.ValidTo;
+            entity.EffectiveFrom = dto.ValidFrom;
+            entity.EffectiveTo = dto.ValidTo;
             entity.CommissionPercentage = dto.CommissionPercentage; // The numeric value
             entity.IsPercentage = dto.IsPercentage;                 // Value vs Percentage Toggle
             entity.IsActive = dto.IsActive;

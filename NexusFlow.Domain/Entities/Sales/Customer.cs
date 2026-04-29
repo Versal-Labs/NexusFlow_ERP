@@ -1,4 +1,5 @@
 ﻿using NexusFlow.Domain.Common;
+using NexusFlow.Domain.Entities.Finance;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -46,13 +47,15 @@ namespace NexusFlow.Domain.Entities.Sales
         #region 4. Address (Primary Billing)
         [Required, MaxLength(200)]
         public string AddressLine1 { get; set; } = string.Empty;
-
         [MaxLength(200)]
         public string AddressLine2 { get; set; } = string.Empty;
 
         [Required, MaxLength(100)]
+        public string Province { get; set; } = string.Empty;
+        [Required, MaxLength(100)]
+        public string District { get; set; } = string.Empty;
+        [Required, MaxLength(100)]
         public string City { get; set; } = string.Empty;
-
         [Required, MaxLength(50)]
         public string Country { get; set; } = "LK";
         #endregion
@@ -72,17 +75,14 @@ namespace NexusFlow.Domain.Entities.Sales
         #endregion
 
         #region 6. Banking Details (For Direct Debits / Refunds)
-        [MaxLength(100)]
-        public string BankName { get; set; } = string.Empty;
+        public int? BankId { get; set; }
+        public Bank? Bank { get; set; }
 
-        [MaxLength(50)]
-        public string BankBranch { get; set; } = string.Empty;
+        public int? BankBranchId { get; set; }
+        public BankBranch? BankBranch { get; set; }
 
         [MaxLength(50)]
         public string BankAccountNumber { get; set; } = string.Empty;
-
-        [MaxLength(20)]
-        public string BankSwiftCode { get; set; } = string.Empty;
         #endregion
 
         #region 7. System Control

@@ -22,8 +22,10 @@ namespace NexusFlow.Infrastructure
 {
     public class ErpDbContext : IdentityDbContext<ApplicationUser>, IErpDbContext
     {
-        public ErpDbContext(DbContextOptions<ErpDbContext> options) : base(options)
+        private readonly ICurrentUserService _currentUserService;
+        public ErpDbContext(DbContextOptions<ErpDbContext> options, ICurrentUserService currentUserService) : base(options)
         {
+            _currentUserService = currentUserService;
         }
 
         // Define your DbSets here later, e.g.:
@@ -60,8 +62,6 @@ namespace NexusFlow.Infrastructure
         public DbSet<NotificationItem> Notifications { get; set; }
         public DbSet<SystemLookup> SystemLookups { get; set; }
         public DbSet<PaymentAllocation> PaymentAllocations { get; set; }
-        public DbSet<GoodsReceipt> GoodsReceipts { get; set; }
-        public DbSet<GoodsReceiptItem> GoodsReceiptItems { get; set; }
         public DbSet<SupplierBill> SupplierBills { get; set; }
         public DbSet<SupplierBillItem> SupplierBillItems { get; set; }
         public DbSet<Employee> Employees { get; set; }
@@ -77,6 +77,9 @@ namespace NexusFlow.Infrastructure
         public DbSet<Bank> Banks { get; set; }
         public DbSet<BankBranch> BankBranches { get; set; }
         public DbSet<BankReconciliation> BankReconciliations { get; set; }
+        public DbSet<Province> Provinces { get; set; }
+        public DbSet<District> Districts { get; set; }
+        public DbSet<City> Cities { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -116,14 +119,35 @@ namespace NexusFlow.Infrastructure
             modelBuilder.Entity<Microsoft.AspNetCore.Identity.IdentityUserLogin<string>>(b => b.ToTable("UserLogins", "Identity"));
             modelBuilder.Entity<Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>>(b => b.ToTable("RoleClaims", "Identity"));
             modelBuilder.Entity<Microsoft.AspNetCore.Identity.IdentityUserToken<string>>(b => b.ToTable("UserTokens", "Identity"));
+
+            // 3. ARCHITECTURAL MANDATE: SQL Server Temporal Tables
+            foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+            {
+                if (typeof(BaseEntity).IsAssignableFrom(entityType.ClrType) ||
+                    typeof(AuditableEntity).IsAssignableFrom(entityType.ClrType))
+                {
+                    if (entityType.ClrType == typeof(AuditLog) ||
+                        entityType.ClrType == typeof(NotificationItem))
+                        continue;
+
+                    string tableName = entityType.GetTableName() ?? entityType.ClrType.Name;
+                    string schema = entityType.GetSchema() ?? "dbo";
+
+                    // THE REAL FIX: The EF Core method is IsTemporal()
+                    modelBuilder.Entity(entityType.ClrType).ToTable(tableName, schema, tb => tb.IsTemporal(t =>
+                    {
+                        t.UseHistoryTable($"{tableName}_History", schema);
+                        t.HasPeriodStart("ValidFrom");
+                        t.HasPeriodEnd("ValidTo");
+                    }));
+                }
+            }
         }
+
 
         public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
-            // 1. Handle "AuditableEntity" (CreatedBy, LastModifiedBy)
-            // You ideally inject ICurrentUserService to get the real user. 
-            // For now, we hardcode "System" or check if you have the service.
-            string currentUser = "Admin"; // Replace with _currentUserService.UserId later
+            string currentUser = _currentUserService.UserId;
 
             foreach (var entry in ChangeTracker.Entries<AuditableEntity>())
             {
@@ -140,116 +164,14 @@ namespace NexusFlow.Infrastructure
                 }
             }
 
-            // 2. Handle "AuditLog" (The JSON Trail)
-            var auditEntries = OnBeforeSaveChanges(currentUser);
-
             var result = await base.SaveChangesAsync(cancellationToken);
-
-            // 3. Save the Audit Logs (We need the IDs generated in Step 2 for 'Added' entries)
-            await OnAfterSaveChanges(auditEntries);
 
             return result;
         }
 
-        // --- HELPER METHODS FOR AUDITING ---
+        
 
-        private List<AuditEntry> OnBeforeSaveChanges(string userId)
-        {
-            ChangeTracker.DetectChanges();
-            var auditEntries = new List<AuditEntry>();
-
-            foreach (var entry in ChangeTracker.Entries())
-            {
-                if (entry.Entity is AuditLog || entry.State == EntityState.Detached || entry.State == EntityState.Unchanged)
-                    continue;
-
-                // 1. Initialize the Audit Entry
-                var auditEntry = new AuditEntry(entry)
-                {
-                    // Use Metadata.GetTableName() to avoid weird EF Proxy class names
-                    TableName = entry.Metadata.GetTableName() ?? entry.Entity.GetType().Name,
-                    UserId = userId
-                };
-
-                // 2. ARCHITECTURAL FIX: Set AuditType ONCE per entity, outside the property loop!
-                auditEntry.AuditType = entry.State switch
-                {
-                    EntityState.Added => "Create",
-                    EntityState.Deleted => "Delete",
-                    EntityState.Modified => "Update",
-                    _ => "Unknown"
-                };
-
-                auditEntries.Add(auditEntry);
-
-                // 3. Process the Properties
-                foreach (var property in entry.Properties)
-                {
-                    if (property.IsTemporary)
-                    {
-                        // Values generated by DB (like ID on Insert)
-                        auditEntry.TemporaryProperties.Add(property);
-                        continue;
-                    }
-
-                    string propertyName = property.Metadata.Name;
-                    if (property.Metadata.IsPrimaryKey())
-                    {
-                        auditEntry.KeyValues[propertyName] = property.CurrentValue;
-                        continue;
-                    }
-
-                    switch (entry.State)
-                    {
-                        case EntityState.Added:
-                            auditEntry.NewValues[propertyName] = property.CurrentValue;
-                            break;
-
-                        case EntityState.Deleted:
-                            auditEntry.OldValues[propertyName] = property.OriginalValue;
-                            break;
-
-                        case EntityState.Modified:
-                            if (property.IsModified)
-                            {
-                                auditEntry.OldValues[propertyName] = property.OriginalValue;
-                                auditEntry.NewValues[propertyName] = property.CurrentValue;
-                                auditEntry.ChangedColumns.Add(propertyName);
-                            }
-                            break;
-                    }
-                }
-            }
-
-            // 4. DATABASE OPTIMIZATION
-            // If it's an "Update" but no actual columns changed, don't write a useless blank log to the DB.
-            return auditEntries.Where(a => a.AuditType != "Update" || a.ChangedColumns.Count > 0).ToList();
-        }
-
-        private async Task OnAfterSaveChanges(List<AuditEntry> auditEntries)
-        {
-            if (auditEntries == null || auditEntries.Count == 0) return;
-
-            foreach (var auditEntry in auditEntries)
-            {
-                // For new entries, get the ID generated by the DB
-                foreach (var prop in auditEntry.TemporaryProperties)
-                {
-                    if (prop.Metadata.IsPrimaryKey())
-                    {
-                        auditEntry.KeyValues[prop.Metadata.Name] = prop.CurrentValue;
-                    }
-                    else
-                    {
-                        auditEntry.NewValues[prop.Metadata.Name] = prop.CurrentValue;
-                    }
-                }
-
-                AuditLogs.Add(auditEntry.ToAuditLog());
-            }
-
-            await base.SaveChangesAsync(); // Save the logs themselves
-        }
+        
 
         public async Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default)
         {

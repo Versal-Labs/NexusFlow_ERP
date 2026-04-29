@@ -110,6 +110,38 @@
 </div>
 </div>
 
+<div class="modal fade" id="permissionsModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-dark text-white py-2">
+                <h5 class="modal-title fw-bold fs-6"><i class="fa-solid fa-user-shield me-2"></i>Manage Role Permissions: <span id="lblPermRoleName" class="text-warning"></span></h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4 bg-light">
+                <input type="hidden" id="PermRoleId" />
+                
+                <div class="alert alert-info border-info shadow-sm py-2 fs-13">
+                    <i class="fa-solid fa-circle-info me-2"></i> Check the boxes to grant access. Users currently assigned to this role will inherit these permissions on their next login.
+                </div>
+
+                <div id="permissionsContainer" class="row g-3">
+                    <div class="text-center py-4 w-100"><i class="spinner-border text-primary"></i></div>
+                </div>
+
+            </div>
+            <div class="modal-footer bg-white border-top py-2 d-flex justify-content-between">
+                <button type="button" class="btn btn-outline-secondary btn-sm px-4 fw-bold" onclick="iamApp.selectAllPerms()">Select All</button>
+                <div>
+                    <button type="button" class="btn btn-light btn-sm px-3 border" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary btn-sm px-4 fw-bold shadow-sm" onclick="iamApp.savePermissions(event)">
+                        <i class="fa-solid fa-lock me-2"></i> Save Permissions
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="modal fade" id="roleModal" tabindex="-1" data-bs-backdrop="static">
     <div class="modal-dialog modal-dialog-centered modal-sm">
         <div class="modal-content border-0 shadow-lg">

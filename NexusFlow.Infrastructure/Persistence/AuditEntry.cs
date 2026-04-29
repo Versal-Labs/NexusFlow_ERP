@@ -24,20 +24,6 @@ namespace NexusFlow.Infrastructure.Persistence
         public List<string> ChangedColumns { get; } = new();
         public string AuditType { get; set; }
 
-        public AuditLog ToAuditLog()
-        {
-            var audit = new AuditLog
-            {
-                UserId = UserId,
-                TableName = TableName,
-                DateTime = DateTime.UtcNow,
-                PrimaryKey = JsonConvert.SerializeObject(KeyValues),
-                OldValues = OldValues.Count == 0 ? null : JsonConvert.SerializeObject(OldValues),
-                NewValues = NewValues.Count == 0 ? null : JsonConvert.SerializeObject(NewValues),
-                AffectedColumns = ChangedColumns.Count == 0 ? null : JsonConvert.SerializeObject(ChangedColumns),
-                Type = AuditType.ToString()
-            };
-            return audit;
-        }
+        
     }
 }

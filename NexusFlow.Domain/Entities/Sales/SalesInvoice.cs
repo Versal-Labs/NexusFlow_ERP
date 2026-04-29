@@ -1,8 +1,10 @@
 ﻿using NexusFlow.Domain.Common;
 using NexusFlow.Domain.Entities.Finance;
+using NexusFlow.Domain.Entities.HR;
 using NexusFlow.Domain.Enums;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
 
@@ -13,6 +15,8 @@ namespace NexusFlow.Domain.Entities.Sales
     {
         // Document Info
         public string InvoiceNumber { get; set; } = string.Empty; // e.g., "INV-2024-001"
+        [MaxLength(100)]
+        public string CustomerPoNumber { get; set; } = string.Empty;
         public DateTime InvoiceDate { get; set; }
         public DateTime DueDate { get; set; }
 
@@ -29,6 +33,9 @@ namespace NexusFlow.Domain.Entities.Sales
         // Status
         public bool IsPosted { get; set; } = false; // Draft vs Final
         public int? SalesRepId { get; set; } // For Commissions
+
+        [ForeignKey("SalesRepId")]
+        public Employee? SalesRep { get; set; }
         public string Notes { get; set; } = string.Empty;
         public bool ApplyVat { get; set; } = true;
 

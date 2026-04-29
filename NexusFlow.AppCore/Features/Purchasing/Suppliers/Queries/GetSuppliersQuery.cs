@@ -79,8 +79,9 @@ namespace NexusFlow.AppCore.Features.Purchasing.Suppliers.Queries
 
                 AddressLine1 = s.AddressLine1,
                 AddressLine2 = s.AddressLine2,
+                Province = s.Province,
+                District = s.District,
                 City = s.City,
-                State = s.State,
                 ZipCode = s.ZipCode,
                 Country = s.Country,
 
@@ -90,8 +91,8 @@ namespace NexusFlow.AppCore.Features.Purchasing.Suppliers.Queries
                 PaymentTermId = s.PaymentTermId,
                 CreditLimit = s.CreditLimit,
 
-                BankName = s.BankName,
-                BankBranch = s.BankBranch,
+                BankId = s.BankId,
+                BankBranchId = s.BankBranchId,
                 BankAccountNumber = s.BankAccountNumber,
                 BankSwiftCode = s.BankSwiftCode,
                 BankIBAN = s.BankIBAN,

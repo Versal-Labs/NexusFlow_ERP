@@ -45,47 +45,41 @@ namespace NexusFlow.AppCore.Features.Purchasing.Suppliers.Commands
 
         private void MapDtoToEntity(SupplierDto dto, Supplier entity)
         {
-            // 1. Identity
             entity.Name = dto.Name;
             entity.TradeName = dto.TradeName;
             entity.TaxRegNo = dto.TaxRegNo;
             entity.BusinessRegNo = dto.BusinessRegNo;
-
-            // 2. Groups
             entity.SupplierGroupId = dto.SupplierGroupId;
             entity.RatingId = dto.RatingId;
-
-            // 3. Contact
             entity.ContactPerson = dto.ContactPerson;
             entity.Email = dto.Email;
             entity.AccountsEmail = dto.AccountsEmail;
             entity.Phone = dto.Phone;
             entity.Mobile = dto.Mobile;
             entity.Website = dto.Website;
-
-            // 4. Address
             entity.AddressLine1 = dto.AddressLine1;
             entity.AddressLine2 = dto.AddressLine2;
+
+            // MAPPED LOCATIONS
+            entity.Province = dto.Province;
+            entity.District = dto.District;
             entity.City = dto.City;
-            entity.State = dto.State;
             entity.ZipCode = dto.ZipCode;
             entity.Country = dto.Country;
 
-            // 5. Finance
             entity.DefaultPayableAccountId = dto.DefaultPayableAccountId;
             entity.DefaultExpenseAccountId = dto.DefaultExpenseAccountId;
-            entity.CurrencyCode = dto.CurrencyCode;
+            entity.CurrencyCode = string.IsNullOrWhiteSpace(dto.CurrencyCode) ? "LKR" : dto.CurrencyCode;
             entity.PaymentTermId = dto.PaymentTermId;
             entity.CreditLimit = dto.CreditLimit;
 
-            // 6. Banking
-            entity.BankName = dto.BankName;
-            entity.BankBranch = dto.BankBranch;
+            // MAPPED BANKS
+            entity.BankId = dto.BankId;
+            entity.BankBranchId = dto.BankBranchId;
             entity.BankAccountNumber = dto.BankAccountNumber;
             entity.BankSwiftCode = dto.BankSwiftCode;
             entity.BankIBAN = dto.BankIBAN;
 
-            // 7. System
             entity.IsActive = dto.IsActive;
             entity.InternalNotes = dto.InternalNotes;
         }

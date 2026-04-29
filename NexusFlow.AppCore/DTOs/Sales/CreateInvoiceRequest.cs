@@ -11,6 +11,7 @@ namespace NexusFlow.AppCore.DTOs.Sales
         public int CustomerId { get; set; }
         public int WarehouseId { get; set; }
         public int? SalesRepId { get; set; }
+        public string CustomerPoNumber { get; set; } = string.Empty;
         public string Notes { get; set; } = string.Empty;
 
         public bool ApplyVat { get; set; }

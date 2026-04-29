@@ -51,6 +51,7 @@ namespace NexusFlow.AppCore.Features.Sales.Commands
                 var invoice = new SalesInvoice
                 {
                     InvoiceNumber = invoiceNo,
+                    CustomerPoNumber = dto.CustomerPoNumber,
                     InvoiceDate = dto.Date,
                     DueDate = dto.DueDate,
                     CustomerId = dto.CustomerId,
@@ -61,7 +62,7 @@ namespace NexusFlow.AppCore.Features.Sales.Commands
                     TotalDiscount = dto.GlobalDiscountAmount,
                     SubTotal = 0,
                     TotalTax = 0,
-                    GrandTotal = 0
+                    GrandTotal = 0,
                 };
 
                 var revenueGroup = new Dictionary<int, decimal>();
@@ -81,8 +82,8 @@ namespace NexusFlow.AppCore.Features.Sales.Commands
                     var now = DateTime.UtcNow;
                     activeRules = await _context.CommissionRules.AsNoTracking()
                         .Where(r => r.IsActive
-                                 && (!r.ValidFrom.HasValue || r.ValidFrom <= now)
-                                 && (!r.ValidTo.HasValue || r.ValidTo >= now))
+                                 && (!r.EffectiveFrom.HasValue || r.EffectiveFrom <= now)
+                                 && (!r.EffectiveTo.HasValue || r.EffectiveTo >= now))
                         .ToListAsync(cancellationToken);
                 }
 

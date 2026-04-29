@@ -8,6 +8,7 @@ using NexusFlow.Domain.Entities.System;
 using NexusFlow.Infrastructure.Identity;
 using NexusFlow.Infrastructure.Persistence;
 using NexusFlow.Infrastructure.Services;
+using NexusFlow.Infrastructure.Services.Storage;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -30,6 +31,14 @@ namespace NexusFlow.Infrastructure
             .AddEntityFrameworkStores<ErpDbContext>()
             .AddDefaultTokenProviders();
 
+            // Inside AddInfrastructure method
+            var azureConnectionString = configuration.GetConnectionString("AzureBlobStorage");
+
+            services.AddSingleton(new AzureBlobStorageProvider(azureConnectionString));
+            services.AddSingleton(new LocalDiskStorageProvider(@"C:\NexusStorage\Fallback"));
+
+            services.AddScoped<IGlobalStorageCoordinator, GlobalStorageCoordinator>();
+
 
             services.AddScoped<ApplicationDbContextInitialiser>();
             services.AddTransient<ITokenService, JwtTokenService>();
@@ -39,8 +48,13 @@ namespace NexusFlow.Infrastructure
             services.AddScoped<INotificationService, NotificationService>();
             services.AddScoped<INumberSequenceService, NumberSequenceService>();
             services.AddScoped<IFinancialAccountResolver, FinancialAccountResolver>();
+            services.AddScoped<IExportService, SyncfusionExportService>();
+            services.AddScoped<ISmsGatewayService, SmsGatewayService>();
 
             services.AddSingleton<IUserIdProvider, NameUserIdProvider>();
+
+            services.AddHttpContextAccessor();
+            services.AddScoped<ICurrentUserService, CurrentUserService>();
 
             return services;
         }

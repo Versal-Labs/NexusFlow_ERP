@@ -1,4 +1,5 @@
 ﻿using NexusFlow.Domain.Common;
+using NexusFlow.Domain.Entities.Master;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -14,6 +15,8 @@ namespace NexusFlow.Domain.Entities.Purchasing
 
         public int PurchaseOrderId { get; set; }
         public PurchaseOrder PurchaseOrder { get; set; }
+
+        public Warehouse Warehouse { get; set; } = null!;
 
         public int WarehouseId { get; set; } // Where did we store the fabric?
         public string SupplierInvoiceNo { get; set; } = string.Empty;

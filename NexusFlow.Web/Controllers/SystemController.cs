@@ -13,5 +13,12 @@ namespace NexusFlow.Web.Controllers
             // Returns ~/Views/System/Users.cshtml
             return View();
         }
+
+        [HttpGet]
+        public IActionResult AuditExplorer()
+        {
+            // Returns the HTML Shell for the SPA-like DataTable experience
+            return View();
+        }
     }
 }

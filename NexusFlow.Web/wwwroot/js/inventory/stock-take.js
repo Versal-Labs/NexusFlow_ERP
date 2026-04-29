@@ -15,6 +15,18 @@
 
         this._initGrid();
         this._loadLookups();
+
+        $('#searchCountItems').on('input', function () {
+            let term = $(this).val().toLowerCase();
+            $('.count-row').each(function () {
+                let desc = $(this).find('.product-desc').text().toLowerCase();
+                if (desc.includes(term)) {
+                    $(this).show();
+                } else {
+                    $(this).hide();
+                }
+            });
+        });
     },
 
     _initGrid: function () {
@@ -108,55 +120,106 @@
     // --- PHASE 2: BLIND COUNT ---
     openCountModal: async function (id) {
         $('#CountStockTakeId').val(id);
-        $('#countBody').html('<tr><td colspan="2" class="text-center py-4"><i class="spinner-border text-primary"></i></td></tr>');
+        $('#searchCountItems').val(''); // Reset search bar
+        $('#countBody').html('<tr><td colspan="4" class="text-center py-4"><i class="spinner-border text-primary"></i> Loading Inventory Snapshot...</td></tr>');
         this._countModal.show();
 
         try {
             const res = await api.get(`/api/inventory/stocktakes/${id}`);
             const data = res.data || res;
             let html = '';
+
             data.items.forEach(i => {
-                let val = i.countedQty !== null ? i.countedQty : '';
+                // TIER-1 FIX: Pre-fill with SystemQty instead of leaving blank!
+                let val = i.countedQty !== null ? i.countedQty : i.systemQty;
+                let sysQty = parseFloat(i.systemQty) || 0;
+
+                // Pre-calculate live variance
+                let variance = val - sysQty;
+                let varHtml = window.stockTakeApp._getVarianceBadge(variance);
+
                 html += `
-                    <tr data-vid="${i.productVariantId}">
-                        <td class="ps-3 fw-bold text-dark">${i.description}</td>
-                        <td class="pe-3">
-                            <input type="number" class="form-control form-control-lg text-center fw-bold border-warning count-input" value="${val}" min="0" step="0.01">
+                    <tr class="count-row" data-vid="${i.productVariantId}" data-sys="${sysQty}">
+                        <td class="ps-3 fw-bold text-dark product-desc">${i.description}</td>
+                        <td class="text-center font-monospace text-muted align-middle">${sysQty}</td>
+                        <td class="px-3">
+                            <input type="number" class="form-control form-control-sm text-center fw-bold border-primary count-input" value="${val}" min="0" step="0.01" onclick="this.select()">
                         </td>
+                        <td class="text-center align-middle variance-cell">${varHtml}</td>
                     </tr>`;
             });
+
             $('#countBody').html(html);
-        } catch(e) { $('#countBody').html('<tr><td colspan="2" class="text-danger text-center">Load failed.</td></tr>'); }
+            $('#lblCountProgress').text(`${data.items.length} Items Total`);
+
+            // TIER-1 FEATURE: Live Variance Calculation on Input
+            $('.count-input').on('input', function () {
+                let row = $(this).closest('tr');
+                let sys = parseFloat(row.data('sys')) || 0;
+                let count = parseFloat($(this).val());
+                if (isNaN(count)) count = 0; // Fallback to 0 if they delete the number
+
+                let variance = count - sys;
+                row.find('.variance-cell').html(window.stockTakeApp._getVarianceBadge(variance));
+            });
+
+        } catch (e) {
+            $('#countBody').html('<tr><td colspan="4" class="text-danger text-center fw-bold py-4">Failed to load snapshot data.</td></tr>');
+        }
+    },
+
+    _getVarianceBadge: function (variance) {
+        if (variance === 0) return `<span class="badge bg-light text-muted border shadow-sm"><i class="fa-solid fa-check me-1"></i> Match</span>`;
+        if (variance > 0) return `<span class="badge bg-success bg-opacity-10 text-success border border-success shadow-sm">+${variance} (Surplus)</span>`;
+        return `<span class="badge bg-danger bg-opacity-10 text-danger border border-danger shadow-sm">${variance} (Shrink)</span>`;
     },
 
     submitCount: async function () {
         let items = {};
         let hasErrors = false;
-        
-        $('#countBody tr').each(function() {
+
+        $('#countBody tr.count-row').each(function () {
             let vid = parseInt($(this).data('vid'));
             let val = $(this).find('.count-input').val();
-            if (val === '') { hasErrors = true; $(this).find('.count-input').addClass('is-invalid'); }
-            else { $(this).find('.count-input').removeClass('is-invalid'); items[vid] = parseFloat(val); }
+
+            if (val === '') {
+                hasErrors = true;
+                $(this).find('.count-input').addClass('is-invalid');
+            } else {
+                $(this).find('.count-input').removeClass('is-invalid');
+                items[vid] = parseFloat(val);
+            }
         });
 
-        if (hasErrors) { toastr.warning("Please enter a quantity for all items. Enter 0 if empty."); return; }
+        if (hasErrors) {
+            toastr.warning("Please ensure a valid quantity is entered for all items. Enter 0 if the shelf is empty.");
+            return;
+        }
 
         var $btn = $(event.currentTarget);
         var ogText = $btn.html();
-        $btn.prop('disabled', true).html('<i class="spinner-border spinner-border-sm"></i>');
+        $btn.prop('disabled', true).html('<i class="spinner-border spinner-border-sm me-1"></i> Saving...');
 
         try {
+            // TIER-1 FIX: Wrapped the data inside a 'Payload' object to match the C# Command!
             const res = await api.post('/api/inventory/stocktakes/count', {
-                StockTakeId: parseInt($('#CountStockTakeId').val()),
-                CountedItems: items
+                Payload: {
+                    StockTakeId: parseInt($('#CountStockTakeId').val()),
+                    CountedItems: items
+                }
             });
+
             if (res && res.succeeded) {
-                toastr.success(res.message);
+                toastr.success(res.message || "Count submitted successfully.");
                 this._countModal.hide();
                 this._table.ajax.reload(null, false);
+            } else {
+                toastr.error(res?.messages?.[0] || "Failed to submit count.");
             }
-        } catch(e) { console.error(e); } 
+        } catch (e) {
+            console.error(e);
+            toastr.error("Network error during submission.");
+        }
         finally { $btn.prop('disabled', false).html(ogText); }
     },
 

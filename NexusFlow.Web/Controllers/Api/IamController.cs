@@ -67,5 +67,25 @@ namespace NexusFlow.Web.Controllers.Api
             var result = await _mediator.Send(command);
             return result.Succeeded ? Ok(result) : BadRequest(result);
         }
+
+        [HttpGet("permissions")]
+        public async Task<IActionResult> GetAllPermissions()
+        {
+            return Ok(await _mediator.Send(new GetAllPermissionsQuery()));
+        }
+
+        [HttpGet("roles/{id}/permissions")]
+        public async Task<IActionResult> GetRolePermissions(string id)
+        {
+            var result = await _mediator.Send(new GetRolePermissionsQuery { RoleId = id });
+            return result.Succeeded ? Ok(result.Data) : BadRequest(result.Message);
+        }
+
+        [HttpPost("roles/{id}/permissions")]
+        public async Task<IActionResult> UpdateRolePermissions(string id, [FromBody] List<string> permissions)
+        {
+            var result = await _mediator.Send(new UpdateRolePermissionsCommand { RoleId = id, Permissions = permissions });
+            return result.Succeeded ? Ok(result) : BadRequest(result.Message);
+        }
     }
 }

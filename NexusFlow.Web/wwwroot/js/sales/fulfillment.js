@@ -15,32 +15,43 @@
     // FILTERS
     // ==========================================
     _initFilters: function () {
-        // Load Customers for dropdown
+        // Load Customers for dropdown safely
         api.get('/api/customer').then(res => {
-            const customers = res.data || res || [];
+            // Safely parse the array (handles both raw arrays and your Result<T> wrappers)
+            let customers = Array.isArray(res) ? res : (res?.data || []);
+            if (!Array.isArray(customers)) customers = [];
+
             let $cust = $('#filterCustomer').empty().append('<option value="">-- All Customers --</option>');
             customers.forEach(c => $cust.append($('<option></option>').val(c.name).text(c.name)));
-        });
+        }).catch(err => console.error("Failed to load customers for filter", err));
 
         // Setup Custom DataTables Filter Logic
         $.fn.dataTable.ext.search.push((settings, data, dataIndex) => {
             if (settings.nTable.id !== 'fulfillmentGrid') return true;
 
-            const filterCust = $('#filterCustomer').val().toLowerCase();
+            // TIER-1 FIX: Safely handle null dropdown values
+            const filterCust = ($('#filterCustomer').val() || '').toLowerCase();
             const filterStart = $('#filterStartDate').val();
             const filterEnd = $('#filterEndDate').val();
 
-            const rowDateStr = data[1]; // Date is in column index 1
-            const rowCust = data[2].toLowerCase(); // Customer is in column index 2
+            // TIER-1 FIX: Safely handle null cell data so .toLowerCase() never crashes
+            const rowDateStr = data[1] || '';
+            const rowCust = (data[2] || '').toLowerCase();
 
             // Customer Check
             if (filterCust && !rowCust.includes(filterCust)) return false;
 
             // Date Check
             if (filterStart || filterEnd) {
+                // If date is completely missing in the row, hide it if a filter is active
+                if (!rowDateStr) return false;
+
                 const rowDate = new Date(rowDateStr);
+
                 if (filterStart && rowDate < new Date(filterStart)) return false;
-                if (filterEnd && rowDate > new Date(filterEnd)) return false;
+
+                // UX FIX: Append T23:59:59 so the end date includes the *entire* last day 
+                if (filterEnd && rowDate > new Date(filterEnd + 'T23:59:59')) return false;
             }
 
             return true;

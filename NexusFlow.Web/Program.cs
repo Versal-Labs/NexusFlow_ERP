@@ -1,17 +1,20 @@
-using Azure.Storage.Blobs;
+
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using NexusFlow.AppCore;
 using NexusFlow.AppCore.Constants;
+using NexusFlow.AppCore.Interfaces;
 using NexusFlow.Domain.Entities.System;
 using NexusFlow.Infrastructure;
 using NexusFlow.Infrastructure.Hubs;
 using NexusFlow.Infrastructure.Persistence;
 using NexusFlow.Notification;
 using NexusFlow.Web;
+using NexusFlow.Web.Security;
 using Scalar.AspNetCore;
 using Serilog;
 using System.Text;
@@ -34,9 +37,8 @@ builder.Services.AddNotifications();
 
 builder.Services.AddSignalR();
 
-string blobConnectionString = builder.Configuration.GetConnectionString("AzureBlobStorage");
-
-builder.Services.AddSingleton(x => new BlobServiceClient(blobConnectionString));
+builder.Services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();
+builder.Services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
 
 // Add this at the very beginning of your Program.cs
 Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense("Ngo9BigBOggjHTQxAR8/V1JHaF5cWWdCf1FpRmJGdld5fUVHYVZUTXxaS00DNHVRdkdlWXxcdXRdRmdZV0Z0XURWYEo=");
@@ -49,6 +51,7 @@ Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense("Ngo9BigBOggjHTQx
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.LoginPath = "/Account/Login"; // Where to redirect if not logged in
+    options.AccessDeniedPath = "/Account/AccessDenied";
     options.ExpireTimeSpan = TimeSpan.FromHours(30);
     options.SlidingExpiration = true;
     options.Cookie.HttpOnly = true;
@@ -204,5 +207,31 @@ using (var scope = app.Services.CreateScope())
 
 //Hubs
 app.MapHub<NotificationHub>("/hubs/notifications");
+
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var context = services.GetRequiredService<IErpDbContext>();
+
+        // Ensure database is created/migrated first
+        // await ((DbContext)context).Database.MigrateAsync(); 
+
+        // Define the path to your JSON file
+        var env = services.GetRequiredService<IWebHostEnvironment>();
+        var locationJsonPath = Path.Combine(env.ContentRootPath, "SeedData", "sri_lanka_cities.json");
+
+        // Execute the Location Seeder
+        await NexusFlow.Infrastructure.Data.Seeders.LocationSeeder.SeedAsync(context, locationJsonPath);
+
+        // (You can add your Bank Seeder here as well!)
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "An error occurred while seeding the Master Data.");
+    }
+}
 
 app.Run();
