@@ -17,7 +17,15 @@ namespace NexusFlow.AppCore.Features.Sales.Queries
         public decimal Balance { get; set; }
     }
 
-    public class GetUnpaidInvoicesQuery : IRequest<Result<List<UnpaidInvoiceDto>>>
+    // NEW: The Wrapper Response
+    public class UnpaidInvoicesResponseDto
+    {
+        public decimal UnappliedCredit { get; set; }
+        public List<UnpaidInvoiceDto> Invoices { get; set; } = new();
+    }
+
+    // UPDATE: Change the return type
+    public class GetUnpaidInvoicesQuery : IRequest<Result<UnpaidInvoicesResponseDto>>
     {
         public int CustomerId { get; set; }
     }

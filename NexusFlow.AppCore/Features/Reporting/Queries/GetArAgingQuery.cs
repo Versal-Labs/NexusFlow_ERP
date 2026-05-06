@@ -25,6 +25,7 @@ namespace NexusFlow.AppCore.Features.Reporting.Queries
     public class GetArAgingQuery : IRequest<Result<List<ArAgingDto>>>
     {
         public int? CustomerId { get; set; }
+        public int? SalesRepId { get; set; }
     }
 
     public class GetArAgingHandler : IRequestHandler<GetArAgingQuery, Result<List<ArAgingDto>>>
@@ -44,6 +45,9 @@ namespace NexusFlow.AppCore.Features.Reporting.Queries
 
             if (request.CustomerId.HasValue)
                 query = query.Where(i => i.CustomerId == request.CustomerId.Value);
+
+            if (request.SalesRepId.HasValue)
+                query = query.Where(i => i.SalesRepId == request.SalesRepId.Value);
 
             var openInvoices = await query.ToListAsync(cancellationToken);
 

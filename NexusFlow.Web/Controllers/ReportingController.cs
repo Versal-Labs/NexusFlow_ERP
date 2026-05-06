@@ -19,5 +19,7 @@ namespace NexusFlow.Web.Controllers
         public IActionResult InventoryAnalytics() => View();
         public IActionResult ChequeVaultAnalytics() => View();
         public IActionResult GeneralLedger() => View();
+        public IActionResult CommissionControl() => View();
+        public IActionResult RepPortal() => View();
     }
 }

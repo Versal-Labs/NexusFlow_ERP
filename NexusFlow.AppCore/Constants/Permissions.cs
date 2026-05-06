@@ -109,6 +109,9 @@ namespace NexusFlow.AppCore.Constants
             public const string ViewInventoryAnalytics = "Permissions.Reporting.ViewInventoryAnalytics";
             public const string ViewChequeVaultAnalytics = "Permissions.Reporting.ViewChequeVaultAnalytics";
             public const string ViewGeneralLedger = "Permissions.Reporting.ViewGeneralLedger";
+            //add the commission control and rep commission reports permissions
+            public const string ViewCommissionControl = "Permissions.Reporting.ViewCommissionControl";
+            public const string ViewRepCommissions = "Permissions.Reporting.ViewRepCommissions";
         }
     }
 }

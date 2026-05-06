@@ -265,9 +265,32 @@
 
     _loadUnpaidInvoices: async function (customerId) {
         $('#allocationBody').html('<tr><td colspan="6" class="text-center py-4"><i class="spinner-border spinner-border-sm text-primary me-2"></i> Loading invoices...</td></tr>');
+
+        // Remove any existing credit banner
+        $('#creditBanner').remove();
+
         try {
             const res = await api.get(`/api/sales/customers/${customerId}/unpaid-invoices`);
-            const invoices = res.data || res;
+
+            // Extract the new DTO structure
+            const payload = res.data || res;
+            const invoices = payload.invoices || [];
+            const unappliedCredit = payload.unappliedCredit || 0;
+
+            // TIER 1: Show Unapplied Credit Alert
+            if (unappliedCredit > 0) {
+                const alertHtml = `
+                    <div id="creditBanner" class="alert alert-info border-info d-flex justify-content-between align-items-center mb-3 shadow-sm py-2">
+                        <div>
+                            <i class="fa-solid fa-wallet fs-5 me-2"></i>
+                            <strong>Customer has Available Credit:</strong> LKR ${unappliedCredit.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                        </div>
+                        <button type="button" class="btn btn-sm btn-info fw-bold text-dark shadow-sm" onclick="receiptApp.applyExistingCredit(${customerId}, ${unappliedCredit})">
+                            Apply Credit to Invoices
+                        </button>
+                    </div>`;
+                $('#receiptForm').prepend(alertHtml);
+            }
 
             let html = '';
             if (!invoices || invoices.length === 0) {
