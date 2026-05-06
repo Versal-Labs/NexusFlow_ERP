@@ -332,5 +332,41 @@ namespace NexusFlow.Web.Controllers.Api
             var fileBytes = _exportService.ExportToPdf(result.Data, metadata);
             return File(fileBytes, "application/pdf", $"GeneralLedger_{query.AccountId}_{DateTime.Now:yyyyMMdd}.pdf");
         }
+
+        // ==========================================
+        // COMMISSIONS & REP PORTAL
+        // ==========================================
+
+        [HttpGet("commission-control")]
+        public async Task<IActionResult> GetCommissionControl([FromQuery] GetCommissionControlQuery query)
+        {
+            var result = await _mediator.Send(query);
+            return result.Succeeded ? Ok(result.Data) : BadRequest(result.Message);
+        }
+
+        [HttpGet("commission-control/export/excel")]
+        public async Task<IActionResult> ExportCommissionExcel([FromQuery] GetCommissionControlQuery query)
+        {
+            var result = await _mediator.Send(query);
+            if (!result.Succeeded || !result.Data.Any()) return BadRequest("No data to export.");
+
+            var metadata = new ExportMetadata { ReportTitle = "Commission Control Report", CompanyName = "NexusFlow Enterprise" };
+            if (query.StartDate.HasValue) metadata.AppliedFilters.Add("From Date", query.StartDate.Value.ToString("yyyy-MM-dd"));
+            if (query.EndDate.HasValue) metadata.AppliedFilters.Add("To Date", query.EndDate.Value.ToString("yyyy-MM-dd"));
+
+            var fileBytes = _exportService.ExportToExcel(result.Data, metadata, "Commissions");
+            return File(fileBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"CommissionControl_{DateTime.Now:yyyyMMdd}.xlsx");
+        }
+
+        [HttpGet("my-commissions")]
+        public async Task<IActionResult> GetMyCommissions([FromQuery] GetMyCommissionsQuery query)
+        {
+            // IMPORTANT: Security! Override the query ID with the logged-in user's ID
+            // so they can never query another rep's commissions via the API.
+            query.SalesRepId = int.Parse(User.FindFirst("EmployeeId")?.Value ?? "0"); // Adjust claim name as per your auth setup
+
+            var result = await _mediator.Send(query);
+            return result.Succeeded ? Ok(result.Data) : BadRequest(result.Message);
+        }
     }
 }

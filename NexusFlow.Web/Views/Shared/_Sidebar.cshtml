@@ -356,12 +356,21 @@
                             }
                             @if (CurrentUser.HasPermission(Permissions.Reporting.ViewChequeVaultAnalytics))
                             {
-                        <a href="/Reporting/ChequeVaultAnalytics" class="nav-link py-1 small">Cheque Vault Analytics</a>
+                                <a href="/Reporting/ChequeVaultAnalytics" class="nav-link py-1 small">Cheque Vault Analytics</a>
                             }
-                    @if (CurrentUser.HasPermission(Permissions.Reporting.ViewGeneralLedger))
-                    {
-                        <a href="/Reporting/GeneralLedger" class="nav-link py-1 small">General Ledger</a>
-                    }
+                            @if (CurrentUser.HasPermission(Permissions.Reporting.ViewGeneralLedger))
+                            {
+                                <a href="/Reporting/GeneralLedger" class="nav-link py-1 small">General Ledger</a>
+                            }
+                            
+                            @if (CurrentUser.HasPermission(Permissions.Reporting.ViewCommissionControl))
+                            {
+                                <a href="/Reporting/CommissionControl" class="nav-link py-1 small">Commission Control</a>
+                            }
+                            @if (CurrentUser.HasPermission(Permissions.Reporting.ViewRepCommissions))
+                            {
+                                <a href="/Reporting/RepPortal" class="nav-link py-1 small">Rep Commissions</a>
+                            }
                         </nav>
                     </div>
                 }
