@@ -19,12 +19,14 @@ namespace NexusFlow.Web.Controllers.Api
         public SupplierController(IMediator mediator) => _mediator = mediator;
 
         [HttpGet]
+        [Authorize(Policy = Permissions.MasterData.ViewSuppliers)]
         public async Task<IActionResult> GetAll()
         {
             return Ok(await _mediator.Send(new GetSuppliersQuery()));
         }
 
         [HttpGet("{id}")]
+        [Authorize(Policy = Permissions.MasterData.ViewSuppliers)]
         public async Task<IActionResult> GetById(int id)
         {
             var result = await _mediator.Send(new GetSupplierByIdQuery { Id = id });
@@ -32,6 +34,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpPost]
+        [Authorize(Policy = Permissions.MasterData.ManageSuppliers)]
         public async Task<IActionResult> Create(CreateSupplierCommand command)
         {
             var result = await _mediator.Send(command);
@@ -39,6 +42,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpPut("{id}")]
+        [Authorize(Policy = Permissions.MasterData.ManageSuppliers)]
         public async Task<IActionResult> Update(int id, UpdateSupplierCommand command)
         {
             if (id != command.Supplier.Id) return BadRequest("ID Mismatch");
@@ -47,6 +51,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpGet("search")]
+        [Authorize(Policy = Permissions.MasterData.ViewSuppliers)]
         public async Task<IActionResult> SearchSuppliers([FromQuery] string? query)
         {
             var data = await _mediator.Send(new SearchSuppliersQuery(query));

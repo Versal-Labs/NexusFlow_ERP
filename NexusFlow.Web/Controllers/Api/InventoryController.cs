@@ -29,6 +29,7 @@ namespace NexusFlow.Web.Controllers.Api
 
         // POST api/inventory/production
         [HttpPost("production")]
+        [Authorize(Policy = Permissions.Inventory.RunProduction)]
         public async Task<IActionResult> RunProduction([FromBody] RunProductionCommand command)
         {
             var result = await _mediator.Send(command);
@@ -37,6 +38,7 @@ namespace NexusFlow.Web.Controllers.Api
 
         // POST api/inventory/transfer
         [HttpPost("transfer")]
+        [Authorize(Policy = Permissions.Inventory.TransferStock)]
         public async Task<IActionResult> TransferStock([FromBody] TransferStockCommand command)
         {
             var result = await _mediator.Send(command);
@@ -44,6 +46,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpGet("stock-levels")]
+        [Authorize(Policy = Permissions.Inventory.ViewStock)]
         public async Task<IActionResult> GetStockLevels([FromQuery] int? warehouseId)
         {
             var query = new NexusFlow.AppCore.Features.Inventory.Queries.GetStockLevelsQuery { WarehouseId = warehouseId };
@@ -52,6 +55,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpGet("stock/available")]
+        [Authorize(Policy = Permissions.Inventory.ViewStock)]
         public async Task<IActionResult> GetAvailableStock([FromQuery] int variantId, [FromQuery] int warehouseId)
         {
             var result = await _mediator.Send(new GetAvailableStockQuery
@@ -63,9 +67,11 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpGet("stocktakes")]
+        [Authorize(Policy = Permissions.Inventory.ViewStockTakes)]
         public async Task<IActionResult> GetStockTakes() => Ok(await _mediator.Send(new GetStockTakesQuery()));
 
         [HttpGet("stocktakes/{id}")]
+        [Authorize(Policy = Permissions.Inventory.ViewStockTakes)]
         public async Task<IActionResult> GetStockTakeById(int id)
         {
             var res = await _mediator.Send(new GetStockTakeByIdQuery { Id = id });
@@ -73,6 +79,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpPost("stocktakes/initiate")]
+        [Authorize(Policy = Permissions.Inventory.InitiateStockTake)]
         public async Task<IActionResult> Initiate([FromBody] InitiateStockTakeCommand command)
         {
             var res = await _mediator.Send(command);
@@ -80,6 +87,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpPost("stocktakes/count")]
+        [Authorize(Policy = Permissions.Inventory.SubmitCount)]
         public async Task<IActionResult> SubmitCount([FromBody] SubmitBlindCountCommand command)
         {
             var res = await _mediator.Send(command);
@@ -87,6 +95,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpPost("stocktakes/{id}/approve")]
+        [Authorize(Policy = Permissions.Inventory.ApproveStockTake)]
         public async Task<IActionResult> Approve(int id)
         {
             var res = await _mediator.Send(new ApproveStockTakeCommand { StockTakeId = id, ApproverName = User.Identity?.Name ?? "System" });
@@ -94,6 +103,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpPost("issue-materials")]
+        [Authorize(Policy = Permissions.Inventory.RunProduction)]
         public async Task<IActionResult> IssueMaterials([FromBody] CreateMaterialIssueCommand command)
         {
             var result = await _mediator.Send(command);
@@ -106,6 +116,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpPost("production-receipts")]
+        [Authorize(Policy = Permissions.Inventory.RunProduction)]
         public async Task<IActionResult> ReceiveProduction([FromBody] ReceiveProductionCommand command)
         {
             var result = await _mediator.Send(command);
@@ -114,6 +125,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpGet("production-receipts")]
+        [Authorize(Policy = Permissions.Inventory.ViewStock)]
         public async Task<IActionResult> GetProductionReceipts()
         {
             var result = await _mediator.Send(new GetProductionReceiptsQuery());
@@ -123,6 +135,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpGet("issues")]
+        [Authorize(Policy = Permissions.Inventory.ViewStock)]
         public async Task<IActionResult> GetMaterialIssues()
         {
             var result = await _mediator.Send(new GetMaterialIssuesQuery());
@@ -135,6 +148,7 @@ namespace NexusFlow.Web.Controllers.Api
 
         [HttpPost("preview-import")]
         [AllowAnonymous]
+        [Authorize(Policy = Permissions.MasterData.ManageProducts)]
         public async Task<IActionResult> PreviewImport(IFormFile file, CancellationToken cancellationToken)
         {
             if (file == null || file.Length == 0) return BadRequest("No file uploaded.");
@@ -148,6 +162,7 @@ namespace NexusFlow.Web.Controllers.Api
 
         [HttpPost("execute-import")]
         [AllowAnonymous]
+        [Authorize(Policy = Permissions.MasterData.ManageProducts)]
         public async Task<IActionResult> ExecuteImport([FromBody] ExecuteLegacyProductsCommand command, CancellationToken cancellationToken)
         {
             var result = await _mediator.Send(command, cancellationToken);
@@ -155,6 +170,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpGet("valuation")]
+        [Authorize(Policy = Permissions.Inventory.ViewStock)]
         public async Task<IActionResult> GetStockValuation([FromQuery] int? warehouseId, [FromQuery] int? categoryId, [FromQuery] string? search)
         {
             var result = await _mediator.Send(new GetStockValuationQuery
@@ -167,6 +183,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpGet("transfers")]
+        [Authorize(Policy = Permissions.Inventory.ViewStock)]
         public async Task<IActionResult> GetTransfers()
         {
             var result = await _mediator.Send(new GetTransfersQuery());
@@ -174,6 +191,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpPost("transfers")]
+        [Authorize(Policy = Permissions.Inventory.TransferStock)]
         public async Task<IActionResult> ExecuteTransfer([FromBody] TransferStockCommand command)
         {
             var result = await _mediator.Send(command);
@@ -181,6 +199,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpGet("stock-level")]
+        [Authorize(Policy = Permissions.Inventory.ViewStock)]
         public async Task<IActionResult> GetStockLevel([FromQuery] int variantId, [FromQuery] int warehouseId)
         {
             var result = await _mediator.Send(new GetVariantStockLevelQuery
@@ -193,6 +212,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpGet("transfers/{refNo}")]
+        [Authorize(Policy = Permissions.Inventory.ViewStock)]
         public async Task<IActionResult> GetTransferByRef(string refNo)
         {
             var result = await _mediator.Send(new GetTransferByRefQuery { ReferenceNo = refNo });
@@ -200,6 +220,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpPost("transfers/{refNo}/reverse")]
+        [Authorize(Policy = Permissions.Inventory.TransferStock)]
         public async Task<IActionResult> ReverseTransfer(string refNo)
         {
             var result = await _mediator.Send(new ReverseTransferCommand { ReferenceNo = refNo });
@@ -207,12 +228,14 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpGet("adjustments")]
+        [Authorize(Policy = Permissions.Inventory.ViewStock)]
         public async Task<IActionResult> GetAdjustments()
         {
             return Ok(await _mediator.Send(new GetAdjustmentsQuery()));
         }
 
         [HttpPost("adjustments")]
+        [Authorize(Policy = Permissions.Inventory.AdjustStock)]
         public async Task<IActionResult> ExecuteAdjustment([FromBody] AdjustStockCommand command)
         {
             var result = await _mediator.Send(command);

@@ -7,6 +7,7 @@ namespace NexusFlow.Web.Controllers
     [Authorize(AuthenticationSchemes = AuthConstants.IdentityScheme)]
     public class ConfigController : Controller
     {
+        [Authorize(Policy = Permissions.System.ManageConfigs)]
         public IActionResult Index()
         {
             return View();

@@ -21,6 +21,7 @@ namespace NexusFlow.Web.Controllers
         {
             _mediator = mediator;
         }
+        [Authorize(Policy = Permissions.Finance.ViewReports)]
         public async Task<IActionResult> Index()
         {
             // Execute the high-performance dashboard aggregation query
@@ -32,6 +33,7 @@ namespace NexusFlow.Web.Controllers
             return View(model);
         }
 
+        [Authorize(Policy = Permissions.Finance.ViewReports)]
         public IActionResult Privacy()
         {
             var vm = new UserName
@@ -48,6 +50,7 @@ namespace NexusFlow.Web.Controllers
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        [Authorize(Policy = Permissions.Finance.ViewReports)]
         public IActionResult Error()
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });

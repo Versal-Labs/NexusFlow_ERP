@@ -8,6 +8,7 @@ namespace NexusFlow.Web.Controllers
     public class SupplierController : Controller
     {
         [HttpGet]
+        [Authorize(Policy = Permissions.MasterData.ViewSuppliers)]
         public IActionResult Index()
         {
             return View();

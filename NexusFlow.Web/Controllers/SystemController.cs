@@ -8,6 +8,7 @@ namespace NexusFlow.Web.Controllers
     [Authorize(Roles = "SuperAdmin,Admin")]
     public class SystemController : Controller
     {
+        [Authorize(Policy = Permissions.System.ViewUsers)]
         public IActionResult Users()
         {
             // Returns ~/Views/System/Users.cshtml
@@ -15,6 +16,7 @@ namespace NexusFlow.Web.Controllers
         }
 
         [HttpGet]
+        [Authorize(Policy = Permissions.System.ViewAuditLogs)]
         public IActionResult AuditExplorer()
         {
             // Returns the HTML Shell for the SPA-like DataTable experience

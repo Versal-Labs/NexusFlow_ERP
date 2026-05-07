@@ -33,6 +33,7 @@ namespace NexusFlow.Web.Controllers.Api
         // ==========================================
 
         [HttpGet("purchase-orders")]
+        [Authorize(Policy = Permissions.Purchasing.ViewPOs)]
         public async Task<IActionResult> GetPurchaseOrders()
         {
             var result = await _mediator.Send(new GetPurchaseOrdersQuery());
@@ -40,6 +41,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpGet("purchase-orders/{id}")]
+        [Authorize(Policy = Permissions.Purchasing.ViewPOs)]
         public async Task<IActionResult> GetPurchaseOrderById(int id)
         {
             var result = await _mediator.Send(new GetPurchaseOrderByIdQuery { Id = id });
@@ -47,6 +49,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpPost("purchase-orders")]
+        [Authorize(Policy = Permissions.Purchasing.CreatePO)]
         public async Task<IActionResult> CreatePurchaseOrder([FromBody] CreatePurchaseOrderCommand command)
         {
             var result = await _mediator.Send(command);
@@ -54,6 +57,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpPut("purchase-orders/{id}")]
+        [Authorize(Policy = Permissions.Purchasing.CreatePO)]
         public async Task<IActionResult> UpdatePurchaseOrder(int id, [FromBody] UpdatePurchaseOrderCommand command)
         {
             // Standard REST API security check: Ensure the URL ID matches the Payload ID
@@ -72,6 +76,7 @@ namespace NexusFlow.Web.Controllers.Api
         // ==========================================
 
         [HttpGet("grns")]
+        [Authorize(Policy = Permissions.Purchasing.ViewGRNs)]
         public async Task<IActionResult> GetGrns()
         {
             var result = await _mediator.Send(new GetGrnsQuery());
@@ -79,6 +84,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpPost("grns")]
+        [Authorize(Policy = Permissions.Purchasing.CreateGRN)]
         public async Task<IActionResult> CreateGrn([FromBody] CreateGrnCommand command)
         {
             var result = await _mediator.Send(command);
@@ -86,6 +92,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpGet("grns/{id}")]
+        [Authorize(Policy = Permissions.Purchasing.ViewGRNs)]
         public async Task<IActionResult> GetGrnsById(int id)
         {
             var result = await _mediator.Send(new GetGrnByIdQuery { Id = id });
@@ -97,6 +104,7 @@ namespace NexusFlow.Web.Controllers.Api
         // ==========================================
 
         [HttpGet("supplier-bills")]
+        [Authorize(Policy = Permissions.Purchasing.ViewBills)]
         public async Task<IActionResult> GetSupplierBills()
         {
             var result = await _mediator.Send(new GetSupplierBillsQuery());
@@ -104,6 +112,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpPost("supplier-bills")]
+        [Authorize(Policy = Permissions.Purchasing.CreateBill)]
         public async Task<IActionResult> CreateSupplierBill([FromBody] CreateSupplierBillCommand command)
         {
             var result = await _mediator.Send(command);
@@ -111,6 +120,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpGet("suppliers/{supplierId}/unbilled-grns")]
+        [Authorize(Policy = Permissions.Purchasing.ViewGRNs)]
         public async Task<IActionResult> GetUnbilledGrns(int supplierId)
         {
             var result = await _mediator.Send(new GetUnbilledGrnsQuery { SupplierId = supplierId });
@@ -118,6 +128,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpGet("suppliers/{supplierId}/unpaid-bills")]
+        [Authorize(Policy = Permissions.Purchasing.ViewBills)]
         public async Task<IActionResult> GetUnpaidSupplierBills(int supplierId)
         {
             var result = await _mediator.Send(new GetUnpaidSupplierBillsQuery { SupplierId = supplierId });
@@ -125,6 +136,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpGet("supplier-bills/{id}")]
+        [Authorize(Policy = Permissions.Purchasing.ViewBills)]
         public async Task<IActionResult> GetSupplierBillById(int id)
         {
             var result = await _mediator.Send(new GetSupplierBillByIdQuery { Id = id });
@@ -132,6 +144,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpPut("supplier-bills/{id}")]
+        [Authorize(Policy = Permissions.Purchasing.CreateBill)]
         public async Task<IActionResult> UpdateSupplierBill(int id, [FromBody] UpdateSupplierBillCommand command)
         {
             // Ensure the handler knows exactly which Bill ID it is operating on
@@ -146,12 +159,14 @@ namespace NexusFlow.Web.Controllers.Api
         // ==========================================
 
         [HttpGet("debit-notes")]
+        [Authorize(Policy = Permissions.Purchasing.ViewDebitNotes)]
         public async Task<IActionResult> GetDebitNotes([FromQuery] int? supplierId, [FromQuery] DateTime? startDate, [FromQuery] DateTime? endDate)
         {
             return Ok(await _mediator.Send(new GetDebitNotesQuery { SupplierId = supplierId, StartDate = startDate, EndDate = endDate }));
         }
 
         [HttpGet("debit-notes/{id}")]
+        [Authorize(Policy = Permissions.Purchasing.ViewDebitNotes)]
         public async Task<IActionResult> GetDebitNoteById(int id)
         {
             var res = await _mediator.Send(new GetDebitNoteByIdQuery { Id = id });
@@ -159,6 +174,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpPost("debit-notes")]
+        [Authorize(Policy = Permissions.Purchasing.ViewDebitNotes)]
         public async Task<IActionResult> CreateDebitNote([FromBody] CreateDebitNoteCommand command)
         {
             var res = await _mediator.Send(command);

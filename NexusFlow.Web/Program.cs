@@ -1,4 +1,7 @@
 
+using Hangfire;
+using Hangfire.Console;
+using Hangfire.SqlServer;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -10,6 +13,7 @@ using NexusFlow.AppCore.Constants;
 using NexusFlow.AppCore.Interfaces;
 using NexusFlow.Domain.Entities.System;
 using NexusFlow.Infrastructure;
+using NexusFlow.Infrastructure.Hangfire;
 using NexusFlow.Infrastructure.Hubs;
 using NexusFlow.Infrastructure.Persistence;
 using NexusFlow.Notification;
@@ -34,6 +38,39 @@ builder.Services.AddAppCore();
 builder.Services.AddInfrastructure(builder.Configuration);
 
 builder.Services.AddNotifications();
+
+// --- HANGFIRE CONFIGURATION ---
+var hangfireConnection = builder.Configuration["Hangfire:ConnectionString"]
+    ?? builder.Configuration.GetConnectionString("DefaultConnection")!;
+
+builder.Services.AddHangfire(config => config
+    .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+    .UseSimpleAssemblyNameTypeSerializer()
+    .UseRecommendedSerializerSettings()
+    .UseConsole()                          // Enables rich job logs in dashboard
+    .UseSqlServerStorage(hangfireConnection, new SqlServerStorageOptions
+    {
+        CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
+        SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
+        QueuePollInterval = TimeSpan.FromSeconds(15),
+        UseRecommendedIsolationLevel = true,
+        DisableGlobalLocks = true,   // Required for multi-server setups
+        PrepareSchemaIfNecessary = true,   // Auto-creates Hangfire tables
+    }));
+
+builder.Services.AddHangfireServer(options =>
+{
+    options.WorkerCount = int.Parse(
+        builder.Configuration["Hangfire:WorkerCount"] ?? "5");
+    options.Queues = builder.Configuration
+        .GetSection("Hangfire:Queues").Get<string[]>()
+        ?? new[] { "critical", "default", "low" };
+    options.ServerName = $"{Environment.MachineName}:{Environment.ProcessId}";
+});
+
+// Register the job service abstraction
+builder.Services.AddScoped<IBackgroundJobService, BackgroundJobService>();
+// --- END HANGFIRE CONFIGURATION ---
 
 builder.Services.AddSignalR();
 
@@ -190,6 +227,26 @@ app.UseRouting();
 // 3. MIDDLEWARE ORDER IS CRITICAL
 app.UseAuthentication();
 app.UseAuthorization();
+
+// --- HANGFIRE DASHBOARD ---
+var dashboardPath = builder.Configuration["Hangfire:DashboardPath"] ?? "/hangfire";
+
+app.UseHangfireDashboard(dashboardPath, new DashboardOptions
+{
+    Authorization = new[] { new HangfireDashboardAuthFilter() },
+    DashboardTitle = "NexusFlow — Job Dashboard",
+    DisplayStorageConnectionString = false,   // Never expose connection strings
+    StatsPollingInterval = 5000,              // Refresh every 5 seconds
+    IsReadOnlyFunc = context =>
+    {
+        // Optionally make dashboard read-only for non-super-admins
+        return false;
+    }
+});
+
+// Register all recurring jobs
+RecurringJobsRegistrar.RegisterAll();
+// --- END HANGFIRE DASHBOARD ---
 
 app.MapStaticAssets();
 

@@ -24,6 +24,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpGet]
+        [Authorize(Policy = Permissions.MasterData.ManageBOMs)]
         public async Task<IActionResult> GetAll()
         {
             var result = await _mediator.Send(new GetBomsQuery());
@@ -31,6 +32,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpGet("{id}")]
+        [Authorize(Policy = Permissions.MasterData.ManageBOMs)]
         public async Task<IActionResult> GetById(int id)
         {
             var result = await _mediator.Send(new GetBomByIdQuery(id));
@@ -38,6 +40,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpPost]
+        [Authorize(Policy = Permissions.MasterData.ManageBOMs)]
         public async Task<IActionResult> Save(SaveBomCommand command)
         {
             var result = await _mediator.Send(command);

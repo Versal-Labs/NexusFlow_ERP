@@ -19,9 +19,11 @@ namespace NexusFlow.Web.Controllers.Api
         public UnitOfMeasureController(IMediator mediator) => _mediator = mediator;
 
         [HttpGet]
+        [Authorize(Policy = Permissions.MasterData.ViewProducts)]
         public async Task<IActionResult> GetAll() => Ok(await _mediator.Send(new GetUnitsQuery()));
 
         [HttpPost]
+        [Authorize(Policy = Permissions.MasterData.ManageProducts)]
         public async Task<IActionResult> Create(CreateUnitCommand command)
         {
             var result = await _mediator.Send(command);
@@ -29,6 +31,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpPut("{id}")]
+        [Authorize(Policy = Permissions.MasterData.ManageProducts)]
         public async Task<IActionResult> Update(int id, UpdateUnitCommand command)
         {
             if (id != command.Id) return BadRequest();

@@ -7,6 +7,7 @@ namespace NexusFlow.Web.Controllers
     [Authorize(AuthenticationSchemes = AuthConstants.IdentityScheme)]
     public class BomController : Controller
     {
+        [Authorize(Policy = Permissions.MasterData.ManageBOMs)]
         public IActionResult Index()
         {
             return View();

@@ -19,9 +19,11 @@ namespace NexusFlow.Web.Controllers.Api
         public CategoryController(IMediator mediator) => _mediator = mediator;
 
         [HttpGet]
+        [Authorize(Policy = Permissions.MasterData.ViewProducts)]
         public async Task<IActionResult> GetAll() => Ok(await _mediator.Send(new GetCategoriesQuery()));
 
         [HttpPost]
+        [Authorize(Policy = Permissions.MasterData.ManageProducts)]
         public async Task<IActionResult> Create(CreateCategoryCommand command)
         {
             var result = await _mediator.Send(command);
@@ -29,6 +31,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpPut("{id}")]
+        [Authorize(Policy = Permissions.MasterData.ManageProducts)]
         public async Task<IActionResult> Update(int id, UpdateCategoryCommand command)
         {
             if (id != command.Category.Id) return BadRequest();

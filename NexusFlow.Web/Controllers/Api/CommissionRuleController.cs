@@ -18,9 +18,11 @@ namespace NexusFlow.Web.Controllers.Api
         public CommissionRuleController(IMediator mediator) => _mediator = mediator;
 
         [HttpGet]
+        [Authorize(Policy = Permissions.HR.ManageCommissionRules)]
         public async Task<IActionResult> GetAll() => Ok(await _mediator.Send(new GetCommissionRulesQuery()));
 
         [HttpPost]
+        [Authorize(Policy = Permissions.HR.ManageCommissionRules)]
         public async Task<IActionResult> Save([FromBody] SaveCommissionRuleCommand command)
         {
             var result = await _mediator.Send(command);

@@ -7,6 +7,7 @@ namespace NexusFlow.Web.Controllers
     [Authorize(AuthenticationSchemes = AuthConstants.IdentityScheme)]
     public class FulfillmentController : Controller
     {
+        [Authorize(Policy = Permissions.Sales.ViewOrders)]
         public IActionResult Index()
         {
             return View("~/Views/Sales/Fulfillment.cshtml");

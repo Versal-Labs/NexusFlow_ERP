@@ -25,6 +25,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpPost]
+        [Authorize(Policy = Permissions.MasterData.ManageProducts)]
         public async Task<IActionResult> CreateProduct([FromBody] CreateProductCommand command)
         {
             var result = await _mediator.Send(command);
@@ -32,6 +33,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpGet]
+        [Authorize(Policy = Permissions.MasterData.ViewProducts)]
         public async Task<IActionResult> GetAll()
         {
             // Uses the GetProductsQuery you defined
@@ -44,6 +46,7 @@ namespace NexusFlow.Web.Controllers.Api
         // 3. READ ONE (GET api/product/{id})
         // Used when clicking "Edit" to populate the drawer
         [HttpGet("{id}")]
+        [Authorize(Policy = Permissions.MasterData.ViewProducts)]
         public async Task<IActionResult> GetById(int id)
         {
             var query = new GetProductByIdQuery { Id = id };
@@ -56,6 +59,7 @@ namespace NexusFlow.Web.Controllers.Api
         // 4. UPDATE (PUT api/product)
         // Used to save changes to an existing product
         [HttpPut]
+        [Authorize(Policy = Permissions.MasterData.ManageProducts)]
         public async Task<IActionResult> UpdateProduct([FromBody] UpdateProductCommand command)
         {
             var result = await _mediator.Send(command);
@@ -63,6 +67,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpPut("bulk-update")]
+        [Authorize(Policy = Permissions.MasterData.ManageProducts)]
         public async Task<IActionResult> BulkUpdate([FromBody] BulkUpdateVariantsCommand command)
         {
             var result = await _mediator.Send(command);
@@ -72,6 +77,7 @@ namespace NexusFlow.Web.Controllers.Api
         // 5. DELETE (DELETE api/product/{id})
         // Used to soft-delete or remove a product
         [HttpDelete("{id}")]
+        [Authorize(Policy = Permissions.MasterData.ManageProducts)]
         public async Task<IActionResult> DeleteProduct(int id)
         {
             var command = new DeleteProductCommand { Id = id };
@@ -81,6 +87,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpPost("bulk")]
+        [Authorize(Policy = Permissions.MasterData.ManageProducts)]
         public async Task<IActionResult> BulkCreate([FromBody] BulkImportProductsCommand command)
         {
             var result = await _mediator.Send(command);

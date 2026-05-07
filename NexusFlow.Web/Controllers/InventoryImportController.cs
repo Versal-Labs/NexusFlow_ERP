@@ -24,12 +24,14 @@ namespace NexusFlow.Web.Controllers
             _logger = logger;
         }
 
+        [Authorize(Policy = Permissions.MasterData.ManageProducts)]
         public IActionResult Index()
         {
             return View();
         }
 
         [HttpPost("preview-import")]
+        [Authorize(Policy = Permissions.MasterData.ManageProducts)]
         public async Task<IActionResult> PreviewImport(IFormFile file, CancellationToken cancellationToken)
         {
             if (file == null || file.Length == 0) return BadRequest("No file uploaded.");
@@ -42,6 +44,7 @@ namespace NexusFlow.Web.Controllers
         }
 
         [HttpPost("execute-import")]
+        [Authorize(Policy = Permissions.MasterData.ManageProducts)]
         public async Task<IActionResult> ExecuteImport([FromBody] ExecuteLegacyProductsCommand command, CancellationToken cancellationToken)
         {
             var result = await _mediator.Send(command, cancellationToken);

@@ -37,6 +37,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpGet("accounts")]
+        [Authorize(Policy = Permissions.Finance.ViewChartOfAccounts)]
         public async Task<IActionResult> GetAccounts()
         {
             var result = await _mediator.Send(new GetAccountsQuery());
@@ -45,6 +46,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpGet("chart-of-accounts")]
+        [Authorize(Policy = Permissions.Finance.ViewChartOfAccounts)]
         public async Task<IActionResult> GetChartOfAccounts()
         {
             var result = await _mediator.Send(new GetChartOfAccountsQuery());
@@ -52,6 +54,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpPost("account")]
+        [Authorize(Policy = Permissions.Finance.ManageAccounts)]
         public async Task<IActionResult> CreateAccount([FromBody] CreateAccountCommand command)
         {
             var result = await _mediator.Send(command);
@@ -59,6 +62,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpPut("account/{id}")]
+        [Authorize(Policy = Permissions.Finance.ManageAccounts)]
         public async Task<IActionResult> UpdateAccount(int id, [FromBody] UpdateAccountCommand command)
         {
             if (id != command.Id) return BadRequest("ID Mismatch");
@@ -67,6 +71,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpDelete("account/{id}")]
+        [Authorize(Policy = Permissions.Finance.ManageAccounts)]
         public async Task<IActionResult> DeactivateAccount(int id)
         {
             var result = await _mediator.Send(new DeactivateAccountCommand(id));
@@ -74,6 +79,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpGet("trial-balance")]
+        [Authorize(Policy = Permissions.Finance.ViewReports)]
         public async Task<IActionResult> GetTrialBalance([FromQuery] DateTime? date)
         {
             var query = new GetTrialBalanceQuery { AsOfDate = date ?? DateTime.UtcNow };
@@ -85,6 +91,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpGet("balance-sheet")]
+        [Authorize(Policy = Permissions.Finance.ViewReports)]
         public async Task<IActionResult> GetBalanceSheet([FromQuery] DateTime? date)
         {
             var query = new AppCore.Features.Finance.Queries.GetBalanceSheetQuery { AsOfDate = date ?? DateTime.UtcNow };
@@ -96,6 +103,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpGet("periods")]
+        [Authorize(Policy = Permissions.Finance.ManagePeriods)]
         public async Task<IActionResult> GetFinancialPeriods()
         {
             var result = await _mediator.Send(new GetFinancialPeriodsQuery());
@@ -103,6 +111,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpPost("periods")]
+        [Authorize(Policy = Permissions.Finance.ManagePeriods)]
         public async Task<IActionResult> CreateFinancialPeriod([FromBody] CreateFinancialPeriodCommand command)
         {
             var result = await _mediator.Send(command);
@@ -111,6 +120,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpGet("journals")]
+        [Authorize(Policy = Permissions.Finance.ViewJournals)]
         public async Task<IActionResult> GetJournals([FromQuery] DateTime? startDate, [FromQuery] DateTime? endDate, [FromQuery] string? module)
         {
             var query = new GetJournalEntriesQuery { StartDate = startDate, EndDate = endDate, Module = module };
@@ -119,6 +129,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpGet("journals/{id}")]
+        [Authorize(Policy = Permissions.Finance.ViewJournals)]
         public async Task<IActionResult> GetJournalById(int id)
         {
             var result = await _mediator.Send(new GetJournalEntryByIdQuery { Id = id });
@@ -128,6 +139,7 @@ namespace NexusFlow.Web.Controllers.Api
 
         // In Controllers/Api/FinanceController.cs
         [HttpGet("banks")]
+        [Authorize(Policy = Permissions.Finance.BankReconciliation)]
         public async Task<IActionResult> GetBanks()
         {
             var banks = await _context.Banks
@@ -139,6 +151,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpGet("banks/{bankId}/branches")]
+        [Authorize(Policy = Permissions.Finance.BankReconciliation)]
         public async Task<IActionResult> GetBranches(int bankId)
         {
             var branches = await _context.BankBranches
@@ -151,6 +164,7 @@ namespace NexusFlow.Web.Controllers.Api
 
         [HttpPost("seed-banks")]
         [AllowAnonymous] // Temporarily allow anonymous just to hit it from Postman/Browser without token issues, remove after!
+        [Authorize(Policy = Permissions.Finance.ManageAccounts)]
         public async Task<IActionResult> SeedSriLankaBanks([FromServices] IWebHostEnvironment env)
         {
             // Assuming you placed the json file inside the 'wwwroot/data' folder of your web project
@@ -170,6 +184,7 @@ namespace NexusFlow.Web.Controllers.Api
         // ==========================================
 
         [HttpGet("banking/beginning-balance")]
+        [Authorize(Policy = Permissions.Finance.BankReconciliation)]
         public async Task<IActionResult> GetBeginningBalance([FromQuery] int bankAccountId)
         {
             var result = await _mediator.Send(new GetBeginningBalanceQuery(bankAccountId));
@@ -177,6 +192,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpGet("banking/uncleared")]
+        [Authorize(Policy = Permissions.Finance.BankReconciliation)]
         public async Task<IActionResult> GetUnclearedTransactions([FromQuery] int bankAccountId, [FromQuery] DateTime statementDate)
         {
             var result = await _mediator.Send(new GetUnclearedTransactionsQuery(bankAccountId, statementDate));
@@ -185,6 +201,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpPost("banking/adjustment")]
+        [Authorize(Policy = Permissions.Finance.BankReconciliation)]
         public async Task<IActionResult> PostBankAdjustment([FromBody] PostBankAdjustmentCommand command)
         {
             var result = await _mediator.Send(command);
@@ -193,6 +210,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpPost("banking/finalize")]
+        [Authorize(Policy = Permissions.Finance.BankReconciliation)]
         public async Task<IActionResult> FinalizeReconciliation([FromBody] FinalizeReconciliationCommand command)
         {
             var result = await _mediator.Send(command);
@@ -201,6 +219,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpGet("reports/profit-and-loss")]
+        [Authorize(Policy = Permissions.Finance.ViewReports)]
         public async Task<IActionResult> GetProfitAndLoss([FromQuery] DateTime startDate, [FromQuery] DateTime endDate, [FromQuery] string basis = "Accrual")
         {
             var result = await _mediator.Send(new GetProfitAndLossQuery { StartDate = startDate, EndDate = endDate, Basis = basis });
@@ -208,6 +227,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpGet("reports/balance-sheet")]
+        [Authorize(Policy = Permissions.Finance.ViewReports)]
         public async Task<IActionResult> GetBalanceSheet([FromQuery] DateTime asOfDate)
         {
             var result = await _mediator.Send(new AppCore.Features.Finance.Reports.Queries.GetBalanceSheetQuery { AsOfDate = asOfDate });
@@ -218,6 +238,7 @@ namespace NexusFlow.Web.Controllers.Api
         // 1. PREVIEW CSV DATA (Safe Parsing)
         // ==========================================
         [HttpPost("preview-arap-import")]
+        [Authorize(Policy = Permissions.Finance.ManageAccounts)]
         public IActionResult PreviewArApImport(IFormFile file)
         {
             if (file == null || file.Length == 0)
@@ -250,6 +271,7 @@ namespace NexusFlow.Web.Controllers.Api
         // 2. EXECUTE IMPORT
         // ==========================================
         [HttpPost("execute-arap-import")]
+        [Authorize(Policy = Permissions.Finance.ManageAccounts)]
         public async Task<IActionResult> ExecuteArApImport([FromBody] ImportOpenInvoicesCommand command)
         {
             var result = await _mediator.Send(command);
@@ -260,6 +282,7 @@ namespace NexusFlow.Web.Controllers.Api
         // 1. PREVIEW TRIAL BALANCE CSV
         // ==========================================
         [HttpPost("preview-tb-import")]
+        [Authorize(Policy = Permissions.Finance.ManageAccounts)]
         public IActionResult PreviewTbImport(IFormFile file)
         {
             if (file == null || file.Length == 0)
@@ -291,6 +314,7 @@ namespace NexusFlow.Web.Controllers.Api
         // 2. EXECUTE TRIAL BALANCE IMPORT
         // ==========================================
         [HttpPost("execute-tb-import")]
+        [Authorize(Policy = Permissions.Finance.ManageAccounts)]
         public async Task<IActionResult> ExecuteTbImport([FromBody] ImportTrialBalanceCommand command)
         {
             var result = await _mediator.Send(command);

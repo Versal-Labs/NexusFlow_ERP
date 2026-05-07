@@ -5,6 +5,7 @@ using NexusFlow.Domain.Entities.Finance;
 using NexusFlow.Domain.Entities.HR;
 using NexusFlow.Domain.Entities.Inventory;
 using NexusFlow.Domain.Entities.Master;
+using NexusFlow.Domain.Entities.Payroll;
 using NexusFlow.Domain.Entities.Purchasing;
 using NexusFlow.Domain.Entities.Sales;
 using NexusFlow.Domain.Entities.System;
@@ -61,6 +62,18 @@ namespace NexusFlow.AppCore.Interfaces
         DbSet<Province> Provinces { get; set; }
         DbSet<District> Districts { get; set; }
         DbSet<City> Cities { get; set; }
+
+        DbSet<PayrollComponent> PayrollComponents { get; set; }
+        DbSet<EmployeePayrollComponent> EmployeePayrollComponents { get; set; }
+        DbSet<SalaryAdvance> SalaryAdvances { get; set; }
+        DbSet<EmployeeLoan> EmployeeLoans { get; set; }
+        DbSet<LoanRepaymentSchedule> LoanRepaymentSchedules { get; set; }
+
+        DbSet<ShiftProfile> ShiftProfiles { get; set; }
+        DbSet<AttendanceLog> AttendanceLogs { get; set; }
+        DbSet<DailyAttendanceRecord> DailyAttendanceRecords { get; set; }
+        DbSet<LeaveType> LeaveTypes { get; set; }
+        DbSet<LeaveRequest> LeaveRequests { get; set; }
 
         Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 

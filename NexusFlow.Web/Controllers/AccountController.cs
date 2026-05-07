@@ -60,6 +60,7 @@ namespace NexusFlow.Web.Controllers
         }
 
         [HttpPost]
+        [Authorize(Policy = Permissions.System.ViewUsers)]
         public async Task<IActionResult> Logout()
         {
             await _signInManager.SignOutAsync();

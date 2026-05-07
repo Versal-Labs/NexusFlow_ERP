@@ -8,6 +8,7 @@ using NexusFlow.Domain.Entities.Finance;
 using NexusFlow.Domain.Entities.HR;
 using NexusFlow.Domain.Entities.Inventory;
 using NexusFlow.Domain.Entities.Master;
+using NexusFlow.Domain.Entities.Payroll;
 using NexusFlow.Domain.Entities.Purchasing;
 using NexusFlow.Domain.Entities.Sales;
 using NexusFlow.Domain.Entities.System;
@@ -80,6 +81,18 @@ namespace NexusFlow.Infrastructure
         public DbSet<Province> Provinces { get; set; }
         public DbSet<District> Districts { get; set; }
         public DbSet<City> Cities { get; set; }
+
+        public DbSet<PayrollComponent> PayrollComponents { get; set; }
+        public DbSet<EmployeePayrollComponent> EmployeePayrollComponents { get; set; }
+        public DbSet<SalaryAdvance> SalaryAdvances { get; set; }
+        public DbSet<EmployeeLoan> EmployeeLoans { get; set; }
+        public DbSet<LoanRepaymentSchedule> LoanRepaymentSchedules { get; set; }
+        public DbSet<ShiftProfile> ShiftProfiles { get; set; }
+        public DbSet<AttendanceLog> AttendanceLogs { get; set; }
+        public DbSet<DailyAttendanceRecord> DailyAttendanceRecords { get; set; }
+        public DbSet<LeaveType> LeaveTypes { get; set; }
+        public DbSet<LeaveRequest> LeaveRequests { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

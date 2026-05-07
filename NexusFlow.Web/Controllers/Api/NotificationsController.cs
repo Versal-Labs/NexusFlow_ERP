@@ -23,6 +23,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpGet("unread")]
+        [Authorize(Policy = Permissions.System.ViewUsers)]
         public async Task<IActionResult> GetUnread()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);

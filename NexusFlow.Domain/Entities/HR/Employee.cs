@@ -24,6 +24,10 @@ namespace NexusFlow.Domain.Entities.HR
         public string BankName { get; set; } = string.Empty;
         public string BankAccountNo { get; set; } = string.Empty;
 
+        public int? ShiftProfileId { get; set; }
+        [ForeignKey("ShiftProfileId")]
+        public ShiftProfile? ShiftProfile { get; set; }
+
         // 3. Operational Roles
         public bool IsSalesRep { get; set; }
 

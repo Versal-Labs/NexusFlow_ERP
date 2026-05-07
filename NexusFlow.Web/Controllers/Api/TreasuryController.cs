@@ -24,9 +24,11 @@ namespace NexusFlow.Web.Controllers.Api
         // =======================================================
 
         [HttpGet("receipts")]
+        [Authorize(Policy = Permissions.Treasury.ViewReceipts)]
         public async Task<IActionResult> GetReceipts() => Ok(await _mediator.Send(new GetReceiptsQuery()));
 
         [HttpPost("receipts")]
+        [Authorize(Policy = Permissions.Treasury.CreateReceipt)]
         public async Task<IActionResult> RecordPayment([FromBody] RecordPaymentCommand command)
         {
             var result = await _mediator.Send(command);
@@ -34,6 +36,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpGet("receipts/{id}")]
+        [Authorize(Policy = Permissions.Treasury.ViewReceipts)]
         public async Task<IActionResult> GetReceiptById(int id)
         {
             var result = await _mediator.Send(new GetReceiptByIdQuery { ReceiptId = id });
@@ -42,6 +45,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpPost("receipts/{id}/void")]
+        [Authorize(Policy = Permissions.Treasury.VoidReceipt)]
         public async Task<IActionResult> VoidReceipt(int id)
         {
             var result = await _mediator.Send(new VoidReceiptCommand(id));
@@ -54,6 +58,7 @@ namespace NexusFlow.Web.Controllers.Api
         // =======================================================
 
         [HttpGet("payments")]
+        [Authorize(Policy = Permissions.Treasury.ViewPayments)]
         public async Task<IActionResult> GetPayments([FromQuery] int? type, [FromQuery] int? supplierId, [FromQuery] int? method)
         {
             // This feeds your Supplier Payments Datatable
@@ -62,6 +67,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpPost("payments")]
+        [Authorize(Policy = Permissions.Treasury.CreatePayment)]
         public async Task<IActionResult> RecordSupplierPayment([FromBody] RecordSupplierPaymentCommand command)
         {
             var result = await _mediator.Send(command);
@@ -69,6 +75,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpGet("payments/{id}")]
+        [Authorize(Policy = Permissions.Treasury.ViewPayments)]
         public async Task<IActionResult> GetSupplierPaymentById(int id)
         {
             var result = await _mediator.Send(new GetSupplierPaymentByIdQuery { PaymentId = id });
@@ -81,6 +88,7 @@ namespace NexusFlow.Web.Controllers.Api
         // =======================================================
 
         [HttpGet("cheques")]
+        [Authorize(Policy = Permissions.Treasury.ManageCheques)]
         public async Task<IActionResult> GetCheques([FromQuery] int? customerId, [FromQuery] int? bankId, [FromQuery] int? branchId, [FromQuery] int? status)
         {
             var result = await _mediator.Send(new GetChequesQuery { CustomerId = customerId, BankId = bankId, BankBranchId = branchId, Status = (ChequeStatus?)status });
@@ -88,6 +96,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpPost("cheques/bounce")]
+        [Authorize(Policy = Permissions.Treasury.ManageCheques)]
         public async Task<IActionResult> BounceCheque([FromBody] BounceChequeCommand command)
         {
             var result = await _mediator.Send(command);
@@ -95,6 +104,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpPost("cheques/endorse")]
+        [Authorize(Policy = Permissions.Treasury.ManageCheques)]
         public async Task<IActionResult> EndorseCheque([FromBody] EndorseChequeCommand command)
         {
             // Triggers when a user endorses a cheque directly from the Vault UI
