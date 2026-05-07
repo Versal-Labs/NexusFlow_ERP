@@ -7,6 +7,7 @@ namespace NexusFlow.Web.Controllers
     [Authorize(AuthenticationSchemes = AuthConstants.IdentityScheme)]
     public class CustomerController : Controller
     {
+        [Authorize(Policy = Permissions.MasterData.ViewCustomers)]
         public IActionResult Index()
         {
             return View();

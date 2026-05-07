@@ -19,12 +19,14 @@ namespace NexusFlow.Web.Controllers.Api
         public IamController(IMediator mediator) => _mediator = mediator;
 
         [HttpGet("users")]
+        [Authorize(Policy = Permissions.System.ViewUsers)]
         public async Task<IActionResult> GetUsers()
         {
             return Ok(await _mediator.Send(new GetUsersQuery()));
         }
 
         [HttpGet("roles")]
+        [Authorize(Policy = Permissions.System.ManageRoles)]
         public async Task<IActionResult> GetRoles()
         {
             var result = await _mediator.Send(new GetRolesQuery());
@@ -32,6 +34,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpPost("users")]
+        [Authorize(Policy = Permissions.System.ManageUsers)]
         public async Task<IActionResult> CreateUser([FromBody] CreateUserCommand command)
         {
             var result = await _mediator.Send(command);
@@ -39,6 +42,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpPost("users/{id}/toggle-status")]
+        [Authorize(Policy = Permissions.System.ManageUsers)]
         public async Task<IActionResult> ToggleUserStatus(string id)
         {
             var result = await _mediator.Send(new ToggleUserStatusCommand { UserId = id });
@@ -46,6 +50,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpPost("roles")]
+        [Authorize(Policy = Permissions.System.ManageRoles)]
         public async Task<IActionResult> CreateRole([FromBody] CreateRoleCommand command)
         {
             var result = await _mediator.Send(command);
@@ -53,6 +58,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpPut("users/{id}")]
+        [Authorize(Policy = Permissions.System.ManageUsers)]
         public async Task<IActionResult> UpdateUser(string id, [FromBody] UpdateUserCommand command)
         {
             command.UserId = id;
@@ -61,6 +67,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpPut("roles/{id}")]
+        [Authorize(Policy = Permissions.System.ManageRoles)]
         public async Task<IActionResult> UpdateRole(string id, [FromBody] UpdateRoleCommand command)
         {
             command.RoleId = id;
@@ -69,12 +76,14 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpGet("permissions")]
+        [Authorize(Policy = Permissions.System.ManageRoles)]
         public async Task<IActionResult> GetAllPermissions()
         {
             return Ok(await _mediator.Send(new GetAllPermissionsQuery()));
         }
 
         [HttpGet("roles/{id}/permissions")]
+        [Authorize(Policy = Permissions.System.ManageRoles)]
         public async Task<IActionResult> GetRolePermissions(string id)
         {
             var result = await _mediator.Send(new GetRolePermissionsQuery { RoleId = id });
@@ -82,6 +91,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpPost("roles/{id}/permissions")]
+        [Authorize(Policy = Permissions.System.ManageRoles)]
         public async Task<IActionResult> UpdateRolePermissions(string id, [FromBody] List<string> permissions)
         {
             var result = await _mediator.Send(new UpdateRolePermissionsCommand { RoleId = id, Permissions = permissions });

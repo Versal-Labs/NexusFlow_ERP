@@ -23,6 +23,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpGet]
+        [Authorize(Policy = Permissions.MasterData.ViewProducts)]
         public async Task<IActionResult> GetAll()
         {
             var result = await _mediator.Send(new GetBrandsQuery());
@@ -30,6 +31,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpPost]
+        [Authorize(Policy = Permissions.MasterData.ManageProducts)]
         public async Task<IActionResult> Create(CreateBrandCommand command)
         {
             var result = await _mediator.Send(command);
@@ -38,6 +40,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpPut("{id}")]
+        [Authorize(Policy = Permissions.MasterData.ManageProducts)]
         public async Task<IActionResult> Update(int id, UpdateBrandCommand command)
         {
             if (id != command.Id) return BadRequest();

@@ -344,6 +344,62 @@
         toastr.success("Amount automatically distributed to oldest invoices.");
     },
 
+    // ==========================================
+    // APPLY EXISTING CREDIT (OVERPAYMENTS)
+    // ==========================================
+    applyExistingCredit: async function (customerId, availableCredit) {
+        let totalAllocated = 0;
+        let allocations = [];
+
+        // Gather what the cashier typed into the grid
+        $('.alloc-input').each(function () {
+            let val = parseFloat($(this).val()) || 0;
+            if (val > 0) {
+                totalAllocated += val;
+                allocations.push({ InvoiceId: parseInt($(this).closest('tr').data('id')), Amount: val });
+            }
+        });
+
+        if (allocations.length === 0) {
+            toastr.warning("Please type an amount into the invoices below to apply the credit.");
+            return;
+        }
+
+        if (totalAllocated > availableCredit) {
+            toastr.error(`You cannot apply more than the available credit (LKR ${availableCredit.toFixed(2)}).`);
+            return;
+        }
+
+        const result = await Swal.fire({
+            title: 'Apply Credit?',
+            text: `You are about to apply LKR ${totalAllocated.toFixed(2)} of existing credit to these invoices.`,
+            icon: 'info',
+            showCancelButton: true,
+            confirmButtonColor: '#0d6efd',
+            confirmButtonText: 'Yes, Apply Credit'
+        });
+
+        if (!result.isConfirmed) return;
+
+        try {
+            const payload = {
+                CustomerId: customerId,
+                Allocations: allocations
+            };
+
+            const res = await api.post('/api/treasury/receipts/apply-credit', payload);
+            if (res && res.succeeded) {
+                toastr.success("Credit applied successfully!");
+                this._modal.hide();
+                this._table.ajax.reload(null, false);
+            } else {
+                toastr.error(res.messages[0]);
+            }
+        } catch (e) {
+            toastr.error(e.responseJSON?.messages?.[0] || "Failed to apply credit.");
+        }
+    },
+
     _calculateTotals: function () {
         let receiptAmount = parseFloat($('#ReceiptAmount').val()) || 0;
         let totalAllocated = 0;

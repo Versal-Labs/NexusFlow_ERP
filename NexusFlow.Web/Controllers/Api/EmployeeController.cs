@@ -23,6 +23,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpGet]
+        [Authorize(Policy = Permissions.HR.ViewEmployees)]
         public async Task<IActionResult> GetAll()
         {
             var result = await _mediator.Send(new GetEmployeesQuery());
@@ -30,6 +31,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpPost]
+        [Authorize(Policy = Permissions.HR.ManageEmployees)]
         public async Task<IActionResult> Create([FromBody] CreateEmployeeCommand command)
         {
             var result = await _mediator.Send(command);
@@ -38,6 +40,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpPut("{id}")]
+        [Authorize(Policy = Permissions.HR.ManageEmployees)]
         public async Task<IActionResult> Update(int id, [FromBody] UpdateEmployeeCommand command)
         {
             if (id != command.Employee.Id) return BadRequest("ID mismatch");

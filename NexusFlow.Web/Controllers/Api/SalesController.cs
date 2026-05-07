@@ -30,6 +30,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpGet("invoices")]
+        [Authorize(Policy = Permissions.Sales.ViewInvoices)]
         public async Task<IActionResult> GetInvoices()
         {
             var result = await _mediator.Send(new GetInvoicesQuery());
@@ -38,6 +39,7 @@ namespace NexusFlow.Web.Controllers.Api
 
         [HttpPost("invoices")]
         // ARCHITECTURAL FIX: Bind directly to the Command, not the Request DTO
+        [Authorize(Policy = Permissions.Sales.CreateInvoice)]
         public async Task<IActionResult> CreateInvoice([FromBody] CreateInvoiceCommand command)
         {
             var result = await _mediator.Send(command);
@@ -45,6 +47,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpGet("invoices/{id}")]
+        [Authorize(Policy = Permissions.Sales.ViewInvoices)]
         public async Task<IActionResult> GetInvoiceById(int id)
         {
             var result = await _mediator.Send(new GetInvoiceByIdQuery { InvoiceId = id });
@@ -55,12 +58,14 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpGet("credit-notes")]
+        [Authorize(Policy = Permissions.Sales.ViewCreditNotes)]
         public async Task<IActionResult> GetCreditNotes([FromQuery] int? customerId, [FromQuery] DateTime? startDate, [FromQuery] DateTime? endDate)
         {
             return Ok(await _mediator.Send(new GetCreditNotesQuery { CustomerId = customerId, StartDate = startDate, EndDate = endDate }));
         }
 
         [HttpGet("credit-notes/{id}")]
+        [Authorize(Policy = Permissions.Sales.ViewCreditNotes)]
         public async Task<IActionResult> GetCreditNoteById(int id)
         {
             var res = await _mediator.Send(new GetCreditNoteByIdQuery { Id = id });
@@ -68,6 +73,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpPost("credit-notes")]
+        [Authorize(Policy = Permissions.Sales.CreateCreditNote)]
         public async Task<IActionResult> CreateCreditNote([FromBody] CreateCreditNoteCommand command)
         {
             var result = await _mediator.Send(command);
@@ -75,6 +81,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpPost("orders/{id}/convert")]
+        [Authorize(Policy = Permissions.Sales.CreateInvoice)]
         public async Task<IActionResult> ConvertToInvoice(int id, [FromBody] ConvertOrderToInvoiceCommand command)
         {
             if (id != command.SalesOrderId) return BadRequest("ID mismatch.");
@@ -84,6 +91,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpGet("orders/{id}")]
+        [Authorize(Policy = Permissions.Sales.ViewOrders)]
         public async Task<IActionResult> GetOrderById(int id)
         {
             var result = await _mediator.Send(new GetSalesOrderByIdQuery { OrderId = id });
@@ -91,6 +99,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpGet("customers/{customerId}/unpaid-invoices")]
+        [Authorize(Policy = Permissions.Sales.ViewInvoices)]
         public async Task<IActionResult> GetUnpaid(int customerId)
             => Ok(await _mediator.Send(new GetUnpaidInvoicesQuery { CustomerId = customerId }));
 
@@ -98,12 +107,14 @@ namespace NexusFlow.Web.Controllers.Api
         // SALES ORDERS & QUOTATIONS
         // ==========================================
         [HttpGet("orders")]
+        [Authorize(Policy = Permissions.Sales.ViewOrders)]
         public async Task<IActionResult> GetOrders()
         {
             return Ok(await _mediator.Send(new GetSalesOrdersQuery()));
         }
 
         [HttpPost("orders")]
+        [Authorize(Policy = Permissions.Sales.CreateOrder)]
         public async Task<IActionResult> CreateOrder([FromBody] CreateSalesOrderCommand command)
         {
             var result = await _mediator.Send(command);
@@ -111,6 +122,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpGet("orders/{id}/pdf")]
+        [Authorize(Policy = Permissions.Sales.ViewOrders)]
         [AllowAnonymous] // Optional: Depending on if your JS token logic handles direct window.open
         public async Task<IActionResult> DownloadOrderPdf(int id)
         {
@@ -124,6 +136,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpGet("orders/{id}/document")]
+        [Authorize(Policy = Permissions.Sales.ViewOrders)]
         public async Task<IActionResult> GetDocument(int id)
         {
             var result = await _mediator.Send(new GetSalesOrderDocumentQuery(id));
@@ -132,6 +145,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpPost("orders/{id}/change-status")]
+        [Authorize(Policy = Permissions.Sales.CreateOrder)]
         public async Task<IActionResult> ChangeStatus(int id, [FromBody] int newStatus)
         {
             var command = new ChangeSalesOrderStatusCommand(id, (NexusFlow.Domain.Enums.SalesOrderStatus)newStatus);
@@ -141,6 +155,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpPost("invoices/{id}/void")]
+        [Authorize(Policy = Permissions.Sales.VoidInvoice)]
         public async Task<IActionResult> VoidInvoice(int id)
         {
             var result = await _mediator.Send(new VoidInvoiceCommand(id));

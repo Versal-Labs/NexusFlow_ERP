@@ -29,25 +29,31 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpGet("products")]
+        [Authorize(Policy = Permissions.MasterData.ViewProducts)]
         public async Task<IActionResult> GetProducts()
             => Ok(await _mediator.Send(new GetProductsQuery()));
 
         [HttpGet("suppliers")]
+        [Authorize(Policy = Permissions.MasterData.ViewSuppliers)]
         public async Task<IActionResult> GetSuppliers()
             => Ok(await _mediator.Send(new GetSuppliersQuery()));
 
         [HttpGet("customers")]
+        [Authorize(Policy = Permissions.MasterData.ViewCustomers)]
         public async Task<IActionResult> GetCustomers()
             => Ok(await _mediator.Send(new GetCustomersQuery()));
 
         [HttpGet("warehouses")]
+        [Authorize(Policy = Permissions.MasterData.ManageWarehouses)]
         public async Task<IActionResult> GetWarehouses() => Ok(await _mediator.Send(new AppCore.Features.MasterData.Warehouses.Queries.GetWarehousesQuery()));
 
         [HttpGet("warehouses/{id}")]
+        [Authorize(Policy = Permissions.MasterData.ManageWarehouses)]
         public async Task<IActionResult> GetWarehouse(int id) => Ok(await _mediator.Send(new GetWarehouseByIdQuery { Id = id }));
 
         [HttpPost("warehouses")]
         [HttpPut("warehouses/{id}")]
+        [Authorize(Policy = Permissions.MasterData.ManageWarehouses)]
         public async Task<IActionResult> SaveWarehouse([FromBody] SaveWarehouseCommand command, int? id = null)
         {
             if (id.HasValue) command.Warehouse.Id = id.Value;
@@ -56,9 +62,11 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpGet("boms")]
+        [Authorize(Policy = Permissions.MasterData.ManageBOMs)]
         public async Task<IActionResult> GetBoms() => Ok(await _mediator.Send(new GetBomsQuery()));
 
         [HttpPost("boms")]
+        [Authorize(Policy = Permissions.MasterData.ManageBOMs)]
         public async Task<IActionResult> SaveBom([FromBody] SaveBomCommand command)
         {
             var result = await _mediator.Send(command);
@@ -66,6 +74,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpGet("variants/search")]
+        [Authorize(Policy = Permissions.MasterData.ViewProducts)]
         public async Task<IActionResult> SearchVariants([FromQuery] string? query, [FromQuery] int? productType)
         {
             var data = await _mediator.Send(new SearchVariantsQuery(query, productType));

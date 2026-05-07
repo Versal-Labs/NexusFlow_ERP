@@ -28,6 +28,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpGet]
+        [Authorize(Policy = Permissions.MasterData.ViewCustomers)]
         public async Task<IActionResult> GetAll()
         {
             var result = await _mediator.Send(new GetCustomersQuery());
@@ -41,6 +42,7 @@ namespace NexusFlow.Web.Controllers.Api
         // LOCATION MASTER ENDPOINT
         // ==========================================
         [HttpGet("/api/locations/provinces")]
+        [Authorize(Policy = Permissions.MasterData.ViewCustomers)]
         public async Task<IActionResult> GetProvinces()
         {
             // By using .Select(), we break the circular reference and only send 
@@ -71,6 +73,7 @@ namespace NexusFlow.Web.Controllers.Api
         // BANK MASTER ENDPOINT
         // ==========================================
         [HttpGet("/api/banks")]
+        [Authorize(Policy = Permissions.MasterData.ViewCustomers)]
         public async Task<IActionResult> GetBanks()
         {
             var banks = await _context.Banks
@@ -94,6 +97,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpPost("save")]
+        [Authorize(Policy = Permissions.MasterData.ManageCustomers)]
         public async Task<IActionResult> SaveCustomer([FromBody] SaveCustomerCommand command)
         {
             var result = await _mediator.Send(command);

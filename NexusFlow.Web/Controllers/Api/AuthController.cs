@@ -27,6 +27,7 @@ namespace NexusFlow.Web.Controllers.Api
 
         [HttpPost("login")]
         [AllowAnonymous]
+        [Authorize(Policy = Permissions.System.ViewUsers)]
         public async Task<IActionResult> Login([FromBody] LoginCommand command)
         {
             // The Controller doesn't know about UserManager or Tokens.

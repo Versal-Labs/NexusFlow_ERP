@@ -28,6 +28,7 @@ namespace NexusFlow.Web.Controllers.Api
 
         // 1. Fetch JSON for the DataTable UI
         [HttpGet("sales-register")]
+        [Authorize(Policy = Permissions.Reporting.ViewSalesRegister)]
         public async Task<IActionResult> GetSalesRegister([FromQuery] GetSalesRegisterQuery query)
         {
             var result = await _mediator.Send(query);
@@ -54,6 +55,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpGet("sales-register/export/excel")]
+        [Authorize(Policy = Permissions.Reporting.ViewSalesRegister)]
         public async Task<IActionResult> ExportSalesRegisterExcel([FromQuery] GetSalesRegisterQuery query)
         {
             var result = await _mediator.Send(query);
@@ -66,6 +68,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpGet("sales-register/export/pdf")]
+        [Authorize(Policy = Permissions.Reporting.ViewSalesRegister)]
         public async Task<IActionResult> ExportSalesRegisterPdf([FromQuery] GetSalesRegisterQuery query)
         {
             var result = await _mediator.Send(query);
@@ -80,6 +83,7 @@ namespace NexusFlow.Web.Controllers.Api
         // --- AR AGING ---
 
         [HttpGet("ar-aging")]
+        [Authorize(Policy = Permissions.Reporting.ViewArAging)]
         public async Task<IActionResult> GetArAging([FromQuery] GetArAgingQuery query)
         {
             var result = await _mediator.Send(query);
@@ -87,6 +91,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpPost("ar-aging/remind")]
+        [Authorize(Policy = Permissions.Reporting.ViewArAging)]
         public async Task<IActionResult> SendReminder([FromBody] SendArReminderCommand command)
         {
             var result = await _mediator.Send(command);
@@ -94,6 +99,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpGet("ar-aging/export/excel")]
+        [Authorize(Policy = Permissions.Reporting.ViewArAging)]
         public async Task<IActionResult> ExportArAgingExcel([FromQuery] GetArAgingQuery query)
         {
             var result = await _mediator.Send(query);
@@ -105,6 +111,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpGet("ar-aging/export/pdf")]
+        [Authorize(Policy = Permissions.Reporting.ViewArAging)]
         public async Task<IActionResult> ExportArAgingPdf([FromQuery] GetArAgingQuery query)
         {
             var result = await _mediator.Send(query);
@@ -117,6 +124,7 @@ namespace NexusFlow.Web.Controllers.Api
 
         //Customer
         [HttpGet("customer-statement")]
+        [Authorize(Policy = Permissions.Reporting.ViewCustomerStatement)]
         public async Task<IActionResult> GetCustomerStatement([FromQuery] GetCustomerStatementQuery query)
         {
             var result = await _mediator.Send(query);
@@ -124,6 +132,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpGet("customer-statement/export/excel")]
+        [Authorize(Policy = Permissions.Reporting.ViewCustomerStatement)]
         public async Task<IActionResult> ExportStatementExcel([FromQuery] GetCustomerStatementQuery query)
         {
             var result = await _mediator.Send(query);
@@ -137,6 +146,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpGet("customer-statement/export/pdf")]
+        [Authorize(Policy = Permissions.Reporting.ViewCustomerStatement)]
         public async Task<IActionResult> ExportStatementPdf([FromQuery] GetCustomerStatementQuery query)
         {
             var result = await _mediator.Send(query);
@@ -154,6 +164,7 @@ namespace NexusFlow.Web.Controllers.Api
         // ==========================================
 
         [HttpGet("ap-aging")]
+        [Authorize(Policy = Permissions.Reporting.ViewApAging)]
         public async Task<IActionResult> GetApAging([FromQuery] GetApAgingQuery query)
         {
             var result = await _mediator.Send(query);
@@ -161,6 +172,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpGet("ap-aging/export/excel")]
+        [Authorize(Policy = Permissions.Reporting.ViewApAging)]
         public async Task<IActionResult> ExportApAgingExcel([FromQuery] GetApAgingQuery query)
         {
             var result = await _mediator.Send(query);
@@ -172,6 +184,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpGet("ap-aging/export/pdf")]
+        [Authorize(Policy = Permissions.Reporting.ViewApAging)]
         public async Task<IActionResult> ExportApAgingPdf([FromQuery] GetApAgingQuery query)
         {
             var result = await _mediator.Send(query);
@@ -183,6 +196,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpGet("supplier-statement")]
+        [Authorize(Policy = Permissions.Reporting.ViewSupplierStatement)]
         public async Task<IActionResult> GetSupplierStatement([FromQuery] GetSupplierStatementQuery query)
         {
             var result = await _mediator.Send(query);
@@ -190,6 +204,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpGet("supplier-statement/export/excel")]
+        [Authorize(Policy = Permissions.Reporting.ViewSupplierStatement)]
         public async Task<IActionResult> ExportSupplierStatementExcel([FromQuery] GetSupplierStatementQuery query)
         {
             var result = await _mediator.Send(query);
@@ -204,6 +219,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpGet("supplier-statement/export/pdf")]
+        [Authorize(Policy = Permissions.Reporting.ViewSupplierStatement)]
         public async Task<IActionResult> ExportSupplierStatementPdf([FromQuery] GetSupplierStatementQuery query)
         {
             var result = await _mediator.Send(query);
@@ -221,6 +237,7 @@ namespace NexusFlow.Web.Controllers.Api
         // ==========================================
 
         [HttpGet("inventory-analytics")]
+        [Authorize(Policy = Permissions.Reporting.ViewInventoryAnalytics)]
         public async Task<IActionResult> GetInventoryAnalytics([FromQuery] GetInventoryAnalyticsQuery query)
         {
             var result = await _mediator.Send(query);
@@ -228,6 +245,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpGet("inventory-analytics/export/excel")]
+        [Authorize(Policy = Permissions.Reporting.ViewInventoryAnalytics)]
         public async Task<IActionResult> ExportInventoryAnalyticsExcel([FromQuery] GetInventoryAnalyticsQuery query)
         {
             var result = await _mediator.Send(query);
@@ -243,6 +261,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpGet("inventory-analytics/export/pdf")]
+        [Authorize(Policy = Permissions.Reporting.ViewInventoryAnalytics)]
         public async Task<IActionResult> ExportInventoryAnalyticsPdf([FromQuery] GetInventoryAnalyticsQuery query)
         {
             var result = await _mediator.Send(query);
@@ -262,6 +281,7 @@ namespace NexusFlow.Web.Controllers.Api
         // ==========================================
 
         [HttpGet("cheque-vault")]
+        [Authorize(Policy = Permissions.Reporting.ViewChequeVaultAnalytics)]
         public async Task<IActionResult> GetChequeVaultAnalytics([FromQuery] GetChequeVaultAnalyticsQuery query)
         {
             var result = await _mediator.Send(query);
@@ -269,6 +289,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpGet("cheque-vault/export/excel")]
+        [Authorize(Policy = Permissions.Reporting.ViewChequeVaultAnalytics)]
         public async Task<IActionResult> ExportChequeVaultExcel([FromQuery] GetChequeVaultAnalyticsQuery query)
         {
             var result = await _mediator.Send(query);
@@ -282,6 +303,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpGet("cheque-vault/export/pdf")]
+        [Authorize(Policy = Permissions.Reporting.ViewChequeVaultAnalytics)]
         public async Task<IActionResult> ExportChequeVaultPdf([FromQuery] GetChequeVaultAnalyticsQuery query)
         {
             var result = await _mediator.Send(query);
@@ -299,6 +321,7 @@ namespace NexusFlow.Web.Controllers.Api
         // ==========================================
 
         [HttpGet("general-ledger")]
+        [Authorize(Policy = Permissions.Reporting.ViewGeneralLedger)]
         public async Task<IActionResult> GetGeneralLedger([FromQuery] GetGeneralLedgerQuery query)
         {
             var result = await _mediator.Send(query);
@@ -306,6 +329,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpGet("general-ledger/export/excel")]
+        [Authorize(Policy = Permissions.Reporting.ViewGeneralLedger)]
         public async Task<IActionResult> ExportGeneralLedgerExcel([FromQuery] GetGeneralLedgerQuery query)
         {
             var result = await _mediator.Send(query);
@@ -320,6 +344,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpGet("general-ledger/export/pdf")]
+        [Authorize(Policy = Permissions.Reporting.ViewGeneralLedger)]
         public async Task<IActionResult> ExportGeneralLedgerPdf([FromQuery] GetGeneralLedgerQuery query)
         {
             var result = await _mediator.Send(query);
@@ -338,6 +363,7 @@ namespace NexusFlow.Web.Controllers.Api
         // ==========================================
 
         [HttpGet("commission-control")]
+        [Authorize(Policy = Permissions.Reporting.ViewCommissionControl)]
         public async Task<IActionResult> GetCommissionControl([FromQuery] GetCommissionControlQuery query)
         {
             var result = await _mediator.Send(query);
@@ -345,6 +371,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpGet("commission-control/export/excel")]
+        [Authorize(Policy = Permissions.Reporting.ViewCommissionControl)]
         public async Task<IActionResult> ExportCommissionExcel([FromQuery] GetCommissionControlQuery query)
         {
             var result = await _mediator.Send(query);
@@ -359,6 +386,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpGet("my-commissions")]
+        [Authorize(Policy = Permissions.Reporting.ViewRepCommissions)]
         public async Task<IActionResult> GetMyCommissions([FromQuery] GetMyCommissionsQuery query)
         {
             // IMPORTANT: Security! Override the query ID with the logged-in user's ID

@@ -22,6 +22,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpGet("datatable")]
+        [Authorize(Policy = Permissions.System.ViewAuditLogs)]
         public async Task<IActionResult> GetAuditLogsForDataTable([FromQuery] GetSystemAuditLogsQuery query)
         {
             var result = await _mediator.Send(query);

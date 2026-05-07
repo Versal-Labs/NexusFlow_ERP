@@ -25,6 +25,7 @@ namespace NexusFlow.Web.Controllers.Api
         #region System Configs (Key-Value)
 
         [HttpPost("settings")]
+        [Authorize(Policy = Permissions.System.ManageConfigs)]
         public async Task<IActionResult> CreateSetting([FromBody] CreateSystemConfigCommand command)
         {
             var result = await _mediator.Send(command);
@@ -32,6 +33,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpPost("sequences")]
+        [Authorize(Policy = Permissions.System.ManageConfigs)]
         public async Task<IActionResult> CreateSequence([FromBody] CreateNumberSequenceCommand command)
         {
             var result = await _mediator.Send(command);
@@ -39,6 +41,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpGet("settings")]
+        [Authorize(Policy = Permissions.System.ManageConfigs)]
         public async Task<IActionResult> GetSettings()
         {
             // Returns List<SystemConfigDto>
@@ -47,6 +50,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpPut("settings")]
+        [Authorize(Policy = Permissions.System.ManageConfigs)]
         public async Task<IActionResult> UpdateSetting([FromBody] UpdateSystemConfigCommand command)
         {
             var result = await _mediator.Send(command);
@@ -56,6 +60,7 @@ namespace NexusFlow.Web.Controllers.Api
 
         #region Number Sequences
         [HttpGet("sequences")]
+        [Authorize(Policy = Permissions.System.ManageConfigs)]
         public async Task<IActionResult> GetSequences()
         {
             // Returns List<NumberSequenceDto>
@@ -64,6 +69,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpPut("sequences")]
+        [Authorize(Policy = Permissions.System.ManageConfigs)]
         public async Task<IActionResult> UpdateSequence([FromBody] UpdateNumberSequenceCommand command)
         {
             var result = await _mediator.Send(command);
@@ -73,10 +79,12 @@ namespace NexusFlow.Web.Controllers.Api
 
         #region Lookups (Dropdown)
         [HttpGet("lookups")]
+        [Authorize(Policy = Permissions.System.ManageConfigs)]
         public async Task<IActionResult> GetAll([FromQuery] string type)
             => Ok(await _mediator.Send(new GetLookupsQuery { Type = type }));
 
         [HttpPost("lookups")]
+        [Authorize(Policy = Permissions.System.ManageConfigs)]
         public async Task<IActionResult> Create(CreateLookupCommand command)
         {
             var result = await _mediator.Send(command);
@@ -84,6 +92,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpPut("lookups")]
+        [Authorize(Policy = Permissions.System.ManageConfigs)]
         public async Task<IActionResult> Update(int id, UpdateLookupCommand command)
         {
             if (id != command.Id) return BadRequest();

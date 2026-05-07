@@ -7,6 +7,7 @@ namespace NexusFlow.Web.Controllers
     [Authorize(AuthenticationSchemes = AuthConstants.IdentityScheme)]
     public class StockTakeController : Controller
     {
+        [Authorize(Policy = Permissions.Inventory.ViewStockTakes)]
         public IActionResult Index()
         {
             return View("~/Views/Inventory/StockTake.cshtml");

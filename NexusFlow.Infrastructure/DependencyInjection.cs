@@ -4,8 +4,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using NexusFlow.AppCore.Interfaces;
+using NexusFlow.AppCore.Jobs;
+using NexusFlow.AppCore.Jobs.Interfaces;
 using NexusFlow.Domain.Entities.System;
 using NexusFlow.Infrastructure.Identity;
+using NexusFlow.Infrastructure.Jobs.Runners;
 using NexusFlow.Infrastructure.Persistence;
 using NexusFlow.Infrastructure.Services;
 using NexusFlow.Infrastructure.Services.Storage;
@@ -55,6 +58,11 @@ namespace NexusFlow.Infrastructure
 
             services.AddHttpContextAccessor();
             services.AddScoped<ICurrentUserService, CurrentUserService>();
+
+            services.AddScoped<IProcessDailyAttendanceJob, ProcessDailyAttendanceJob>();
+
+            // Hangfire Runners (Infrastructure wrappers)
+            services.AddScoped<ProcessDailyAttendanceJobRunner>();
 
             return services;
         }
