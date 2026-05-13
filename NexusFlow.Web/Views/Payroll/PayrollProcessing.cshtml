@@ -1,0 +1,76 @@
+﻿@{
+    ViewData["Title"] = "Monthly Payroll Processing";
+}
+
+<div class="container-fluid py-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h4 class="mb-0 text-dark fw-bold"><i class="fa-solid fa-file-invoice-dollar text-success me-2"></i>Payroll Command Center</h4>
+            <p class="text-muted mb-0 fs-14">Generate drafts, review payslips, and post liabilities to the General Ledger.</p>
+        </div>
+        <div class="d-flex gap-2" id="actionButtons">
+            <button class="btn btn-primary shadow-sm btn-sm px-3 fw-bold" onclick="payrollApp.generateDraft()" id="btnGenerate">
+                <i class="fa-solid fa-calculator me-1"></i> Generate Draft
+            </button>
+            <button class="btn btn-warning shadow-sm btn-sm px-3 fw-bold text-dark d-none" onclick="payrollApp.approveAndPost()" id="btnApprove">
+                <i class="fa-solid fa-lock me-1"></i> Approve & Post to GL
+            </button>
+            <div class="dropdown d-none" id="btnExports">
+                <button class="btn btn-success shadow-sm btn-sm px-3 fw-bold dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                    <i class="fa-solid fa-file-export me-1"></i> Disburse & Export
+                </button>
+                <ul class="dropdown-menu shadow">
+                    <li><a class="dropdown-item fw-bold text-dark" href="#" onclick="payrollApp.exportBank()"><i class="fa-solid fa-building-columns text-primary me-2"></i>Bank Transfer File (SLIPS)</a></li>
+                    <li><a class="dropdown-item fw-bold text-dark" href="#" onclick="payrollApp.exportEpf()"><i class="fa-solid fa-file-contract text-success me-2"></i>EPF/ETF C-Form</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm mb-3 bg-light">
+        <div class="card-body py-2 px-3">
+            <div class="row g-2 align-items-center fs-13">
+                <div class="col-md-3">
+                    <label class="form-label mb-0 fw-bold text-muted">Payroll Month</label>
+                    <input type="month" class="form-control form-control-sm shadow-sm fw-bold" id="filterMonthYear" onchange="payrollApp.loadPeriod()">
+                </div>
+                <div class="col-md-9 text-end mt-4">
+                    <h5 class="mb-0" id="statusBanner">
+                        <span class="badge bg-secondary px-3 py-2">Select a Month</span>
+                    </h5>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-3">
+            <table id="payrollGrid" class="table table-hover table-sm w-100 fs-13 align-middle mb-0">
+                <thead class="table-light text-secondary text-center">
+                    <tr>
+                        <th class="text-start ps-3">Employee</th>
+                        <th class="text-end">Basic (LKR)</th>
+                        <th class="text-end text-success">Allowances</th>
+                        <th class="text-end text-danger">Deductions</th>
+                        <th class="text-end fw-bold text-primary">Net Pay</th>
+                        <th class="text-center pe-3">Action</th>
+                    </tr>
+                </thead>
+                <tfoot class="bg-light fw-bold">
+                    <tr>
+                        <td class="text-end pe-3 text-uppercase">Totals:</td>
+                        <td class="text-end" id="footBasic">0.00</td>
+                        <td class="text-end text-success" id="footAllowances">0.00</td>
+                        <td class="text-end text-danger" id="footDeductions">0.00</td>
+                        <td class="text-end fw-bold text-primary" id="footNetPay">0.00</td>
+                        <td></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/hr/payroll-processing.js" asp-append-version="true"></script>
+}

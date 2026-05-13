@@ -92,6 +92,9 @@ namespace NexusFlow.Infrastructure
         public DbSet<DailyAttendanceRecord> DailyAttendanceRecords { get; set; }
         public DbSet<LeaveType> LeaveTypes { get; set; }
         public DbSet<LeaveRequest> LeaveRequests { get; set; }
+        public DbSet<PayrollPeriod> PayrollPeriods { get; set; }
+        public DbSet<PayrollSlip> PayrollSlips { get; set; }
+        public DbSet<PayrollSlipLineItem> PayrollSlipLineItems { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

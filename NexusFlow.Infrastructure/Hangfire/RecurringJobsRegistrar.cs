@@ -3,6 +3,7 @@ using NexusFlow.Infrastructure.Jobs.Runners;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace NexusFlow.Infrastructure.Hangfire
 {
@@ -22,7 +23,16 @@ namespace NexusFlow.Infrastructure.Hangfire
                     TimeZone = TimeZoneInfo.Utc
                 });
 
-            // Add more jobs here...
+            // Payroll — 25th of every month at 02:00 UTC
+            RecurringJob.AddOrUpdate<GenerateDraftPayrollJobRunner>(
+                recurringJobId: "monthly-payroll-generator",
+                methodCall: runner => runner.RunAsync(null!, null, null, CancellationToken.None),
+                cronExpression: "0 2 25 * *",
+                options: new RecurringJobOptions
+                {
+                    QueueName = "critical",
+                    TimeZone = TimeZoneInfo.Utc
+                });
         }
     }
 }

@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NexusFlow.AppCore.Constants;
 using NexusFlow.AppCore.Features.HR.Commands;
+using NexusFlow.AppCore.Features.HR.Queries;
+using NexusFlow.AppCore.Jobs;
 using NexusFlow.Infrastructure.Jobs.Runners;
 using NexusFlow.Web.Filters;
 
@@ -42,6 +44,35 @@ namespace NexusFlow.Web.Controllers.Api
                 runner => runner.RunAsync(null!, date, CancellationToken.None));
 
             return Accepted(new { jobId, date = date?.ToString("yyyy-MM-dd") ?? "yesterday" });
+        }
+
+        [HttpGet("daily-records")]
+        public async Task<IActionResult> GetDailyRecords([FromQuery] DateTime date)
+        {
+            var result = await _mediator.Send(new GetDailyAttendanceQuery { Date = date });
+            return Ok(result);
+        }
+
+        [HttpPost("override-record")]
+        public async Task<IActionResult> OverrideRecord([FromBody] OverrideAttendanceCommand command)
+        {
+            var result = await _mediator.Send(command);
+            return result.Succeeded ? Ok(result) : BadRequest(result);
+        }
+
+        // Endpoint to let HR manually trigger the nightly job for a specific date
+        [HttpPost("process-day")]
+        public async Task<IActionResult> ProcessDay([FromQuery] DateTime date, [FromServices] ProcessDailyAttendanceJob job)
+        {
+            try
+            {
+                await job.ExecuteAsync(date);
+                return Ok(new { message = "Attendance processing completed for " + date.ToString("yyyy-MM-dd") });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
     }
 }

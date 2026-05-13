@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NexusFlow.AppCore.Features.Payroll.Queries;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -15,5 +16,6 @@ namespace NexusFlow.AppCore.Interfaces
     {
         byte[] ExportToExcel<T>(IEnumerable<T> data, ExportMetadata metadata, string sheetName = "Report");
         byte[] ExportToPdf<T>(IEnumerable<T> data, ExportMetadata metadata);
+        byte[] GeneratePayslipPdf(PayslipDto slip);
     }
 }

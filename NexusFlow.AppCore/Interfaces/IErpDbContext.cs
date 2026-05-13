@@ -75,6 +75,10 @@ namespace NexusFlow.AppCore.Interfaces
         DbSet<LeaveType> LeaveTypes { get; set; }
         DbSet<LeaveRequest> LeaveRequests { get; set; }
 
+        DbSet<PayrollPeriod> PayrollPeriods { get; set; }
+        DbSet<PayrollSlip> PayrollSlips { get; set; }
+        DbSet<PayrollSlipLineItem> PayrollSlipLineItems { get; set; }
+
         Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 
         Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default);

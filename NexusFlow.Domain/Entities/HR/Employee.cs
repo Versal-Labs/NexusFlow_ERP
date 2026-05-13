@@ -28,6 +28,10 @@ namespace NexusFlow.Domain.Entities.HR
         [ForeignKey("ShiftProfileId")]
         public ShiftProfile? ShiftProfile { get; set; }
 
+        // Add these to Employee.cs
+        public DateTime HireDate { get; set; } // Required
+        public DateTime? ResignationDate { get; set; } // Null if still employed
+
         // 3. Operational Roles
         public bool IsSalesRep { get; set; }
 

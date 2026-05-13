@@ -64,6 +64,10 @@ namespace NexusFlow.Infrastructure
             // Hangfire Runners (Infrastructure wrappers)
             services.AddScoped<ProcessDailyAttendanceJobRunner>();
 
+            // Infrastructure/DependencyInjection.cs
+            services.AddScoped<IGenerateDraftPayrollJob, GenerateDraftPayrollJob>();
+            services.AddScoped<GenerateDraftPayrollJobRunner>();
+
             return services;
         }
     }
