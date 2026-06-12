@@ -98,5 +98,33 @@ namespace NexusFlow.Web.Controllers.Api
                 return BadRequest(new { message = ex.Message });
             }
         }
+
+        [HttpGet("components")]
+        public async Task<IActionResult> GetComponents()
+        {
+            var result = await _mediator.Send(new GetPayrollComponentsQuery());
+            return Ok(result);
+        }
+
+        [HttpGet("assignments")]
+        public async Task<IActionResult> GetAssignments()
+        {
+            var result = await _mediator.Send(new GetEmployeeAssignmentsQuery());
+            return Ok(result);
+        }
+
+        [HttpGet("loans")]
+        public async Task<IActionResult> GetLoans()
+        {
+            var result = await _mediator.Send(new GetActiveLoansQuery());
+            return Ok(result);
+        }
+
+        [HttpPost("loans/issue")]
+        public async Task<IActionResult> IssueLoan([FromBody] IssueEmployeeLoanCommand command)
+        {
+            var result = await _mediator.Send(command);
+            return result.Succeeded ? Ok(result) : BadRequest(result);
+        }
     }
 }

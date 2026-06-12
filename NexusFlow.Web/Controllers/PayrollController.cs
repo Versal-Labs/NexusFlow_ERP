@@ -13,5 +13,10 @@ namespace NexusFlow.Web.Controllers
         {
             return View();
         }
+
+        public IActionResult PayrollConfig()
+        {
+            return View();
+        }
     }
 }

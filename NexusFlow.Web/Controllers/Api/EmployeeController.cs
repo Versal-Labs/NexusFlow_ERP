@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using NexusFlow.AppCore.Constants;
 using NexusFlow.AppCore.Features.HR.Commands;
 using NexusFlow.AppCore.Features.HR.Queries;
+using NexusFlow.AppCore.Features.Payroll.Queries;
 using NexusFlow.Web.Filters;
 
 namespace NexusFlow.Web.Controllers.Api
@@ -48,6 +49,13 @@ namespace NexusFlow.Web.Controllers.Api
             var result = await _mediator.Send(command);
             if (result.Succeeded) return Ok(result);
             return BadRequest(result);
+        }
+
+        [HttpGet("employees/lookup")]
+        public async Task<IActionResult> GetEmployeeLookup()
+        {
+            var result = await _mediator.Send(new GetEmployeeLookupQuery());
+            return Ok(result);
         }
     }
 }
