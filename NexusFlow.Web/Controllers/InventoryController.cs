@@ -48,5 +48,11 @@ namespace NexusFlow.Web.Controllers
         {
             return View();
         }
+
+        [Authorize(Policy = Permissions.Inventory.PrintBarcodes)]
+        public IActionResult BarcodeCenter()
+        {
+            return View();
+        }
     }
 }

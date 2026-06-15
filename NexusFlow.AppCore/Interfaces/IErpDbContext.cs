@@ -24,6 +24,7 @@ namespace NexusFlow.AppCore.Interfaces
         DbSet<UnitOfMeasure> UnitOfMeasures { get; set; }
         DbSet<Product> Products { get; set; }
         DbSet<ProductVariant> ProductVariants { get; set; }
+        DbSet<BarcodeTemplate> BarcodeTemplates { get; set; }
         DbSet<BillOfMaterial> BillOfMaterials { get; set; }
         DbSet<BomComponent> BomComponents { get; set; }
         DbSet<Warehouse> Warehouses { get; set; }

@@ -1,0 +1,172 @@
+@using NexusFlow.AppCore.Constants
+@inject NexusFlow.AppCore.Interfaces.ICurrentUserService CurrentUser
+@{
+    ViewData["Title"] = "Barcode Center";
+    bool canManageTemplates = CurrentUser.HasPermission(Permissions.Inventory.ManageBarcodeTemplates);
+}
+
+<div class="container-fluid py-3 mb-5" id="barcodeCenter" data-can-manage-templates="@canManageTemplates.ToString().ToLowerInvariant()">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h4 class="mb-0 text-dark fw-bold"><i class="fa-solid fa-barcode text-primary me-2"></i>Barcode Center</h4>
+            <p class="text-muted mb-0 fs-14">Prepare product barcode labels for your configured printer or sticker sheet.</p>
+        </div>
+        @if (canManageTemplates)
+        {
+            <button type="button" class="btn btn-outline-primary btn-sm fw-bold" onclick="barcodeApp.openTemplateModal()">
+                <i class="fa-solid fa-gear me-1"></i> New Template
+            </button>
+        }
+    </div>
+
+    <div class="card shadow-sm border-0 mb-3">
+        <div class="card-header bg-white border-0 pt-3 pb-0">
+            <h6 class="fw-bold mb-0">1. Select Barcode Template</h6>
+        </div>
+        <div class="card-body">
+            <div class="row g-3 align-items-end">
+                <div class="col-lg-6">
+                    <label class="form-label fw-semibold">Printer / Sticker Template</label>
+                    <select id="barcodeTemplateId" class="form-select">
+                        <option value="">No barcode templates configured</option>
+                    </select>
+                </div>
+                <div class="col-lg-6">
+                    <div id="templateSummary" class="small text-muted">An administrator must configure exact page and sticker measurements before printing.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (canManageTemplates)
+    {
+        <div class="card shadow-sm border-0 mb-3">
+            <div class="card-header bg-white border-0 pt-3 d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="fw-bold mb-0">Template Administration</h6>
+                    <small class="text-muted">Measurements are stored in millimeters.</small>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Name</th>
+                                <th>Page</th>
+                                <th>Sticker</th>
+                                <th>Grid</th>
+                                <th>Symbology</th>
+                                <th class="text-center">Default</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="templateRows"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+
+    <div class="card shadow-sm border-0 mb-3">
+        <div class="card-header bg-white border-0 pt-3 pb-0">
+            <h6 class="fw-bold mb-0">2. Add Products</h6>
+        </div>
+        <div class="card-body">
+            <label class="form-label fw-semibold">Search by product name, SKU, or barcode</label>
+            <select id="variantSearch" class="form-select" style="width:100%"></select>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-white border-0 pt-3 d-flex justify-content-between align-items-center">
+            <h6 class="fw-bold mb-0">3. Print Queue</h6>
+            <span class="badge bg-primary-subtle text-primary" id="stickerCount">0 stickers</span>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width:25%">SKU</th>
+                            <th>Product Name</th>
+                            <th style="width:180px" class="text-center">Print Quantity</th>
+                            <th style="width:70px"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="printRows">
+                        <tr id="emptyPrintRow"><td colspan="4" class="text-center text-muted py-4">Search for a product variant to add it to the print queue.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="d-flex justify-content-end border-top pt-3">
+                <button type="button" id="generateBarcodePdf" class="btn btn-primary fw-bold px-4" disabled onclick="barcodeApp.generatePdf(event)">
+                    <i class="fa-solid fa-file-pdf me-2"></i>Generate PDF
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (canManageTemplates)
+{
+    <div class="modal fade" id="barcodeTemplateModal" tabindex="-1" data-bs-backdrop="static">
+        <div class="modal-dialog modal-xl modal-dialog-scrollable">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title fs-6 fw-bold">Barcode Template</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body bg-light">
+                    <form id="barcodeTemplateForm" class="row g-3">
+                        <input type="hidden" id="templateId" value="0">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Template Name</label>
+                            <input id="templateName" class="form-control" maxlength="150" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold">Symbology</label>
+                            <select id="templateSymbology" class="form-select" required>
+                                <option value="1">Code128</option>
+                                <option value="2">EAN13</option>
+                                <option value="3">UPC</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 d-flex align-items-end pb-2">
+                            <div class="form-check form-switch">
+                                <input id="templateIsDefault" class="form-check-input" type="checkbox">
+                                <label class="form-check-label fw-semibold" for="templateIsDefault">Default template</label>
+                            </div>
+                        </div>
+
+                        <div class="col-12"><hr class="my-0"><div class="fw-bold mt-2">Physical Measurements (mm)</div></div>
+                        <div class="col-md-3"><label class="form-label">Page Width</label><input id="pageWidthMM" type="number" min="0.001" step="0.001" class="form-control" required></div>
+                        <div class="col-md-3"><label class="form-label">Page Height</label><input id="pageHeightMM" type="number" min="0.001" step="0.001" class="form-control" required></div>
+                        <div class="col-md-3"><label class="form-label">Sticker Width</label><input id="stickerWidthMM" type="number" min="0.001" step="0.001" class="form-control" required></div>
+                        <div class="col-md-3"><label class="form-label">Sticker Height</label><input id="stickerHeightMM" type="number" min="0.001" step="0.001" class="form-control" required></div>
+                        <div class="col-md-3"><label class="form-label">Stickers Per Row</label><input id="stickersPerRow" type="number" min="1" step="1" class="form-control" required></div>
+                        <div class="col-md-3"><label class="form-label">Rows Per Page</label><input id="rowsPerPage" type="number" min="1" step="1" class="form-control" required></div>
+                        <div class="col-md-3"><label class="form-label">Top Margin</label><input id="marginTopMM" type="number" min="0" step="0.001" value="0" class="form-control" required></div>
+                        <div class="col-md-3"><label class="form-label">Left Margin</label><input id="marginLeftMM" type="number" min="0" step="0.001" value="0" class="form-control" required></div>
+                        <div class="col-md-3"><label class="form-label">Horizontal Gap</label><input id="horizontalGapMM" type="number" min="0" step="0.001" value="0" class="form-control" required></div>
+                        <div class="col-md-3"><label class="form-label">Vertical Gap</label><input id="verticalGapMM" type="number" min="0" step="0.001" value="0" class="form-control" required></div>
+
+                        <div class="col-12"><hr class="my-0"><div class="fw-bold mt-2">Optional Printed Text</div></div>
+                        <div class="col-md-3 form-check ms-2"><input id="printCompanyName" class="form-check-input" type="checkbox"><label class="form-check-label" for="printCompanyName">Company Name</label></div>
+                        <div class="col-md-3 form-check"><input id="printProductName" class="form-check-input" type="checkbox" checked><label class="form-check-label" for="printProductName">Product Name</label></div>
+                        <div class="col-md-3 form-check"><input id="printPrice" class="form-check-input" type="checkbox"><label class="form-check-label" for="printPrice">Price</label></div>
+                        <div class="col-md-3 form-check"><input id="printSizeColor" class="form-check-input" type="checkbox"><label class="form-check-label" for="printSizeColor">Size / Color</label></div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary fw-bold" onclick="barcodeApp.saveTemplate(event)">Save Template</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script src="~/js/inventory/barcode-center.js" asp-append-version="true"></script>
+}

@@ -42,6 +42,7 @@ namespace NexusFlow.Infrastructure
         public DbSet<UnitOfMeasure> UnitOfMeasures { get; set; }
         public DbSet<Product> Products { get; set; }
         public DbSet<ProductVariant> ProductVariants { get; set; }
+        public DbSet<BarcodeTemplate> BarcodeTemplates { get; set; }
         public DbSet<BillOfMaterial> BillOfMaterials { get; set; }
         public DbSet<BomComponent> BomComponents { get; set; }
         public DbSet<Warehouse> Warehouses { get; set; }
@@ -113,6 +114,12 @@ namespace NexusFlow.Infrastructure
 
                 foreach (var property in properties)
                 {
+                    if (entityType.ClrType == typeof(BarcodeTemplate))
+                    {
+                        property.SetColumnType("decimal(9,3)");
+                        continue;
+                    }
+
                     // We use 18,2 for money. 
                     // If the property name contains 'Qty' or 'Quantity' or 'Rate', 
                     // we use 18,4 for higher precision.

@@ -41,6 +41,7 @@ namespace NexusFlow.AppCore.Constants
                     Permissions.Inventory.AdjustStock, Permissions.Inventory.ViewStockTakes,
                     Permissions.Inventory.InitiateStockTake, Permissions.Inventory.SubmitCount,
                     Permissions.Inventory.ApproveStockTake, Permissions.Inventory.RunProduction,
+                    Permissions.Inventory.PrintBarcodes,
                     Permissions.MasterData.ViewProducts, Permissions.MasterData.ManageProducts,
                     Permissions.MasterData.ManageWarehouses, Permissions.MasterData.ManageBOMs,
                     Permissions.Purchasing.ViewPOs, Permissions.Purchasing.ViewGRNs,

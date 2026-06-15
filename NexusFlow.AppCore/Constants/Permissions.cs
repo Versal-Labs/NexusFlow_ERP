@@ -43,6 +43,8 @@ namespace NexusFlow.AppCore.Constants
             public const string SubmitCount = "Permissions.Inventory.SubmitCount";
             public const string ApproveStockTake = "Permissions.Inventory.ApproveStockTake";
             public const string RunProduction = "Permissions.Inventory.RunProduction";
+            public const string PrintBarcodes = "Permissions.Inventory.PrintBarcodes";
+            public const string ManageBarcodeTemplates = "Permissions.Inventory.ManageBarcodeTemplates";
         }
 
         public static class Treasury
