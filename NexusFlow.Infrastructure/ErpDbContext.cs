@@ -95,6 +95,8 @@ namespace NexusFlow.Infrastructure
         public DbSet<PayrollPeriod> PayrollPeriods { get; set; }
         public DbSet<PayrollSlip> PayrollSlips { get; set; }
         public DbSet<PayrollSlipLineItem> PayrollSlipLineItems { get; set; }
+        public DbSet<InstallationRecord> InstallationRecords { get; set; }
+        public DbSet<AppliedInstallationStep> AppliedInstallationSteps { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

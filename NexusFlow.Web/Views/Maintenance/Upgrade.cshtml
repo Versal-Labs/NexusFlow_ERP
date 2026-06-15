@@ -1,0 +1,19 @@
+@model IReadOnlyList<string>
+@{ ViewData["Title"] = "NexusFlow Upgrade"; Layout = null; }
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>@ViewData["Title"]</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"></head>
+<body class="bg-light"><main class="container py-5"><div class="card border-0 shadow-sm mx-auto" style="max-width:760px"><div class="card-body p-5">
+<h1 class="h3">NexusFlow maintenance upgrade</h1>
+<p class="text-muted">Normal ERP operations remain locked until all migrations and readiness checks pass.</p>
+@if (ViewBag.Error != null) { <div class="alert alert-danger">@ViewBag.Error</div> }
+<h2 class="h6 mt-4">Pending migrations</h2>
+@if (Model.Count == 0) { <div class="alert alert-success">No migrations are pending.</div> }
+else { <ul class="list-group mb-4">@foreach (var migration in Model) { <li class="list-group-item font-monospace">@migration</li> }</ul> }
+<form method="post" asp-action="Upgrade">
+@Html.AntiForgeryToken()
+<div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+<div class="form-check mb-4"><input class="form-check-input" type="checkbox" name="backupConfirmed" value="true" id="backupConfirmed"><label class="form-check-label" for="backupConfirmed">I confirm that a current, restorable database backup exists.</label></div>
+<button class="btn btn-primary" type="submit">Run controlled upgrade</button>
+</form>
+</div></div></main></body></html>

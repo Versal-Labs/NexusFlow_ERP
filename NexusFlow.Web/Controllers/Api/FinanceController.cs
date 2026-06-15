@@ -163,7 +163,6 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpPost("seed-banks")]
-        [AllowAnonymous] // Temporarily allow anonymous just to hit it from Postman/Browser without token issues, remove after!
         [Authorize(Policy = Permissions.Finance.ManageAccounts)]
         public async Task<IActionResult> SeedSriLankaBanks([FromServices] IWebHostEnvironment env)
         {

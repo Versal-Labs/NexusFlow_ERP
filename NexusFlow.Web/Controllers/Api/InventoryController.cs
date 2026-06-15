@@ -147,7 +147,6 @@ namespace NexusFlow.Web.Controllers.Api
         //Bulk import
 
         [HttpPost("preview-import")]
-        [AllowAnonymous]
         [Authorize(Policy = Permissions.MasterData.ManageProducts)]
         public async Task<IActionResult> PreviewImport(IFormFile file, CancellationToken cancellationToken)
         {
@@ -161,7 +160,6 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpPost("execute-import")]
-        [AllowAnonymous]
         [Authorize(Policy = Permissions.MasterData.ManageProducts)]
         public async Task<IActionResult> ExecuteImport([FromBody] ExecuteLegacyProductsCommand command, CancellationToken cancellationToken)
         {

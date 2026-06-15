@@ -18,7 +18,7 @@ namespace NexusFlow.Infrastructure.Identity
             _configuration = configuration;
         }
 
-        public string GenerateToken(string userId, string email, IList<string> roles)
+        public string GenerateToken(string userId, string email, IList<string> roles, IList<string> permissions)
         {
             var jwtSettings = _configuration.GetSection("JwtSettings");
             var secretKey = Encoding.UTF8.GetBytes(jwtSettings["Secret"]!);
@@ -34,6 +34,11 @@ namespace NexusFlow.Infrastructure.Identity
             foreach (var role in roles)
             {
                 claims.Add(new Claim(ClaimTypes.Role, role));
+            }
+
+            foreach (var permission in permissions.Distinct(StringComparer.OrdinalIgnoreCase))
+            {
+                claims.Add(new Claim("Permission", permission));
             }
 
             var tokenDescriptor = new SecurityTokenDescriptor

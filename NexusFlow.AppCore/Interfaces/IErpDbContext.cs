@@ -78,6 +78,8 @@ namespace NexusFlow.AppCore.Interfaces
         DbSet<PayrollPeriod> PayrollPeriods { get; set; }
         DbSet<PayrollSlip> PayrollSlips { get; set; }
         DbSet<PayrollSlipLineItem> PayrollSlipLineItems { get; set; }
+        DbSet<InstallationRecord> InstallationRecords { get; set; }
+        DbSet<AppliedInstallationStep> AppliedInstallationSteps { get; set; }
 
         Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 

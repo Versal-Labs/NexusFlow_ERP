@@ -123,7 +123,6 @@ namespace NexusFlow.Web.Controllers.Api
 
         [HttpGet("orders/{id}/pdf")]
         [Authorize(Policy = Permissions.Sales.ViewOrders)]
-        [AllowAnonymous] // Optional: Depending on if your JS token logic handles direct window.open
         public async Task<IActionResult> DownloadOrderPdf(int id)
         {
             var result = await _mediator.Send(new GetSalesOrderPdfQuery { OrderId = id });

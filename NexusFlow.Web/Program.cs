@@ -1,121 +1,162 @@
-
+using System.Security.Cryptography;
+using System.Text;
+using System.Threading.RateLimiting;
 using Hangfire;
 using Hangfire.Console;
 using Hangfire.SqlServer;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using NexusFlow.AppCore;
 using NexusFlow.AppCore.Constants;
+using NexusFlow.AppCore.Installation;
 using NexusFlow.AppCore.Interfaces;
 using NexusFlow.Domain.Entities.System;
 using NexusFlow.Infrastructure;
 using NexusFlow.Infrastructure.Hangfire;
 using NexusFlow.Infrastructure.Hubs;
-using NexusFlow.Infrastructure.Persistence;
+using NexusFlow.Infrastructure.Installation;
 using NexusFlow.Notification;
 using NexusFlow.Web;
+using NexusFlow.Web.Installation;
 using NexusFlow.Web.Security;
 using Scalar.AspNetCore;
 using Serilog;
-using System.Text;
+
+var paths = new InstallationPaths();
+paths.EnsureDirectories();
+var stateStore = new JsonInstallationStateStore(paths);
+await stateStore.EnsureInitializedAsync();
+var secretStore = new DpapiInstallationSecretStore(paths);
+var connectionProvider = new InstallationConnectionStringProvider(secretStore);
+var initialState = stateStore.Get();
+
+if (initialState.Mode == ApplicationMode.Installed && connectionProvider.GetConnectionString() != null)
+{
+    try
+    {
+        var databaseProvisioner = new InstallationDatabaseProvisioner(connectionProvider);
+        if ((await databaseProvisioner.GetPendingMigrationsAsync()).Count > 0)
+        {
+            initialState.Mode = ApplicationMode.UpgradeRequired;
+            initialState.LastError = null;
+            await stateStore.SaveAsync(initialState);
+        }
+    }
+    catch
+    {
+        initialState.Mode = ApplicationMode.Faulted;
+        initialState.LastError = "The installed database is unavailable. Review server-side logs and configuration.";
+        await stateStore.SaveAsync(initialState);
+    }
+}
 
 var builder = WebApplication.CreateBuilder(args);
-
-builder.Host.UseSerilog((context, configuration) =>
-    configuration.ReadFrom.Configuration(context.Configuration));
-
-// Add services to the container.
-builder.Services.AddControllersWithViews();
-
-// --- CLEAN ARCHITECTURE DI SETUP ---
-builder.Services.AddAppCore();
-
-// IMPORTANT: This adds AddIdentity<ApplicationUser...>, which sets the Default Scheme to "Identity.Application"
-builder.Services.AddInfrastructure(builder.Configuration);
-
-builder.Services.AddNotifications();
-
-// --- HANGFIRE CONFIGURATION ---
-var hangfireConnection = builder.Configuration["Hangfire:ConnectionString"]
-    ?? builder.Configuration.GetConnectionString("DefaultConnection")!;
-
-builder.Services.AddHangfire(config => config
-    .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
-    .UseSimpleAssemblyNameTypeSerializer()
-    .UseRecommendedSerializerSettings()
-    .UseConsole()                          // Enables rich job logs in dashboard
-    .UseSqlServerStorage(hangfireConnection, new SqlServerStorageOptions
-    {
-        CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
-        SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
-        QueuePollInterval = TimeSpan.FromSeconds(15),
-        UseRecommendedIsolationLevel = true,
-        DisableGlobalLocks = true,   // Required for multi-server setups
-        PrepareSchemaIfNecessary = true,   // Auto-creates Hangfire tables
-    }));
-
-builder.Services.AddHangfireServer(options =>
+var configuredJwtSecret = secretStore.Get(InstallationConnectionStringProvider.JwtSecret)
+    ?? Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
+var runtimeSettings = new Dictionary<string, string?>
 {
-    options.WorkerCount = int.Parse(
-        builder.Configuration["Hangfire:WorkerCount"] ?? "5");
-    options.Queues = builder.Configuration
-        .GetSection("Hangfire:Queues").Get<string[]>()
-        ?? new[] { "critical", "default", "low" };
-    options.ServerName = $"{Environment.MachineName}:{Environment.ProcessId}";
+    ["ConnectionStrings:DefaultConnection"] = connectionProvider.GetConnectionString(),
+    ["Hangfire:ConnectionString"] = secretStore.Get(InstallationConnectionStringProvider.HangfireConnectionSecret),
+    ["ConnectionStrings:AzureBlobStorage"] = secretStore.Get(InstallationConnectionStringProvider.AzureBlobStorageSecret),
+    ["JwtSettings:Secret"] = configuredJwtSecret,
+    ["Syncfusion:LicenseKey"] = secretStore.Get(InstallationConnectionStringProvider.SyncfusionLicenseSecret),
+    ["Serilog:WriteTo:1:Args:path"] = Path.Combine(paths.LogsPath, "nexusflow-log-.txt")
+};
+builder.Configuration.AddInMemoryCollection(runtimeSettings);
+
+builder.Host.UseSerilog((context, configuration) => configuration.ReadFrom.Configuration(context.Configuration));
+
+builder.Services.AddControllersWithViews();
+builder.Services.AddAppCore();
+builder.Services.AddInstallationInfrastructure(paths, stateStore, secretStore);
+builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddNotifications();
+builder.Services.AddSignalR();
+builder.Services.AddSingleton<IInstallerAccessService, InstallerAccessService>();
+builder.Services.AddSingleton<IInstallationPreflightChecker, InstallationPreflightChecker>();
+
+builder.Services.AddDataProtection()
+    .SetApplicationName($"NexusFlow.ERP.{paths.InstanceId}")
+    .PersistKeysToFileSystem(new DirectoryInfo(paths.DataProtectionKeysPath));
+
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddPolicy("installer", context =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 10,
+                Window = TimeSpan.FromMinutes(1),
+                QueueLimit = 0,
+                AutoReplenishment = true
+            }));
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 });
 
-// Register the job service abstraction
-builder.Services.AddScoped<IBackgroundJobService, BackgroundJobService>();
-// --- END HANGFIRE CONFIGURATION ---
-
-builder.Services.AddSignalR();
+var shouldRunProductionServices = stateStore.Get().Mode == ApplicationMode.Installed;
+if (shouldRunProductionServices)
+{
+    var hangfireConnection = secretStore.Get(InstallationConnectionStringProvider.HangfireConnectionSecret)
+        ?? connectionProvider.GetRequiredConnectionString();
+    builder.Services.AddHangfire(config => config
+        .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+        .UseSimpleAssemblyNameTypeSerializer()
+        .UseRecommendedSerializerSettings()
+        .UseConsole()
+        .UseSqlServerStorage(hangfireConnection, new SqlServerStorageOptions
+        {
+            CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
+            SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
+            QueuePollInterval = TimeSpan.FromSeconds(15),
+            UseRecommendedIsolationLevel = true,
+            DisableGlobalLocks = true,
+            PrepareSchemaIfNecessary = true
+        }));
+    builder.Services.AddHangfireServer(options =>
+    {
+        options.WorkerCount = int.Parse(builder.Configuration["Hangfire:WorkerCount"] ?? "5");
+        options.Queues = builder.Configuration.GetSection("Hangfire:Queues").Get<string[]>()
+            ?? ["critical", "default", "low"];
+        options.ServerName = $"{paths.InstanceId}:{Environment.MachineName}:{Environment.ProcessId}";
+    });
+    builder.Services.AddScoped<IBackgroundJobService, BackgroundJobService>();
+}
 
 builder.Services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();
 builder.Services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
 
-// Add this at the very beginning of your Program.cs
-Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense("Ngo9BigBOggjHTQxAR8/V1JHaF5cWWdCf1FpRmJGdld5fUVHYVZUTXxaS00DNHVRdkdlWXxcdXRdRmdZV0Z0XURWYEo=");
-// -----------------------------------
+var syncfusionLicense = secretStore.Get(InstallationConnectionStringProvider.SyncfusionLicenseSecret);
+if (!string.IsNullOrWhiteSpace(syncfusionLicense))
+{
+    Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense(syncfusionLicense);
+}
 
-// =================================================================
-// 1. CONFIGURE THE IDENTITY COOKIE (Fixes the Login Loop)
-// =================================================================
-// Since AddInfrastructure already added Identity, we just configure its cookie here.
 builder.Services.ConfigureApplicationCookie(options =>
 {
-    options.LoginPath = "/Account/Login"; // Where to redirect if not logged in
+    options.LoginPath = "/Account/Login";
     options.AccessDeniedPath = "/Account/AccessDenied";
     options.ExpireTimeSpan = TimeSpan.FromHours(30);
     options.SlidingExpiration = true;
     options.Cookie.HttpOnly = true;
     options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-
-    // --- PRODUCTION FIX START ---
-    // Prevent 302 Redirects for API calls (return 401 instead)
+    options.Cookie.Name = $"NexusFlow.{paths.InstanceId}.Auth";
     options.Events.OnRedirectToLogin = context =>
     {
-        // Check if the request is for an API endpoint
         if (context.Request.Path.StartsWithSegments("/api") || context.Request.Path.StartsWithSegments("/hubs"))
         {
             context.Response.StatusCode = StatusCodes.Status401Unauthorized;
             return Task.CompletedTask;
         }
-
-        // Otherwise, do the normal redirect for MVC views
         context.Response.Redirect(context.RedirectUri);
         return Task.CompletedTask;
     };
-    // --- PRODUCTION FIX END ---
 });
 
-// =================================================================
-// 2. ADD JWT AUTHENTICATION (For Mobile/API)
-// =================================================================
-// We append JwtBearer to the existing AuthenticationBuilder
 builder.Services.AddAuthentication()
     .AddJwtBearer(options =>
     {
@@ -128,25 +169,16 @@ builder.Services.AddAuthentication()
             ValidateIssuerSigningKey = true,
             ValidIssuer = jwtSettings["Issuer"],
             ValidAudience = jwtSettings["Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(jwtSettings["Secret"]!))
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuredJwtSecret))
         };
-
         options.Events = new JwtBearerEvents
         {
             OnMessageReceived = context =>
             {
-                // 1. Look for "access_token" in the query string
                 var accessToken = context.Request.Query["access_token"];
-
-                // 2. Check if the request is for our Hub path
-                var path = context.HttpContext.Request.Path;
-
-                // If token exists AND request is for a Hub...
                 if (!string.IsNullOrEmpty(accessToken) &&
-                    (path.StartsWithSegments("/hubs/notifications")))
+                    context.HttpContext.Request.Path.StartsWithSegments("/hubs/notifications"))
                 {
-                    // 3. Read the token from the query string instead of the header
                     context.Token = accessToken;
                 }
                 return Task.CompletedTask;
@@ -154,7 +186,6 @@ builder.Services.AddAuthentication()
         };
     });
 
-// OpenAPI / Swagger Configuration
 builder.Services.AddOpenApi(options =>
 {
     options.AddDocumentTransformer((document, context, cancellationToken) =>
@@ -166,33 +197,22 @@ builder.Services.AddOpenApi(options =>
             Scheme = "bearer",
             BearerFormat = "JWT",
             In = ParameterLocation.Header,
-            Description = "Enter your JWT Token here."
+            Description = "Enter your JWT token."
         };
-
         document.Components ??= new OpenApiComponents();
         document.Components.SecuritySchemes ??= new Dictionary<string, IOpenApiSecurityScheme>();
-
-        if (!document.Components.SecuritySchemes.ContainsKey("Bearer"))
+        document.Components.SecuritySchemes.TryAdd("Bearer", securityScheme);
+        document.Security = [new OpenApiSecurityRequirement
         {
-            document.Components.SecuritySchemes.Add("Bearer", securityScheme);
-        }
-
-        var schemeReference = new OpenApiSecuritySchemeReference("Bearer", document);
-        var requirement = new OpenApiSecurityRequirement
-        {
-            { schemeReference, new List<string>() }
-        };
-
-        document.Security = new List<OpenApiSecurityRequirement> { requirement };
-
+            { new OpenApiSecuritySchemeReference("Bearer", document), new List<string>() }
+        }];
         return Task.CompletedTask;
     });
 });
 
 builder.Services.AddAuthorization(options =>
 {
-    // Create a policy that accepts EITHER Cookie OR JWT
-    options.AddPolicy("HybridPolicy", policy =>
+    options.AddPolicy(AuthConstants.HybridPolicy, policy =>
     {
         policy.AuthenticationSchemes.Add(AuthConstants.IdentityScheme);
         policy.AuthenticationSchemes.Add(AuthConstants.JwtScheme);
@@ -202,16 +222,10 @@ builder.Services.AddAuthorization(options =>
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
-    app.MapScalarApiReference(options =>
-    {
-        options
-            .WithTitle("NexusFlow API")
-            .AddPreferredSecuritySchemes("Bearer");
-    });
+    app.MapScalarApiReference(options => options.WithTitle("NexusFlow API").AddPreferredSecuritySchemes("Bearer"));
 }
 else
 {
@@ -220,75 +234,46 @@ else
 }
 
 app.UseSerilogRequestLogging();
-
 app.UseHttpsRedirection();
+app.UseStaticFiles();
 app.UseRouting();
-
-// 3. MIDDLEWARE ORDER IS CRITICAL
+app.UseRateLimiter();
+app.UseMiddleware<ApplicationModeMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
 
-// --- HANGFIRE DASHBOARD ---
-var dashboardPath = builder.Configuration["Hangfire:DashboardPath"] ?? "/hangfire";
-
-app.UseHangfireDashboard(dashboardPath, new DashboardOptions
+if (shouldRunProductionServices)
 {
-    Authorization = new[] { new HangfireDashboardAuthFilter() },
-    DashboardTitle = "NexusFlow — Job Dashboard",
-    DisplayStorageConnectionString = false,   // Never expose connection strings
-    StatsPollingInterval = 5000,              // Refresh every 5 seconds
-    IsReadOnlyFunc = context =>
+    var dashboardPath = builder.Configuration["Hangfire:DashboardPath"] ?? "/hangfire";
+    app.UseHangfireDashboard(dashboardPath, new DashboardOptions
     {
-        // Optionally make dashboard read-only for non-super-admins
-        return false;
-    }
-});
-
-// Register all recurring jobs
-RecurringJobsRegistrar.RegisterAll();
-// --- END HANGFIRE DASHBOARD ---
-
-app.MapStaticAssets();
-
-app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}")
-    .WithStaticAssets();
-
-using (var scope = app.Services.CreateScope())
-{
-    var initialiser = scope.ServiceProvider.GetRequiredService<ApplicationDbContextInitialiser>();
-    await initialiser.InitialiseAsync();
-    await initialiser.SeedAsync();
+        Authorization = [new HangfireDashboardAuthFilter()],
+        DashboardTitle = "NexusFlow Job Dashboard",
+        DisplayStorageConnectionString = false,
+        StatsPollingInterval = 5000
+    });
+    RecurringJobsRegistrar.RegisterAll();
 }
 
-//Hubs
+app.MapGet("/health/live", () => Results.Ok(new { status = "live", instance = paths.InstanceId }))
+    .AllowAnonymous();
+app.MapGet("/health/ready", async (IInstallationStateStore installationState, IServiceScopeFactory scopes) =>
+{
+    var state = installationState.Get();
+    if (state.Mode != ApplicationMode.Installed)
+    {
+        return Results.Json(new { status = "not-ready", mode = state.Mode.ToString(), detail = state.LastError },
+            statusCode: StatusCodes.Status503ServiceUnavailable);
+    }
+
+    await using var scope = scopes.CreateAsyncScope();
+    var report = await scope.ServiceProvider.GetRequiredService<IInstallationReadinessChecker>().CheckAsync();
+    return report.IsReady
+        ? Results.Ok(new { status = "ready", checks = report.Checks })
+        : Results.Json(new { status = "not-ready", checks = report.Checks }, statusCode: StatusCodes.Status503ServiceUnavailable);
+}).AllowAnonymous();
+
+app.MapControllerRoute(name: "default", pattern: "{controller=Home}/{action=Index}/{id?}");
 app.MapHub<NotificationHub>("/hubs/notifications");
-
-using (var scope = app.Services.CreateScope())
-{
-    var services = scope.ServiceProvider;
-    try
-    {
-        var context = services.GetRequiredService<IErpDbContext>();
-
-        // Ensure database is created/migrated first
-        // await ((DbContext)context).Database.MigrateAsync(); 
-
-        // Define the path to your JSON file
-        var env = services.GetRequiredService<IWebHostEnvironment>();
-        var locationJsonPath = Path.Combine(env.ContentRootPath, "SeedData", "sri_lanka_cities.json");
-
-        // Execute the Location Seeder
-        await NexusFlow.Infrastructure.Data.Seeders.LocationSeeder.SeedAsync(context, locationJsonPath);
-
-        // (You can add your Bank Seeder here as well!)
-    }
-    catch (Exception ex)
-    {
-        var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "An error occurred while seeding the Master Data.");
-    }
-}
 
 app.Run();

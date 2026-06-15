@@ -12,6 +12,7 @@ using NexusFlow.Infrastructure.Jobs.Runners;
 using NexusFlow.Infrastructure.Persistence;
 using NexusFlow.Infrastructure.Services;
 using NexusFlow.Infrastructure.Services.Storage;
+using NexusFlow.Infrastructure.Installation;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -20,12 +21,29 @@ namespace NexusFlow.Infrastructure
 {
     public static class DependencyInjection
     {
+        public static IServiceCollection AddInstallationInfrastructure(
+            this IServiceCollection services,
+            InstallationPaths paths,
+            IInstallationStateStore stateStore,
+            IInstallationSecretStore secretStore)
+        {
+            services.AddSingleton(paths);
+            services.AddSingleton(stateStore);
+            services.AddSingleton(secretStore);
+            services.AddSingleton<IInstallationConnectionStringProvider, InstallationConnectionStringProvider>();
+            services.AddSingleton<IInstallationDatabaseProvisioner, InstallationDatabaseProvisioner>();
+            services.AddScoped<IInstallationTemplateProvider, StandardInstallationTemplateProvider>();
+            services.AddScoped<IInstallationReadinessChecker, InstallationReadinessChecker>();
+            services.AddScoped<IInstallationOrchestrator, InstallationOrchestrator>();
+            return services;
+        }
+
         public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
         {
             // 1. SQL Server Connection
-            services.AddDbContext<ErpDbContext>(options =>
+            services.AddDbContext<ErpDbContext>((serviceProvider, options) =>
                 options.UseSqlServer(
-                    configuration.GetConnectionString("DefaultConnection"),
+                    serviceProvider.GetRequiredService<IInstallationConnectionStringProvider>().GetRequiredConnectionString(),
                     b => b.MigrationsAssembly(typeof(ErpDbContext).Assembly.FullName)));
 
             services.AddScoped<IErpDbContext>(provider => provider.GetRequiredService<ErpDbContext>());
@@ -35,16 +53,18 @@ namespace NexusFlow.Infrastructure
             .AddDefaultTokenProviders();
 
             // Inside AddInfrastructure method
-            var azureConnectionString = configuration.GetConnectionString("AzureBlobStorage");
-
-            services.AddSingleton(new AzureBlobStorageProvider(azureConnectionString));
-            services.AddSingleton(new LocalDiskStorageProvider(@"C:\NexusStorage\Fallback"));
+            services.AddSingleton<AzureBlobStorageProvider>(serviceProvider =>
+                new AzureBlobStorageProvider(
+                    serviceProvider.GetRequiredService<IInstallationSecretStore>()
+                        .Get(InstallationConnectionStringProvider.AzureBlobStorageSecret)));
+            services.AddSingleton<LocalDiskStorageProvider>(serviceProvider =>
+                new LocalDiskStorageProvider(serviceProvider.GetRequiredService<InstallationPaths>().StoragePath));
 
             services.AddScoped<IGlobalStorageCoordinator, GlobalStorageCoordinator>();
 
-
-            services.AddScoped<ApplicationDbContextInitialiser>();
+            services.AddMemoryCache();
             services.AddTransient<ITokenService, JwtTokenService>();
+            services.AddScoped<IConfigService, ConfigService>();
             services.AddScoped<ITaxService, TaxService>();
             services.AddScoped<IStockService, StockService>();
             services.AddScoped<IJournalService, JournalService>();

@@ -6,6 +6,8 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
+using NexusFlow.AppCore.Constants;
+
 namespace NexusFlow.AppCore.Features.System.IAM.Commands
 {
     public class CreateUserCommand : IRequest<Result<string>>
@@ -82,6 +84,15 @@ namespace NexusFlow.AppCore.Features.System.IAM.Commands
             var currentRoles = await _userManager.GetRolesAsync(user);
             if (!currentRoles.Contains(request.Role) && !string.IsNullOrWhiteSpace(request.Role))
             {
+                if (currentRoles.Contains(DefaultRoleManifest.SuperAdmin) &&
+                    request.Role != DefaultRoleManifest.SuperAdmin)
+                {
+                    var activeSuperAdmins = (await _userManager.GetUsersInRoleAsync(DefaultRoleManifest.SuperAdmin))
+                        .Count(x => x.IsActive);
+                    if (activeSuperAdmins <= 1)
+                        return Result<bool>.Failure("The final active SuperAdmin cannot be removed from the SuperAdmin role.");
+                }
+
                 await _userManager.RemoveFromRolesAsync(user, currentRoles);
                 await _userManager.AddToRoleAsync(user, request.Role);
             }
@@ -184,6 +195,9 @@ namespace NexusFlow.AppCore.Features.System.IAM.Commands
             if (role == null) return Result<bool>.Failure("Role not found.");
 
             string cleanRoleName = request.RoleName.Trim().Replace(" ", "");
+            if (role.Name == DefaultRoleManifest.SuperAdmin && cleanRoleName != DefaultRoleManifest.SuperAdmin)
+                return Result<bool>.Failure("The protected SuperAdmin role cannot be renamed.");
+
             if (role.Name != cleanRoleName && await _roleManager.RoleExistsAsync(cleanRoleName))
                 return Result<bool>.Failure($"Role '{cleanRoleName}' already exists.");
 

@@ -1,47 +1,70 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using NexusFlow.AppCore.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace NexusFlow.Infrastructure.Services
 {
     public class NumberSequenceService : INumberSequenceService
     {
         private readonly IErpDbContext _context;
+        private readonly IConfiguration _configuration;
 
-        public NumberSequenceService(IErpDbContext context)
+        public NumberSequenceService(IErpDbContext context, IConfiguration configuration)
         {
             _context = context;
+            _configuration = configuration;
         }
 
         public async Task<string> GenerateNextNumberAsync(string moduleName, CancellationToken ct)
         {
-            // 1. Find the configuration row
-            var sequence = await _context.NumberSequences
-                .FirstOrDefaultAsync(x => x.Module == moduleName);
-
-            if (sequence == null)
+            var connectionString = _configuration.GetConnectionString("DefaultConnection");
+            if (!string.IsNullOrWhiteSpace(connectionString))
             {
-                // Fallback or Error if config is missing
-                throw new Exception($"Number sequence for '{moduleName}' not defined.");
+                return await GenerateAtomicallyAsync(connectionString, moduleName, ct);
             }
 
-            // 2. Capture the current number to use
-            long currentNum = sequence.NextNumber;
+            // Used only by non-SQL test providers. Production always takes the atomic SQL path.
+            var sequence = await _context.NumberSequences.FirstOrDefaultAsync(x => x.Module == moduleName, ct)
+                ?? throw new InvalidOperationException($"Number sequence for '{moduleName}' is not defined.");
 
-            // 3. Increment the number in the database for the next person
-            sequence.NextNumber++;
+            var number = sequence.NextNumber++;
             sequence.LastUsed = DateTime.UtcNow;
-
-            // 4. Save immediately (Concurrency Handling is vital here in production)
             await _context.SaveChangesAsync(ct);
-
-            // 5. Format and return
-            // Matches your preview in screenshot: "SALES/1003" or "GRN-5000"
-            // You might store a 'Separator' column in DB, here assuming '-' or '/' based on logic
-            string separator = sequence.Module == "Sales" ? "/" : "-";
-            return $"{sequence.Prefix}{separator}{currentNum}";
+            return Format(sequence.Prefix, sequence.Delimiter, number, sequence.Suffix);
         }
+
+        private static async Task<string> GenerateAtomicallyAsync(
+            string connectionString,
+            string moduleName,
+            CancellationToken cancellationToken)
+        {
+            const string sql = """
+                UPDATE [Config].[NumberSequences] WITH (UPDLOCK, ROWLOCK)
+                SET [NextNumber] = [NextNumber] + 1,
+                    [LastUsed] = SYSUTCDATETIME()
+                OUTPUT deleted.[NextNumber], inserted.[Prefix], inserted.[Delimiter], inserted.[Suffix]
+                WHERE [Module] = @module;
+                """;
+
+            await using var connection = new SqlConnection(connectionString);
+            await connection.OpenAsync(cancellationToken);
+            await using var command = new SqlCommand(sql, connection);
+            command.Parameters.AddWithValue("@module", moduleName);
+            await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+            if (!await reader.ReadAsync(cancellationToken))
+            {
+                throw new InvalidOperationException($"Number sequence for '{moduleName}' is not defined.");
+            }
+
+            return Format(
+                reader.GetString(1),
+                reader.IsDBNull(2) ? string.Empty : reader.GetString(2),
+                reader.GetInt32(0),
+                reader.IsDBNull(3) ? null : reader.GetString(3));
+        }
+
+        private static string Format(string prefix, string? delimiter, int number, string? suffix) =>
+            $"{prefix}{delimiter}{number}{suffix}";
     }
 }

@@ -9,18 +9,24 @@ namespace NexusFlow.Infrastructure.Services.Storage
 {
     public class AzureBlobStorageProvider : IFileStorageProvider
     {
-        private readonly BlobServiceClient _blobServiceClient;
+        private readonly BlobServiceClient? _blobServiceClient;
         private const string _providerPrefix = "azure://";
 
-        public AzureBlobStorageProvider(string connectionString)
+        public AzureBlobStorageProvider(string? connectionString)
         {
-            _blobServiceClient = new BlobServiceClient(connectionString);
+            if (!string.IsNullOrWhiteSpace(connectionString))
+            {
+                _blobServiceClient = new BlobServiceClient(connectionString);
+            }
         }
 
         public bool CanHandle(string fileReference) => fileReference.StartsWith(_providerPrefix);
 
         public async Task<string> UploadAsync(Stream fileStream, string fileName, string containerFolder, string contentType, CancellationToken cancellationToken = default)
         {
+            if (_blobServiceClient == null)
+                throw new InvalidOperationException("Azure Blob Storage is not configured.");
+
             var containerClient = _blobServiceClient.GetBlobContainerClient(containerFolder.ToLower());
             await containerClient.CreateIfNotExistsAsync(PublicAccessType.None, cancellationToken: cancellationToken);
 
@@ -36,6 +42,9 @@ namespace NexusFlow.Infrastructure.Services.Storage
 
         public async Task<(Stream Stream, string ContentType)> DownloadAsync(string fileReference, CancellationToken cancellationToken = default)
         {
+            if (_blobServiceClient == null)
+                throw new InvalidOperationException("Azure Blob Storage is not configured.");
+
             var parts = fileReference.Replace(_providerPrefix, "").Split('/');
             var containerClient = _blobServiceClient.GetBlobContainerClient(parts[0]);
             var blobClient = containerClient.GetBlobClient(parts[1]);
@@ -46,6 +55,9 @@ namespace NexusFlow.Infrastructure.Services.Storage
 
         public async Task DeleteAsync(string fileReference, CancellationToken cancellationToken = default)
         {
+            if (_blobServiceClient == null)
+                throw new InvalidOperationException("Azure Blob Storage is not configured.");
+
             var parts = fileReference.Replace(_providerPrefix, "").Split('/');
             var containerClient = _blobServiceClient.GetBlobContainerClient(parts[0]);
             var blobClient = containerClient.GetBlobClient(parts[1]);

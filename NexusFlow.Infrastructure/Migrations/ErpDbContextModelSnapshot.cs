@@ -454,422 +454,6 @@ namespace NexusFlow.Infrastructure.Migrations
                                     .HasPeriodEnd("ValidTo")
                                     .HasColumnName("ValidTo");
                             }));
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Balance = 0m,
-                            Code = "1000",
-                            CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsSystemAccount = false,
-                            IsTransactionAccount = false,
-                            Name = "Assets",
-                            RequiresReconciliation = false,
-                            Type = 1
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Balance = 0m,
-                            Code = "2000",
-                            CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsSystemAccount = false,
-                            IsTransactionAccount = false,
-                            Name = "Liabilities",
-                            RequiresReconciliation = false,
-                            Type = 2
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Balance = 0m,
-                            Code = "3000",
-                            CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsSystemAccount = false,
-                            IsTransactionAccount = false,
-                            Name = "Equity",
-                            RequiresReconciliation = false,
-                            Type = 3
-                        },
-                        new
-                        {
-                            Id = 4,
-                            Balance = 0m,
-                            Code = "4000",
-                            CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsSystemAccount = false,
-                            IsTransactionAccount = false,
-                            Name = "Revenue",
-                            RequiresReconciliation = false,
-                            Type = 4
-                        },
-                        new
-                        {
-                            Id = 5,
-                            Balance = 0m,
-                            Code = "6000",
-                            CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsSystemAccount = false,
-                            IsTransactionAccount = false,
-                            Name = "Operating Expenses",
-                            RequiresReconciliation = false,
-                            Type = 5
-                        },
-                        new
-                        {
-                            Id = 101,
-                            Balance = 0m,
-                            Code = "1100",
-                            CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsSystemAccount = false,
-                            IsTransactionAccount = false,
-                            Name = "Current Assets",
-                            ParentAccountId = 1,
-                            RequiresReconciliation = false,
-                            Type = 1
-                        },
-                        new
-                        {
-                            Id = 102,
-                            Balance = 0m,
-                            Code = "1110",
-                            CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsSystemAccount = false,
-                            IsTransactionAccount = false,
-                            Name = "Cash & Cash Equivalents",
-                            ParentAccountId = 101,
-                            RequiresReconciliation = false,
-                            Type = 1
-                        },
-                        new
-                        {
-                            Id = 201,
-                            Balance = 0m,
-                            Code = "2100",
-                            CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsSystemAccount = false,
-                            IsTransactionAccount = false,
-                            Name = "Current Liabilities",
-                            ParentAccountId = 2,
-                            RequiresReconciliation = false,
-                            Type = 2
-                        },
-                        new
-                        {
-                            Id = 202,
-                            Balance = 0m,
-                            Code = "2120",
-                            CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsSystemAccount = false,
-                            IsTransactionAccount = false,
-                            Name = "Tax Payable",
-                            ParentAccountId = 201,
-                            RequiresReconciliation = false,
-                            Type = 2
-                        },
-                        new
-                        {
-                            Id = 401,
-                            Balance = 0m,
-                            Code = "4100",
-                            CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsSystemAccount = false,
-                            IsTransactionAccount = false,
-                            Name = "Operating Revenue",
-                            ParentAccountId = 4,
-                            RequiresReconciliation = false,
-                            Type = 4
-                        },
-                        new
-                        {
-                            Id = 500,
-                            Balance = 0m,
-                            Code = "5000",
-                            CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsSystemAccount = false,
-                            IsTransactionAccount = false,
-                            Name = "Cost of Goods Sold",
-                            RequiresReconciliation = false,
-                            Type = 5
-                        },
-                        new
-                        {
-                            Id = 601,
-                            Balance = 0m,
-                            Code = "6200",
-                            CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsSystemAccount = false,
-                            IsTransactionAccount = false,
-                            Name = "Administrative Expenses",
-                            ParentAccountId = 5,
-                            RequiresReconciliation = false,
-                            Type = 5
-                        },
-                        new
-                        {
-                            Id = 602,
-                            Balance = 0m,
-                            Code = "6300",
-                            CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsSystemAccount = false,
-                            IsTransactionAccount = false,
-                            Name = "Sales & Marketing",
-                            ParentAccountId = 5,
-                            RequiresReconciliation = false,
-                            Type = 5
-                        },
-                        new
-                        {
-                            Id = 6,
-                            Balance = 0m,
-                            Code = "1111",
-                            CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsSystemAccount = false,
-                            IsTransactionAccount = true,
-                            Name = "Cash in Hand",
-                            ParentAccountId = 102,
-                            RequiresReconciliation = false,
-                            Type = 1
-                        },
-                        new
-                        {
-                            Id = 7,
-                            Balance = 0m,
-                            Code = "1112",
-                            CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsSystemAccount = false,
-                            IsTransactionAccount = true,
-                            Name = "Bank - Sampath",
-                            ParentAccountId = 102,
-                            RequiresReconciliation = false,
-                            Type = 1
-                        },
-                        new
-                        {
-                            Id = 8,
-                            Balance = 0m,
-                            Code = "1130",
-                            CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsSystemAccount = false,
-                            IsTransactionAccount = false,
-                            Name = "Inventory Assets",
-                            ParentAccountId = 101,
-                            RequiresReconciliation = false,
-                            Type = 1
-                        },
-                        new
-                        {
-                            Id = 9,
-                            Balance = 0m,
-                            Code = "4110",
-                            CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsSystemAccount = false,
-                            IsTransactionAccount = true,
-                            Name = "Sales Revenue - FG",
-                            ParentAccountId = 401,
-                            RequiresReconciliation = false,
-                            Type = 4
-                        },
-                        new
-                        {
-                            Id = 10,
-                            Balance = 0m,
-                            Code = "6210",
-                            CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsSystemAccount = false,
-                            IsTransactionAccount = true,
-                            Name = "Rent Expense",
-                            ParentAccountId = 601,
-                            RequiresReconciliation = false,
-                            Type = 5
-                        },
-                        new
-                        {
-                            Id = 11,
-                            Balance = 0m,
-                            Code = "6220",
-                            CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsSystemAccount = false,
-                            IsTransactionAccount = true,
-                            Name = "Electricity & Utilities",
-                            ParentAccountId = 601,
-                            RequiresReconciliation = false,
-                            Type = 5
-                        },
-                        new
-                        {
-                            Id = 12,
-                            Balance = 0m,
-                            Code = "6310",
-                            CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsSystemAccount = false,
-                            IsTransactionAccount = true,
-                            Name = "Advertising & Marketing",
-                            ParentAccountId = 602,
-                            RequiresReconciliation = false,
-                            Type = 5
-                        },
-                        new
-                        {
-                            Id = 13,
-                            Balance = 0m,
-                            Code = "2121",
-                            CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsSystemAccount = false,
-                            IsTransactionAccount = true,
-                            Name = "VAT Payable",
-                            ParentAccountId = 202,
-                            RequiresReconciliation = false,
-                            Type = 2
-                        },
-                        new
-                        {
-                            Id = 14,
-                            Balance = 0m,
-                            Code = "2122",
-                            CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsSystemAccount = false,
-                            IsTransactionAccount = true,
-                            Name = "SSCL Payable",
-                            ParentAccountId = 202,
-                            RequiresReconciliation = false,
-                            Type = 2
-                        },
-                        new
-                        {
-                            Id = 1001,
-                            Balance = 0m,
-                            Code = "1120",
-                            CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsSystemAccount = false,
-                            IsTransactionAccount = true,
-                            Name = "Accounts Receivable (AR)",
-                            ParentAccountId = 101,
-                            RequiresReconciliation = false,
-                            Type = 1
-                        },
-                        new
-                        {
-                            Id = 2001,
-                            Balance = 0m,
-                            Code = "2110",
-                            CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsSystemAccount = false,
-                            IsTransactionAccount = true,
-                            Name = "Accounts Payable (AP)",
-                            ParentAccountId = 201,
-                            RequiresReconciliation = false,
-                            Type = 2
-                        },
-                        new
-                        {
-                            Id = 1002,
-                            Balance = 0m,
-                            Code = "1131",
-                            CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsSystemAccount = false,
-                            IsTransactionAccount = true,
-                            Name = "Raw Materials (RM) Inventory",
-                            ParentAccountId = 8,
-                            RequiresReconciliation = false,
-                            Type = 1
-                        },
-                        new
-                        {
-                            Id = 1003,
-                            Balance = 0m,
-                            Code = "1132",
-                            CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsSystemAccount = false,
-                            IsTransactionAccount = true,
-                            Name = "Finished Goods (FG) Inventory",
-                            ParentAccountId = 8,
-                            RequiresReconciliation = false,
-                            Type = 1
-                        },
-                        new
-                        {
-                            Id = 5001,
-                            Balance = 0m,
-                            Code = "5110",
-                            CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsSystemAccount = false,
-                            IsTransactionAccount = true,
-                            Name = "Raw Material Consumption",
-                            ParentAccountId = 500,
-                            RequiresReconciliation = false,
-                            Type = 5
-                        },
-                        new
-                        {
-                            Id = 5002,
-                            Balance = 0m,
-                            Code = "5120",
-                            CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsSystemAccount = false,
-                            IsTransactionAccount = true,
-                            Name = "Outsourced Job Work Costs",
-                            ParentAccountId = 500,
-                            RequiresReconciliation = false,
-                            Type = 5
-                        },
-                        new
-                        {
-                            Id = 3001,
-                            Balance = 0m,
-                            Code = "3100",
-                            CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsSystemAccount = false,
-                            IsTransactionAccount = true,
-                            Name = "Share Capital",
-                            ParentAccountId = 3,
-                            RequiresReconciliation = false,
-                            Type = 3
-                        },
-                        new
-                        {
-                            Id = 3002,
-                            Balance = 0m,
-                            Code = "3200",
-                            CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsSystemAccount = false,
-                            IsTransactionAccount = true,
-                            Name = "Retained Earnings",
-                            ParentAccountId = 3,
-                            RequiresReconciliation = false,
-                            Type = 3
-                        });
                 });
 
             modelBuilder.Entity("NexusFlow.Domain.Entities.Finance.Bank", b =>
@@ -4977,6 +4561,68 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.ToTable("Users", "Identity");
                 });
 
+            modelBuilder.Entity("NexusFlow.Domain.Entities.System.AppliedInstallationStep", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTimeOffset>("AppliedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("LastModifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("StepKey")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("StepVersion")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime>("ValidFrom")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidFrom");
+
+                    b.Property<DateTime>("ValidTo")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidTo");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StepKey", "StepVersion")
+                        .IsUnique();
+
+                    b.ToTable("AppliedInstallationSteps", "System");
+
+                    b.ToTable(tb => tb.IsTemporal(ttb =>
+                            {
+                                ttb.UseHistoryTable("AppliedInstallationSteps_History", "System");
+                                ttb
+                                    .HasPeriodStart("ValidFrom")
+                                    .HasColumnName("ValidFrom");
+                                ttb
+                                    .HasPeriodEnd("ValidTo")
+                                    .HasColumnName("ValidTo");
+                            }));
+                });
+
             modelBuilder.Entity("NexusFlow.Domain.Entities.System.AuditLog", b =>
                 {
                     b.Property<int>("Id")
@@ -5010,6 +4656,83 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("AuditLogs", "System");
+                });
+
+            modelBuilder.Entity("NexusFlow.Domain.Entities.System.InstallationRecord", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTimeOffset?>("CompletedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("InstanceId")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime?>("LastModifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ProductVersion")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("SchemaVersion")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("TemplateVersion")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime>("ValidFrom")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidFrom");
+
+                    b.Property<DateTime>("ValidTo")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidTo");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("InstanceId")
+                        .IsUnique();
+
+                    b.ToTable("InstallationRecords", "System");
+
+                    b.ToTable(tb => tb.IsTemporal(ttb =>
+                            {
+                                ttb.UseHistoryTable("InstallationRecords_History", "System");
+                                ttb
+                                    .HasPeriodStart("ValidFrom")
+                                    .HasColumnName("ValidFrom");
+                                ttb
+                                    .HasPeriodEnd("ValidTo")
+                                    .HasColumnName("ValidTo");
+                            }));
                 });
 
             modelBuilder.Entity("NexusFlow.Domain.Entities.System.NotificationItem", b =>

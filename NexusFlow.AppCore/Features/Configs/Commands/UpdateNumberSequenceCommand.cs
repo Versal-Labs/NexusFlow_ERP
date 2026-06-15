@@ -39,6 +39,11 @@ namespace NexusFlow.AppCore.Features.Configs.Commands
                 return Result<int>.Failure("Next Number must be greater than 0.");
             }
 
+            if (string.IsNullOrWhiteSpace(request.Prefix))
+            {
+                return Result<int>.Failure("Sequence prefix is required.");
+            }
+
             // --- VALIDATION 2: ANTI-REWIND SECURITY CHECK (The Fix) ---
             // If the user tries to set the number LOWER than what it is currently, block it.
             // This prevents "Unique Key Violation" crashes in production.

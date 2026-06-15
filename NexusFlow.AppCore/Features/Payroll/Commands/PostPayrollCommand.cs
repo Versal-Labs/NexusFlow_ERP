@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using NexusFlow.AppCore.DTOs.Finance;
+using NexusFlow.AppCore.Constants;
 using NexusFlow.AppCore.Interfaces;
 using NexusFlow.Domain.Entities.Payroll;
 using NexusFlow.Domain.Enums;
@@ -67,17 +68,14 @@ namespace NexusFlow.AppCore.Features.Payroll.Commands
 
 
                 // 2. BUILD THE GENERAL LEDGER JOURNAL ENTRY
-                // Resolve standard accounts (You must ensure these exist in your Chart of Accounts)
-                int basicSalaryExpenseAcc = await _context.Accounts.Where(a => a.Code == "6000").Select(a => a.Id).FirstAsync(cancellationToken); // e.g., Salaries & Wages Expense
-                int epfExpenseAcc = await _context.Accounts.Where(a => a.Code == "6010").Select(a => a.Id).FirstAsync(cancellationToken); // Employer EPF Expense 12%
-                int etfExpenseAcc = await _context.Accounts.Where(a => a.Code == "6020").Select(a => a.Id).FirstAsync(cancellationToken); // Employer ETF Expense 3%
-
-                int epfPayableAcc = await _context.Accounts.Where(a => a.Code == "2100").Select(a => a.Id).FirstAsync(cancellationToken); // EPF Payable Liability (20%)
-                int etfPayableAcc = await _context.Accounts.Where(a => a.Code == "2110").Select(a => a.Id).FirstAsync(cancellationToken); // ETF Payable Liability (3%)
-                int netSalariesPayableAcc = await _context.Accounts.Where(a => a.Code == "2120").Select(a => a.Id).FirstAsync(cancellationToken); // Net Salaries Payable Liability
-
-                int loanReceivableAcc = await _context.Accounts.Where(a => a.Code == "1200").Select(a => a.Id).FirstAsync(cancellationToken); // Employee Loans Asset
-                int advanceReceivableAcc = await _context.Accounts.Where(a => a.Code == "1210").Select(a => a.Id).FirstAsync(cancellationToken); // Salary Advances Asset
+                int basicSalaryExpenseAcc = await _accountResolver.ResolveAccountIdAsync(AccountMappingKeys.BasicSalaryExpense, cancellationToken);
+                int epfExpenseAcc = await _accountResolver.ResolveAccountIdAsync(AccountMappingKeys.EmployerEpfExpense, cancellationToken);
+                int etfExpenseAcc = await _accountResolver.ResolveAccountIdAsync(AccountMappingKeys.EmployerEtfExpense, cancellationToken);
+                int epfPayableAcc = await _accountResolver.ResolveAccountIdAsync(AccountMappingKeys.EpfPayable, cancellationToken);
+                int etfPayableAcc = await _accountResolver.ResolveAccountIdAsync(AccountMappingKeys.EtfPayable, cancellationToken);
+                int netSalariesPayableAcc = await _accountResolver.ResolveAccountIdAsync(AccountMappingKeys.NetSalariesPayable, cancellationToken);
+                int loanReceivableAcc = await _accountResolver.ResolveAccountIdAsync(AccountMappingKeys.EmployeeLoansReceivable, cancellationToken);
+                int advanceReceivableAcc = await _accountResolver.ResolveAccountIdAsync(AccountMappingKeys.SalaryAdvancesReceivable, cancellationToken);
 
                 var journalLines = new List<JournalLineRequest>();
 
@@ -98,7 +96,7 @@ namespace NexusFlow.AppCore.Features.Payroll.Commands
 
                 if (totalCommissions > 0)
                 {
-                    int commExpenseAcc = await _context.Accounts.Where(a => a.Code == "6030").Select(a => a.Id).FirstAsync(cancellationToken); // Commission Expense
+                    int commExpenseAcc = await _accountResolver.ResolveAccountIdAsync(AccountMappingKeys.CommissionExpense, cancellationToken);
                     journalLines.Add(new JournalLineRequest { AccountId = commExpenseAcc, Debit = totalCommissions, Credit = 0, Note = "Sales Commissions" });
                 }
 
@@ -108,7 +106,7 @@ namespace NexusFlow.AppCore.Features.Payroll.Commands
                 decimal otherAllowances = period.Slips.Sum(s => s.TotalAllowances) - totalCommissions;
                 if (otherAllowances > 0)
                 {
-                    int allowExpenseAcc = await _context.Accounts.Where(a => a.Code == "6040").Select(a => a.Id).FirstAsync(cancellationToken);
+                    int allowExpenseAcc = await _accountResolver.ResolveAccountIdAsync(AccountMappingKeys.AllowanceExpense, cancellationToken);
                     journalLines.Add(new JournalLineRequest { AccountId = allowExpenseAcc, Debit = otherAllowances, Credit = 0, Note = "Other Allowances" });
                 }
 

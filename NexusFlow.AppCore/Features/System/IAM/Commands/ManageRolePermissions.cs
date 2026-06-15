@@ -87,6 +87,10 @@ namespace NexusFlow.AppCore.Features.System.IAM.Commands
             var role = await _roleManager.FindByIdAsync(request.RoleId);
             if (role == null) return Result<int>.Failure("Role not found.");
 
+            if (role.Name == DefaultRoleManifest.SuperAdmin &&
+                !request.Permissions.Contains(Permissions.SuperAdmin, StringComparer.OrdinalIgnoreCase))
+                return Result<int>.Failure("The protected SuperAdmin bypass permission cannot be removed.");
+
             // 1. Get existing claims
             var existingClaims = await _roleManager.GetClaimsAsync(role);
             var existingPermissions = existingClaims.Where(c => c.Type == "Permission").ToList();

@@ -66,16 +66,16 @@ namespace NexusFlow.AppCore.Features.Finance.Queries
 
                     case AccountType.Liability:
                         report.Liabilities.Accounts.Add(line);
-                        report.Liabilities.Total += Math.Abs(item.NetAmount); // Liabilities are Credit (-)
+                        report.Liabilities.Total += -item.NetAmount; // Credit balances are positive; debit balances reduce liabilities.
                         break;
 
                     case AccountType.Equity:
                         report.Equity.Accounts.Add(line);
-                        report.Equity.Total += Math.Abs(item.NetAmount); // Equity is Credit (-)
+                        report.Equity.Total += -item.NetAmount; // Credit balances are positive; debit balances reduce equity.
                         break;
 
                     case AccountType.Revenue:
-                        totalRevenue += Math.Abs(item.NetAmount); // Revenue is Credit
+                        totalRevenue += -item.NetAmount; // Credit revenue is positive; debit revenue reduces income.
                         break;
 
                     case AccountType.Expense:

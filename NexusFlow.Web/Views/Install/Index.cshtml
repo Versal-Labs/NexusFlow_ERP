@@ -1,0 +1,188 @@
+@model NexusFlow.Web.Models.Installation.InstallViewModel
+@{
+    ViewData["Title"] = "Install NexusFlow ERP";
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"]</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background: #f4f7fb; color: #172033; }
+        .shell { max-width: 1100px; margin: 32px auto; }
+        .brand { background: linear-gradient(135deg, #10233f, #245fc5); color: white; }
+        .step-card { border: 0; box-shadow: 0 8px 26px rgba(24, 39, 75, .08); }
+        .section-number { width: 30px; height: 30px; display: inline-grid; place-items: center; border-radius: 50%; background: #e8f0ff; color: #245fc5; font-weight: 700; }
+        .required-note { color: #667085; font-size: .85rem; }
+        .field-validation-error { display: block; margin-top: .35rem; color: #b42318; font-size: .875rem; }
+        .input-validation-error { border-color: #dc3545; }
+        .validation-summary-errors ul { margin-bottom: 0; }
+        .submit-status { display: none; }
+        form.is-submitting .submit-status { display: inline-block; }
+        .required-label::after { content: " *"; color: #b42318; }
+    </style>
+</head>
+<body>
+<main class="shell px-3">
+    <div class="brand rounded-4 p-4 mb-4 d-flex justify-content-between align-items-center">
+        <div>
+            <div class="text-uppercase small opacity-75 mb-1">Production setup</div>
+            <h1 class="h3 mb-1">NexusFlow ERP Installer</h1>
+            <p class="mb-0 opacity-75">This instance remains locked until every required readiness check passes.</p>
+        </div>
+        <span class="badge text-bg-light">@Model.Mode</span>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(Model.Error))
+    {
+        <div class="alert alert-danger">@Model.Error</div>
+    }
+
+    <div class="card step-card rounded-4 mb-4">
+        <div class="card-body p-4">
+            <h2 class="h5 mb-3">Server preflight</h2>
+            @foreach (var check in Model.PreflightChecks)
+            {
+                <div class="d-flex gap-3 border-bottom py-2">
+                    <strong class="@(check.Passed ? "text-success" : "text-danger")">@(check.Passed ? "PASS" : "FAIL")</strong>
+                    <div><div>@check.Description</div><small class="text-muted">@check.Detail</small></div>
+                </div>
+            }
+        </div>
+    </div>
+
+    @if (!Model.IsUnlocked)
+    {
+        <div class="card step-card rounded-4">
+            <div class="card-body p-4 p-md-5">
+                <h2 class="h5">Unlock first-run setup</h2>
+                <p class="text-muted">
+                    Enter the one-time setup key produced by the IIS deployment script or by the server-side
+                    <code>New-NexusFlowSetupKey.ps1</code> recovery command.
+                </p>
+                <form asp-action="Unlock" method="post" class="row g-3">
+                    @Html.AntiForgeryToken()
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <div class="col-md-8">
+                        <label class="form-label">One-time setup key</label>
+                        <input asp-for="SetupKey" class="form-control form-control-lg font-monospace" autocomplete="off" />
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end">
+                        <button class="btn btn-primary btn-lg w-100" type="submit">Unlock installer</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    }
+    else
+    {
+        <form asp-action="Run" method="post" id="installer-form">
+            @Html.AntiForgeryToken()
+            <div asp-validation-summary="All" class="alert alert-danger" id="validation-summary"></div>
+            <p class="required-note"><span class="text-danger">*</span> Required field</p>
+
+            <div class="card step-card rounded-4 mb-4">
+                <div class="card-body p-4">
+                    <h2 class="h5 mb-3"><span class="section-number me-2">1</span>Database connection</h2>
+                    <p class="required-note">The database must already exist. NexusFlow will never create or drop it.</p>
+                    <div class="row g-3">
+                        <div class="col-md-6"><label asp-for="Server" class="form-label required-label">SQL Server</label><input asp-for="Server" class="form-control" placeholder="SERVER\INSTANCE or tcp:server,1433" /><span asp-validation-for="Server" class="text-danger"></span></div>
+                        <div class="col-md-6"><label asp-for="Database" class="form-label required-label">Database name</label><input asp-for="Database" class="form-control" /><span asp-validation-for="Database" class="text-danger"></span></div>
+                        <div class="col-12"><div class="form-check form-switch"><input asp-for="UseWindowsAuthentication" class="form-check-input" id="windowsAuth" /><label class="form-check-label" for="windowsAuth">Use Windows Authentication with the IIS app-pool identity</label></div></div>
+                        <div class="col-md-6"><label asp-for="SqlUsername" class="form-label">SQL username</label><input asp-for="SqlUsername" class="form-control" autocomplete="off" /></div>
+                        <div class="col-md-6"><label asp-for="SqlPassword" class="form-label">SQL password</label><input asp-for="SqlPassword" class="form-control" type="password" autocomplete="new-password" /></div>
+                        <div class="col-12"><div class="form-check"><input asp-for="TrustServerCertificate" class="form-check-input" /><label asp-for="TrustServerCertificate" class="form-check-label">Trust SQL Server certificate</label></div></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card step-card rounded-4 mb-4">
+                <div class="card-body p-4">
+                    <h2 class="h5 mb-3"><span class="section-number me-2">2</span>Company and statutory setup</h2>
+                    <div class="row g-3">
+                        <div class="col-md-6"><label asp-for="CompanyName" class="form-label required-label">Company name</label><input asp-for="CompanyName" class="form-control" /><span asp-validation-for="CompanyName" class="text-danger"></span></div>
+                        <div class="col-md-6"><label asp-for="TaxRegistrationNumber" class="form-label required-label">Tax registration number</label><input asp-for="TaxRegistrationNumber" class="form-control" /><span asp-validation-for="TaxRegistrationNumber"></span></div>
+                        <div class="col-md-8"><label asp-for="CanonicalUrl" class="form-label required-label">Canonical HTTPS URL</label><input asp-for="CanonicalUrl" class="form-control" /><span asp-validation-for="CanonicalUrl" class="text-danger"></span></div>
+                        <div class="col-md-4"><label asp-for="TimeZoneId" class="form-label required-label">Windows timezone</label><input asp-for="TimeZoneId" class="form-control" /><span asp-validation-for="TimeZoneId"></span></div>
+                        <div class="col-md-3"><label asp-for="FiscalYearStart" class="form-label required-label">Fiscal year start</label><input asp-for="FiscalYearStart" class="form-control" /><span asp-validation-for="FiscalYearStart"></span></div>
+                        <div class="col-md-3"><label asp-for="FiscalYearEnd" class="form-label required-label">Fiscal year end</label><input asp-for="FiscalYearEnd" class="form-control" /><span asp-validation-for="FiscalYearEnd"></span></div>
+                        <div class="col-md-3"><label asp-for="VatRate" class="form-label required-label">VAT rate (%)</label><input asp-for="VatRate" class="form-control" /><span asp-validation-for="VatRate"></span></div>
+                        <div class="col-md-3"><label asp-for="SsclRate" class="form-label required-label">SSCL rate (%)</label><input asp-for="SsclRate" class="form-control" /><span asp-validation-for="SsclRate"></span></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card step-card rounded-4 mb-4">
+                <div class="card-body p-4">
+                    <h2 class="h5 mb-3"><span class="section-number me-2">3</span>Operational defaults</h2>
+                    <div class="row g-3">
+                        <div class="col-md-3"><label asp-for="WarehouseCode" class="form-label required-label">Warehouse code</label><input asp-for="WarehouseCode" class="form-control" /><span asp-validation-for="WarehouseCode"></span></div>
+                        <div class="col-md-5"><label asp-for="WarehouseName" class="form-label required-label">Warehouse name</label><input asp-for="WarehouseName" class="form-control" /><span asp-validation-for="WarehouseName"></span></div>
+                        <div class="col-md-4"><label asp-for="WarehouseLocation" class="form-label">Warehouse location <span class="text-muted">(optional)</span></label><input asp-for="WarehouseLocation" class="form-control" /><span asp-validation-for="WarehouseLocation"></span></div>
+                        <div class="col-12"><label asp-for="LocalStoragePath" class="form-label required-label">Local storage path</label><input asp-for="LocalStoragePath" class="form-control font-monospace" /><span asp-validation-for="LocalStoragePath"></span></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card step-card rounded-4 mb-4">
+                <div class="card-body p-4">
+                    <h2 class="h5 mb-3"><span class="section-number me-2">4</span>Initial SuperAdmin</h2>
+                    <div class="row g-3">
+                        <div class="col-md-4"><label asp-for="AdminFullName" class="form-label required-label">Full name</label><input asp-for="AdminFullName" class="form-control" /><span asp-validation-for="AdminFullName"></span></div>
+                        <div class="col-md-4"><label asp-for="AdminEmail" class="form-label required-label">Email address</label><input asp-for="AdminEmail" class="form-control" autocomplete="off" /><span asp-validation-for="AdminEmail"></span></div>
+                        <div class="col-md-2"><label asp-for="AdminPassword" class="form-label required-label">Password</label><input asp-for="AdminPassword" class="form-control" autocomplete="new-password" /><span asp-validation-for="AdminPassword"></span></div>
+                        <div class="col-md-2"><label asp-for="ConfirmAdminPassword" class="form-label required-label">Confirm</label><input asp-for="ConfirmAdminPassword" class="form-control" autocomplete="new-password" /><span asp-validation-for="ConfirmAdminPassword"></span></div>
+                    </div>
+                </div>
+            </div>
+
+            @if (Model.ReadinessChecks.Count > 0)
+            {
+                <div class="card step-card rounded-4 mb-4">
+                    <div class="card-body p-4">
+                        <h2 class="h5 mb-3">Readiness results</h2>
+                        @foreach (var check in Model.ReadinessChecks)
+                        {
+                            <div class="d-flex gap-3 border-bottom py-2">
+                                <strong class="@(check.Passed ? "text-success" : "text-danger")">@(check.Passed ? "PASS" : "FAIL")</strong>
+                                <div><div>@check.Description</div><small class="text-muted">@check.Detail</small></div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+
+            <div class="alert alert-warning">
+                The standard Sri Lanka light-manufacturing template will create required system accounts, mappings, sequences, roles, taxes, cities, and banks. It will not create sample customers, suppliers, products, brands, or categories.
+            </div>
+            <div asp-validation-summary="All" class="alert alert-danger" id="validation-summary-bottom"></div>
+            <button class="btn btn-primary btn-lg w-100 mb-2" type="submit" id="install-submit">
+                <span class="submit-status spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+                <span class="submit-label">Validate, provision, and complete installation</span>
+            </button>
+            <p class="text-center text-muted mb-5">After validation passes, database provisioning may take several minutes. Keep this page open.</p>
+        </form>
+    }
+</main>
+<script>
+    const form = document.getElementById("installer-form");
+    if (form) {
+        form.addEventListener("submit", () => {
+            if (!form.checkValidity()) return;
+            form.classList.add("is-submitting");
+            const button = document.getElementById("install-submit");
+            button.disabled = true;
+            button.querySelector(".submit-label").textContent = "Validating and provisioning...";
+        });
+
+        const summary = document.querySelector(".validation-summary-errors");
+        if (summary) {
+            summary.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+    }
+</script>
+</body>
+</html>

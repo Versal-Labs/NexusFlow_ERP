@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using NexusFlow.AppCore.Interfaces;
+using NexusFlow.AppCore.Constants;
 using NexusFlow.Domain.Entities.Finance;
 using NexusFlow.Domain.Entities.Inventory;
 using NexusFlow.Domain.Enums;
@@ -97,9 +98,8 @@ namespace NexusFlow.AppCore.Features.Inventory.Commands
             }
 
             // 4. Real-time GL Posting exactly matching your JournalEntry schema
-            // Note: Replace "RM_INV" and "WIP_INV" with your actual system lookup codes
-            int rmInventoryAccountId = await _accountResolver.ResolveAccountIdAsync("RM_INV");
-            int wipInventoryAccountId = await _accountResolver.ResolveAccountIdAsync("WIP_INV");
+            int rmInventoryAccountId = await _accountResolver.ResolveAccountIdAsync(AccountMappingKeys.RawMaterialInventory);
+            int wipInventoryAccountId = await _accountResolver.ResolveAccountIdAsync(AccountMappingKeys.WorkInProgressInventory);
 
             var journalEntry = new JournalEntry
             {

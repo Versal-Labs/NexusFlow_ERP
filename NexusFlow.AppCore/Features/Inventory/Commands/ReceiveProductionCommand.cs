@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using NexusFlow.AppCore.Interfaces;
+using NexusFlow.AppCore.Constants;
 using NexusFlow.Domain.Entities.Finance;
 using NexusFlow.Domain.Entities.Inventory;
 using NexusFlow.Domain.Enums;
@@ -80,9 +81,9 @@ namespace NexusFlow.AppCore.Features.Inventory.Commands
             await _context.StockTransactions.AddAsync(stockTransaction, cancellationToken);
 
             // 5. Real-Time GL Posting (3-Way Double Entry)
-            int fgInventoryAccountId = await _accountResolver.ResolveAccountIdAsync("FG_INV");
-            int wipInventoryAccountId = await _accountResolver.ResolveAccountIdAsync("WIP_INV");
-            int apTradeAccountId = await _accountResolver.ResolveAccountIdAsync("AP_TRADE"); // Accrued Labor
+            int fgInventoryAccountId = await _accountResolver.ResolveAccountIdAsync(AccountMappingKeys.FinishedGoodInventory);
+            int wipInventoryAccountId = await _accountResolver.ResolveAccountIdAsync(AccountMappingKeys.WorkInProgressInventory);
+            int apTradeAccountId = await _accountResolver.ResolveAccountIdAsync(AccountMappingKeys.ServiceAccrual);
 
             var journalEntry = new JournalEntry
             {

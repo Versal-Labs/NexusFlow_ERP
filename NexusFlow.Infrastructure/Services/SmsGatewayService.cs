@@ -1,20 +1,21 @@
-﻿using NexusFlow.AppCore.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Text;
+using Microsoft.Extensions.Logging;
+using NexusFlow.AppCore.Interfaces;
 
 namespace NexusFlow.Infrastructure.Services
 {
     public class SmsGatewayService : ISmsGatewayService
     {
+        private readonly ILogger<SmsGatewayService> _logger;
+
+        public SmsGatewayService(ILogger<SmsGatewayService> logger)
+        {
+            _logger = logger;
+        }
+
         public Task<bool> SendSmsAsync(string phoneNumber, string message)
         {
-            // TODO: Wire up your actual SMS API Gateway here (e.g., Twilio, Dialog SMS, etc.)
-            // using var client = new HttpClient();
-            // var response = await client.PostAsync("https://api.smsprovider.com/send", ...);
-
-            System.Console.WriteLine($"[SMS SENT TO {phoneNumber}]: {message}");
-            return Task.FromResult(true);
+            _logger.LogWarning("SMS delivery was requested, but no SMS provider is configured.");
+            return Task.FromResult(false);
         }
     }
 }

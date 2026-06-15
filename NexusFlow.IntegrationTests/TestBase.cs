@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using NexusFlow.AppCore.Interfaces;
@@ -9,6 +10,7 @@ using NexusFlow.Domain.Entities.Master;
 using NexusFlow.Domain.Enums;
 using NexusFlow.Infrastructure;
 using NexusFlow.Infrastructure.Services;
+using NexusFlow.Infrastructure.Installation;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -29,16 +31,21 @@ namespace NexusFlow.IntegrationTests
             var configuration = new ConfigurationBuilder().Build();
             services.AddSingleton<IConfiguration>(configuration);
             services.AddLogging(); // Satisfies ILogger dependencies
+            services.AddMemoryCache();
 
             // 1. Mock the Database (Use In-Memory for speed)
             services.AddDbContext<ErpDbContext>(options =>
-                options.UseInMemoryDatabase(dbName));
+                options.UseInMemoryDatabase(dbName)
+                    .ConfigureWarnings(warnings => warnings.Ignore(InMemoryEventId.TransactionIgnoredWarning)));
 
             // 2. Register Interface Mappings
             services.AddScoped<IErpDbContext>(provider => provider.GetRequiredService<ErpDbContext>());
+            services.AddScoped<ICurrentUserService, SystemCurrentUserService>();
             services.AddScoped<IStockService, StockService>();
             services.AddScoped<ITaxService, TaxService>();
             services.AddScoped<IJournalService, JournalService>();
+            services.AddScoped<INumberSequenceService, NumberSequenceService>();
+            services.AddScoped<IFinancialAccountResolver, FinancialAccountResolver>();
 
             // 3. Register MediatR (Finds all your Handlers)
             services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(IErpDbContext).Assembly));
@@ -60,8 +67,13 @@ namespace NexusFlow.IntegrationTests
             context.SystemConfigs.AddRange(
                 new SystemConfig { Key = "Account.Inventory.RawMaterial", Value = "1031" },
                 new SystemConfig { Key = "Account.Inventory.FinishedGood", Value = "1032" },
+                new SystemConfig { Key = "Account.Inventory.WorkInProgress", Value = "1033" },
                 new SystemConfig { Key = "Account.Liability.TradeCreditors", Value = "2010" },
                 new SystemConfig { Key = "Account.Liability.ServiceAccrual", Value = "2060" },
+                new SystemConfig { Key = "Account.Purchasing.UnbilledReceipts", Value = "2060" },
+                new SystemConfig { Key = "Account.Asset.UndepositedFunds", Value = "1010" },
+                new SystemConfig { Key = "Account.Asset.AccountsReceivable", Value = "1040" },
+                new SystemConfig { Key = "Account.Liability.AccountsPayable", Value = "2010" },
                 new SystemConfig { Key = "Account.Sales.Revenue", Value = "4010" },
                 new SystemConfig { Key = "Account.Sales.Receivable", Value = "1040" },
                 new SystemConfig { Key = "Account.Tax.VATPayable", Value = "2050" },
@@ -72,6 +84,7 @@ namespace NexusFlow.IntegrationTests
             context.Accounts.AddRange(
                 new Account { Id = 1031, Code = "1031", Name = "Stock - Raw Material", Type = AccountType.Asset, IsTransactionAccount = true },
                 new Account { Id = 1032, Code = "1032", Name = "Stock - Finished Goods", Type = AccountType.Asset, IsTransactionAccount = true },
+                new Account { Id = 1033, Code = "1033", Name = "Stock - Work in Progress", Type = AccountType.Asset, IsTransactionAccount = true },
                 new Account { Id = 1010, Code = "1010", Name = "Cash in Hand", Type = AccountType.Asset, IsTransactionAccount = true },
                 new Account { Id = 1020, Code = "1020", Name = "Bank - Sampath", Type = AccountType.Asset, IsTransactionAccount = true },
                 new Account { Id = 2010, Code = "2010", Name = "Trade Creditors", Type = AccountType.Liability, IsTransactionAccount = true },
@@ -88,8 +101,14 @@ namespace NexusFlow.IntegrationTests
             context.TaxRates.Add(new TaxRate { TaxType = vatType, Rate = 18.0m, EffectiveDate = DateTime.MinValue });
 
             // D. PRODUCTS (Fabric & Jeans)
-            var fabric = new ProductVariant { Id = 100, Name = "Fabric Roll", CostPrice = 0, SellingPrice = 0, SKU = "RM-001" };
-            var jean = new ProductVariant { Id = 200, Name = "Blue Jean", CostPrice = 0, SellingPrice = 5000, SKU = "FG-001" };
+            var brand = new Brand { Name = "Test Brand" };
+            var unit = new UnitOfMeasure { Name = "Piece", Symbol = "pcs" };
+            var rawMaterialCategory = new Category { Name = "Raw Material", Code = "RM", InventoryAccountId = 1031, CogsAccountId = 5050 };
+            var finishedGoodCategory = new Category { Name = "Finished Good", Code = "FG", InventoryAccountId = 1032, CogsAccountId = 5050, SalesAccountId = 4010 };
+            var fabricProduct = new Product { Name = "Fabric", Brand = brand, UnitOfMeasure = unit, Category = rawMaterialCategory, Type = ProductType.RawMaterial };
+            var jeanProduct = new Product { Name = "Jean", Brand = brand, UnitOfMeasure = unit, Category = finishedGoodCategory, Type = ProductType.FinishedGood };
+            var fabric = new ProductVariant { Id = 100, Product = fabricProduct, Name = "Fabric Roll", CostPrice = 0, SellingPrice = 0, SKU = "RM-001" };
+            var jean = new ProductVariant { Id = 200, Product = jeanProduct, Name = "Blue Jean", CostPrice = 0, SellingPrice = 5000, SKU = "FG-001" };
             context.ProductVariants.AddRange(fabric, jean);
 
             // E. BOM (1 Jean = 1.5 Fabric)
@@ -98,13 +117,27 @@ namespace NexusFlow.IntegrationTests
             context.BomComponents.Add(new BomComponent { BillOfMaterial = bom, MaterialVariantId = 100, Quantity = 1.5m });
 
             // F. WAREHOUSES & SUPPLIER & CUSTOMER
-            //context.Warehouses.AddRange(
-            //    new Warehouse { Id = 1, Name = "Main Store", IsSubcontractor = false },
-            //    new Warehouse { Id = 2, Name = "Factory", IsSubcontractor = true }
-            //);
+            context.Warehouses.AddRange(
+                new Warehouse { Id = 1, Code = "MAIN", Name = "Main Store", Type = WarehouseType.Internal },
+                new Warehouse { Id = 2, Code = "FACTORY", Name = "Factory", Type = WarehouseType.Subcontractor }
+            );
+
+            context.NumberSequences.AddRange(
+                new NumberSequence { Module = "GRN", Prefix = "GRN", NextNumber = 1 },
+                new NumberSequence { Module = "SalesInvoice", Prefix = "INV", NextNumber = 1 },
+                new NumberSequence { Module = "Payment", Prefix = "PAY", NextNumber = 1 },
+                new NumberSequence { Module = "Receipt", Prefix = "REC", NextNumber = 1 },
+                new NumberSequence { Module = "JOURNAL", Prefix = "JE", NextNumber = 1 }
+            );
 
             context.Suppliers.Add(new Domain.Entities.Purchasing.Supplier { Id = 1, Name = "Fabric Supplier Ltd", DefaultPayableAccountId = 2010 });
-            context.Customers.Add(new Domain.Entities.Sales.Customer { Id = 1, Name = "Retail Shop" });
+            context.Customers.Add(new Domain.Entities.Sales.Customer
+            {
+                Id = 1,
+                Name = "Retail Shop",
+                DefaultReceivableAccountId = 1040,
+                DefaultRevenueAccountId = 4010
+            });
 
             // G. OPEN FINANCIAL PERIOD
             context.FinancialPeriods.Add(new FinancialPeriod { Name = "2024", StartDate = DateTime.MinValue, EndDate = DateTime.MaxValue, IsClosed = false });

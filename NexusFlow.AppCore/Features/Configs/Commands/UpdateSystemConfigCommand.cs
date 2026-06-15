@@ -6,6 +6,8 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
+using NexusFlow.AppCore.Constants;
+
 namespace NexusFlow.AppCore.Features.Configs.Commands
 {
     public class UpdateSystemConfigCommand : IRequest<Result<bool>>
@@ -40,6 +42,19 @@ namespace NexusFlow.AppCore.Features.Configs.Commands
             {
                 return Result<bool>.Failure($"Invalid format. Key '{config.Key}' expects a {config.DataType}.");
             }
+
+            if (AccountMappingKeys.Required.Contains(config.Key, StringComparer.OrdinalIgnoreCase))
+            {
+                var validAccount = await _context.Accounts.AnyAsync(
+                    x => x.Code == request.Value.Trim() && x.IsActive && x.IsTransactionAccount,
+                    cancellationToken);
+                if (!validAccount)
+                    return Result<bool>.Failure("Required account mappings must resolve to an active transaction account.");
+            }
+
+            if (ConfigurationKeys.Required.Contains(config.Key, StringComparer.OrdinalIgnoreCase) &&
+                string.IsNullOrWhiteSpace(request.Value))
+                return Result<bool>.Failure("Required configuration values cannot be empty.");
 
             // 3. Update & Save
             config.Value = request.Value;
