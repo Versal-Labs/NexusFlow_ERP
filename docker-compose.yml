@@ -1,0 +1,29 @@
+services:
+  nexusflow:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: nexusflow-erp:local
+    ports:
+      - "8080:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8080
+      NEXUSFLOW_INSTANCE_ID: local
+      NEXUSFLOW_INSTANCE_ROOT: /app/state
+      NEXUSFLOW_DEPLOYMENT_PROFILE: PortableVm
+      NEXUSFLOW_SECRET_STORE: EncryptedFile
+      NEXUSFLOW_STATE_STORE: File
+      NEXUSFLOW_DATA_PROTECTION_STORE: File
+      NEXUSFLOW_STORAGE_MODE: Local
+      # Set a one-time setup key before first run, then rotate/remove it after the installer consumes it.
+      # NEXUSFLOW_SETUP_KEY: change-this-before-first-run
+      # For preconfigured SQL/Azure SQL deployments, set one of:
+      # ConnectionStrings__DefaultConnection: Server=tcp:server.database.windows.net,1433;Database=NexusFlow;Authentication=Active Directory Default;Encrypt=True;TrustServerCertificate=False;MultipleActiveResultSets=True;
+      # SQLCONNSTR_DefaultConnection: Server=sql-host;Database=NexusFlow;User ID=...;Password=...;Encrypt=True;TrustServerCertificate=False;MultipleActiveResultSets=True;
+    volumes:
+      - nexusflow_state:/app/state
+    restart: unless-stopped
+
+volumes:
+  nexusflow_state:

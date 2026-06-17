@@ -12,7 +12,7 @@ namespace NexusFlow.Web.Controllers
         [Authorize(Policy = Permissions.Inventory.ViewStock)]
         public IActionResult Index()
         {
-            return View();
+            return RedirectToAction(nameof(StockValuation));
         }
 
         // GET: /Inventory/MaterialIssue 
@@ -51,6 +51,12 @@ namespace NexusFlow.Web.Controllers
 
         [Authorize(Policy = Permissions.Inventory.PrintBarcodes)]
         public IActionResult BarcodeCenter()
+        {
+            return View();
+        }
+
+        [Authorize(Policy = Permissions.Inventory.ManageBarcodeTemplates)]
+        public IActionResult BarcodeTemplates()
         {
             return View();
         }

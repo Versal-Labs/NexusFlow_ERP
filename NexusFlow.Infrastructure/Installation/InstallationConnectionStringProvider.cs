@@ -1,14 +1,15 @@
 using NexusFlow.AppCore.Interfaces;
+using NexusFlow.AppCore.Installation;
 
 namespace NexusFlow.Infrastructure.Installation
 {
     public sealed class InstallationConnectionStringProvider : IInstallationConnectionStringProvider
     {
-        public const string DefaultConnectionSecret = "ConnectionStrings.DefaultConnection";
-        public const string HangfireConnectionSecret = "Hangfire.ConnectionString";
-        public const string JwtSecret = "JwtSettings.Secret";
-        public const string SyncfusionLicenseSecret = "Syncfusion.LicenseKey";
-        public const string AzureBlobStorageSecret = "ConnectionStrings.AzureBlobStorage";
+        public const string DefaultConnectionSecret = InstallationSecretKeys.DefaultConnection;
+        public const string HangfireConnectionSecret = InstallationSecretKeys.HangfireConnection;
+        public const string JwtSecret = InstallationSecretKeys.JwtSecret;
+        public const string SyncfusionLicenseSecret = InstallationSecretKeys.SyncfusionLicense;
+        public const string AzureBlobStorageSecret = InstallationSecretKeys.AzureBlobStorage;
 
         private readonly IInstallationSecretStore _secrets;
 

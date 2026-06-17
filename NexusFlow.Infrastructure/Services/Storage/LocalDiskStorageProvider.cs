@@ -33,8 +33,11 @@ namespace NexusFlow.Infrastructure.Services.Storage
 
         public async Task<(Stream Stream, string ContentType)> DownloadAsync(string fileReference, CancellationToken cancellationToken = default)
         {
-            string relativePath = fileReference.Replace(_providerPrefix, "").Replace("/", "\\");
-            string filePath = Path.Combine(_basePath, relativePath);
+            string relativePath = fileReference.Replace(_providerPrefix, "");
+            string filePath = Path.Combine(
+                new[] { _basePath }
+                    .Concat(relativePath.Split(['/', '\\'], StringSplitOptions.RemoveEmptyEntries))
+                    .ToArray());
 
             if (!File.Exists(filePath)) throw new FileNotFoundException("File not found on local fallback disk.");
 
@@ -45,8 +48,11 @@ namespace NexusFlow.Infrastructure.Services.Storage
 
         public async Task DeleteAsync(string fileReference, CancellationToken cancellationToken = default)
         {
-            string relativePath = fileReference.Replace(_providerPrefix, "").Replace("/", "\\");
-            string filePath = Path.Combine(_basePath, relativePath);
+            string relativePath = fileReference.Replace(_providerPrefix, "");
+            string filePath = Path.Combine(
+                new[] { _basePath }
+                    .Concat(relativePath.Split(['/', '\\'], StringSplitOptions.RemoveEmptyEntries))
+                    .ToArray());
             if (File.Exists(filePath)) File.Delete(filePath);
             await Task.CompletedTask;
         }

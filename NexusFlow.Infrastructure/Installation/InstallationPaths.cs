@@ -11,11 +11,12 @@ namespace NexusFlow.Infrastructure.Installation
 
             var rootOverride = Environment.GetEnvironmentVariable("NEXUSFLOW_INSTANCE_ROOT");
             RootPath = string.IsNullOrWhiteSpace(rootOverride)
-                ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "NexusFlow", "ERP", InstanceId)
+                ? Path.Combine(DefaultBasePath(), "NexusFlow", "ERP", InstanceId)
                 : Path.GetFullPath(rootOverride);
 
             StateFilePath = Path.Combine(RootPath, "installation-state.json");
             SecretFilePath = Path.Combine(RootPath, "secrets.dat");
+            SecretKeyPath = Path.Combine(RootPath, "secret.key");
             BootstrapKeyPath = Path.Combine(RootPath, "bootstrap.key");
             DataProtectionKeysPath = Path.Combine(RootPath, "data-protection");
             LogsPath = Path.Combine(RootPath, "logs");
@@ -26,6 +27,7 @@ namespace NexusFlow.Infrastructure.Installation
         public string RootPath { get; }
         public string StateFilePath { get; }
         public string SecretFilePath { get; }
+        public string SecretKeyPath { get; }
         public string BootstrapKeyPath { get; }
         public string DataProtectionKeysPath { get; }
         public string LogsPath { get; }
@@ -37,6 +39,18 @@ namespace NexusFlow.Infrastructure.Installation
             Directory.CreateDirectory(DataProtectionKeysPath);
             Directory.CreateDirectory(LogsPath);
             Directory.CreateDirectory(StoragePath);
+        }
+
+        private static string DefaultBasePath()
+        {
+            if (OperatingSystem.IsWindows())
+            {
+                return Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData);
+            }
+
+            return Environment.GetEnvironmentVariable("HOME")
+                ?? Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)
+                ?? Path.GetTempPath();
         }
     }
 }

@@ -5,7 +5,7 @@ using NexusFlow.AppCore.Interfaces;
 
 namespace NexusFlow.Infrastructure.Installation
 {
-    public sealed class DpapiInstallationSecretStore : IInstallationSecretStore
+    public sealed class DpapiInstallationSecretStore : IInstallationSecretStore, IInstallationSecretStoreDiagnostics
     {
         private static readonly byte[] Entropy = Encoding.UTF8.GetBytes("NexusFlow.ERP.InstallationSecrets.v1");
         private readonly InstallationPaths _paths;
@@ -50,6 +50,31 @@ namespace NexusFlow.Infrastructure.Installation
             }
 
             return Task.CompletedTask;
+        }
+
+        public InstallationSecretDiagnostic Inspect(string key)
+        {
+            lock (_sync)
+            {
+                var values = ReadAll();
+                if (!values.TryGetValue(key, out var value) || string.IsNullOrWhiteSpace(value))
+                {
+                    return new InstallationSecretDiagnostic
+                    {
+                        CanWrite = true,
+                        Source = "Missing"
+                    };
+                }
+
+                return new InstallationSecretDiagnostic
+                {
+                    HasValue = true,
+                    HasStoredValue = true,
+                    CanWrite = true,
+                    Source = "Secret store",
+                    Fingerprint = InstallationSecretFingerprint.Create(value)
+                };
+            }
         }
 
         private Dictionary<string, string> ReadAll()

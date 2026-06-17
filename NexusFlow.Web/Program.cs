@@ -7,6 +7,8 @@ using Hangfire.SqlServer;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.DataProtection.KeyManagement;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
@@ -23,14 +25,22 @@ using NexusFlow.Notification;
 using NexusFlow.Web;
 using NexusFlow.Web.Installation;
 using NexusFlow.Web.Security;
+using NexusFlow.Web.Services;
 using Scalar.AspNetCore;
 using Serilog;
 
-var paths = new InstallationPaths();
-paths.EnsureDirectories();
-var stateStore = new JsonInstallationStateStore(paths);
+var builder = WebApplication.CreateBuilder(args);
+var runtime = InstallationRuntime.Create(builder.Configuration);
+var paths = runtime.Paths;
+var runtimeOptions = runtime.Options;
+var stateStore = runtime.StateStore;
 await stateStore.EnsureInitializedAsync();
-var secretStore = new DpapiInstallationSecretStore(paths);
+var secretStore = runtime.SecretStore;
+if (!string.IsNullOrWhiteSpace(secretStore.Get(InstallationSecretKeys.RestartRequiredAtUtc)))
+{
+    await secretStore.RemoveAsync(InstallationSecretKeys.RestartRequiredAtUtc);
+    await secretStore.RemoveAsync(InstallationSecretKeys.RestartRequiredReason);
+}
 var connectionProvider = new InstallationConnectionStringProvider(secretStore);
 var initialState = stateStore.Get();
 
@@ -54,14 +64,14 @@ if (initialState.Mode == ApplicationMode.Installed && connectionProvider.GetConn
     }
 }
 
-var builder = WebApplication.CreateBuilder(args);
 var configuredJwtSecret = secretStore.Get(InstallationConnectionStringProvider.JwtSecret)
     ?? Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
 var runtimeSettings = new Dictionary<string, string?>
 {
     ["ConnectionStrings:DefaultConnection"] = connectionProvider.GetConnectionString(),
     ["Hangfire:ConnectionString"] = secretStore.Get(InstallationConnectionStringProvider.HangfireConnectionSecret),
-    ["ConnectionStrings:AzureBlobStorage"] = secretStore.Get(InstallationConnectionStringProvider.AzureBlobStorageSecret),
+    ["ConnectionStrings:AzureBlobStorage"] = secretStore.Get(InstallationConnectionStringProvider.AzureBlobStorageSecret)
+        ?? runtimeOptions.AzureBlobStorageConnectionString,
     ["JwtSettings:Secret"] = configuredJwtSecret,
     ["Syncfusion:LicenseKey"] = secretStore.Get(InstallationConnectionStringProvider.SyncfusionLicenseSecret),
     ["Serilog:WriteTo:1:Args:path"] = Path.Combine(paths.LogsPath, "nexusflow-log-.txt")
@@ -72,16 +82,38 @@ builder.Host.UseSerilog((context, configuration) => configuration.ReadFrom.Confi
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddAppCore();
-builder.Services.AddInstallationInfrastructure(paths, stateStore, secretStore);
+builder.Services.AddInstallationInfrastructure(paths, stateStore, secretStore, runtimeOptions);
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddNotifications();
 builder.Services.AddSignalR();
 builder.Services.AddSingleton<IInstallerAccessService, InstallerAccessService>();
 builder.Services.AddSingleton<IInstallationPreflightChecker, InstallationPreflightChecker>();
+builder.Services.AddSingleton<IApplicationRestartService, ApplicationRestartService>();
 
-builder.Services.AddDataProtection()
-    .SetApplicationName($"NexusFlow.ERP.{paths.InstanceId}")
-    .PersistKeysToFileSystem(new DirectoryInfo(paths.DataProtectionKeysPath));
+var dataProtectionBuilder = builder.Services.AddDataProtection()
+    .SetApplicationName($"NexusFlow.ERP.{paths.InstanceId}");
+if (runtimeOptions.DataProtectionStoreMode == DataProtectionStoreMode.AzureBlob &&
+    !string.IsNullOrWhiteSpace(runtimeOptions.AzureBlobStorageConnectionString))
+{
+    builder.Services.Configure<KeyManagementOptions>(options =>
+    {
+        options.XmlRepository = new AzureBlobXmlRepository(
+            runtimeOptions.AzureBlobStorageConnectionString,
+            runtimeOptions.AzureBlobDataProtectionContainer!,
+            runtimeOptions.DataProtectionBlobName!);
+    });
+}
+else
+{
+    dataProtectionBuilder.PersistKeysToFileSystem(new DirectoryInfo(paths.DataProtectionKeysPath));
+}
+
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.KnownNetworks.Clear();
+    options.KnownProxies.Clear();
+});
 
 builder.Services.AddRateLimiter(options =>
 {
@@ -234,6 +266,7 @@ else
 }
 
 app.UseSerilogRequestLogging();
+app.UseForwardedHeaders();
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
@@ -255,7 +288,7 @@ if (shouldRunProductionServices)
     RecurringJobsRegistrar.RegisterAll();
 }
 
-app.MapGet("/health/live", () => Results.Ok(new { status = "live", instance = paths.InstanceId }))
+app.MapGet("/health/live", () => Results.Ok(new { status = "live", instance = paths.InstanceId, profile = runtimeOptions.Profile.ToString() }))
     .AllowAnonymous();
 app.MapGet("/health/ready", async (IInstallationStateStore installationState, IServiceScopeFactory scopes) =>
 {

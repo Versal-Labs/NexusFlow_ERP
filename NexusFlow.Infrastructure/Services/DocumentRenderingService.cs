@@ -10,6 +10,7 @@ using Syncfusion.Pdf.Graphics;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -34,20 +35,23 @@ namespace NexusFlow.Infrastructure.Services
         public async Task<byte[]> RenderDocumentToPdfAsync(DocumentType documentType, PrintDocumentDto data, CancellationToken cancellationToken = default)
         {
             var template = await _dbContext.DocumentTemplates
-                .FirstOrDefaultAsync(t => t.DocumentType == documentType && t.IsActive && t.IsDefault, cancellationToken);
+                .Where(t => t.DocumentType == documentType && t.IsActive && t.IsDefault)
+                .OrderBy(t => t.TaxProfile == TaxProfile.All ? 0 : 1)
+                .FirstOrDefaultAsync(cancellationToken);
 
             if (template != null && !string.IsNullOrWhiteSpace(template.BlobUrl))
             {
-                return await RenderUsingWordTemplateAsync(template.BlobUrl, data, cancellationToken);
+                return await RenderUsingWordTemplateAsync(documentType, template.BlobUrl, data, cancellationToken);
             }
 
             return await RenderFallbackPdfAsync(documentType, data, cancellationToken);
         }
 
-        private async Task<byte[]> RenderUsingWordTemplateAsync(string blobUrl, PrintDocumentDto data, CancellationToken cancellationToken)
+        private async Task<byte[]> RenderUsingWordTemplateAsync(DocumentType documentType, string blobUrl, PrintDocumentDto data, CancellationToken cancellationToken)
         {
             try
             {
+                var profile = await _companyProfileService.GetProfileAsync(cancellationToken);
                 var (templateStream, _) = await _storageCoordinator.RetrieveFileAsync(blobUrl, cancellationToken);
 
                 using var memoryStream = new MemoryStream();
@@ -55,26 +59,45 @@ namespace NexusFlow.Infrastructure.Services
                 memoryStream.Position = 0;
 
                 using var wordDocument = new WordDocument(memoryStream, FormatType.Docx);
+                using var companyLogoStream = await TryLoadCompanyLogoAsync(profile.LogoBlobUrl, cancellationToken);
 
-                // Prepare MailMerge Data
-                string[] fieldNames = new[] {
-                    "DocumentNumber", "DocumentDate", "CustomerOrSupplierName",
-                    "BillingAddress", "ShippingAddress", "Notes",
-                    "SubTotal", "TaxTotal", "DiscountTotal", "GrandTotal", "CurrencyCode"
-                };
+                var mergeFields = BuildMergeFields(data, profile, companyLogoStream != null);
 
-                string[] fieldValues = new[] {
-                    data.DocumentNumber, data.DocumentDate.ToString("yyyy-MM-dd"), data.CustomerOrSupplierName,
-                    data.BillingAddress, data.ShippingAddress, data.Notes,
-                    data.SubTotal.ToString("N2"), data.TaxTotal.ToString("N2"), data.DiscountTotal.ToString("N2"), data.GrandTotal.ToString("N2"), data.CurrencyCode
-                };
-
-                wordDocument.MailMerge.Execute(fieldNames, fieldValues);
-
-                // Execute MailMerge for Line Items
-                if (data.LineItems != null && data.LineItems.Count > 0)
+                void MergeCompanyLogo(object sender, MergeImageFieldEventArgs args)
                 {
-                    wordDocument.MailMerge.ExecuteGroup(new MailMergeDataTable("LineItems", data.LineItems));
+                    if (companyLogoStream == null)
+                    {
+                        args.Skip = true;
+                        return;
+                    }
+
+                    companyLogoStream.Position = 0;
+                    args.ImageStream = companyLogoStream;
+
+                    if (args.Picture != null)
+                    {
+                        args.Picture.Width = 120;
+                        args.Picture.Height = 45;
+                    }
+                }
+
+                wordDocument.MailMerge.MergeImageField += MergeCompanyLogo;
+
+                try
+                {
+                    var fields = mergeFields.ToArray();
+                    wordDocument.MailMerge.Execute(
+                        fields.Select(x => x.Key).ToArray(),
+                        fields.Select(x => x.Value).ToArray());
+
+                    foreach (var table in BuildMergeTables(documentType, data))
+                    {
+                        wordDocument.MailMerge.ExecuteGroup(new MailMergeDataTable(table.Key, table.Value));
+                    }
+                }
+                finally
+                {
+                    wordDocument.MailMerge.MergeImageField -= MergeCompanyLogo;
                 }
 
                 using var render = new DocIORenderer();
@@ -87,7 +110,118 @@ namespace NexusFlow.Infrastructure.Services
             catch (Exception)
             {
                 // Fallback on error
-                return await RenderFallbackPdfAsync(DocumentType.SalesInvoice, data, cancellationToken);
+                return await RenderFallbackPdfAsync(documentType, data, cancellationToken);
+            }
+        }
+
+        private static Dictionary<string, string> BuildMergeFields(PrintDocumentDto data, Domain.Entities.System.CompanyProfile profile, bool hasCompanyLogo)
+        {
+            var fields = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["DocumentId"] = data.DocumentId ?? string.Empty,
+                ["DocumentType"] = data.DocumentType ?? string.Empty,
+                ["DocumentNumber"] = data.DocumentNumber ?? string.Empty,
+                ["DocumentDate"] = data.DocumentDate.ToString("yyyy-MM-dd"),
+                ["CustomerOrSupplierName"] = data.CustomerOrSupplierName ?? string.Empty,
+                ["BillingAddress"] = data.BillingAddress ?? string.Empty,
+                ["ShippingAddress"] = data.ShippingAddress ?? string.Empty,
+                ["Notes"] = data.Notes ?? string.Empty,
+                ["SubTotal"] = data.SubTotal.ToString("N2"),
+                ["TaxTotal"] = data.TaxTotal.ToString("N2"),
+                ["DiscountTotal"] = data.DiscountTotal.ToString("N2"),
+                ["GrandTotal"] = data.GrandTotal.ToString("N2"),
+                ["CurrencyCode"] = data.CurrencyCode ?? string.Empty,
+                ["CompanyName"] = profile.CompanyName ?? string.Empty,
+                ["CompanyTaxRegistrationNumber"] = profile.TaxRegistrationNumber ?? string.Empty,
+                ["CompanyBusinessRegistrationNumber"] = profile.BusinessRegistrationNumber ?? string.Empty,
+                ["CompanyAddress"] = profile.PrimaryAddress ?? string.Empty,
+                ["CompanyEmail"] = profile.ContactEmail ?? string.Empty,
+                ["CompanyPhone"] = profile.ContactPhone ?? string.Empty,
+                ["CompanyLogo"] = hasCompanyLogo ? "CompanyLogo" : string.Empty
+            };
+
+            foreach (var field in data.Fields)
+            {
+                if (!string.IsNullOrWhiteSpace(field.Key))
+                {
+                    fields[field.Key.Trim()] = field.Value ?? string.Empty;
+                }
+            }
+
+            return fields;
+        }
+
+        private static Dictionary<string, List<PrintTableRowDto>> BuildMergeTables(DocumentType documentType, PrintDocumentDto data)
+        {
+            var tables = new Dictionary<string, List<PrintTableRowDto>>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var table in data.Tables)
+            {
+                if (!string.IsNullOrWhiteSpace(table.Key) && table.Value.Count > 0)
+                {
+                    tables[table.Key.Trim()] = table.Value;
+                }
+            }
+
+            if (data.LineItems.Count > 0)
+            {
+                var rows = data.LineItems.Select(PrintTableRowDto.FromLineItem).ToList();
+                tables.TryAdd("LineItems", rows);
+
+                var defaultTableName = DefaultTableName(documentType);
+                if (!string.IsNullOrWhiteSpace(defaultTableName))
+                {
+                    tables.TryAdd(defaultTableName, rows);
+                }
+            }
+
+            return tables;
+        }
+
+        private static string? DefaultTableName(DocumentType documentType)
+        {
+            return documentType switch
+            {
+                DocumentType.SalesOrder or DocumentType.SalesQuotation or DocumentType.SalesInvoice => "SalesLines",
+                DocumentType.CreditNote => "CreditNoteLines",
+                DocumentType.PurchaseOrder => "PurchaseLines",
+                DocumentType.GRN => "ReceivedLines",
+                DocumentType.SupplierBill => "SupplierBillLines",
+                DocumentType.DebitNote => "DebitNoteLines",
+                DocumentType.CustomerReceipt or DocumentType.SupplierPaymentRemittance => "PaymentAllocations",
+                DocumentType.StockTransferDeliveryNote => "TransferLines",
+                _ => null
+            };
+        }
+
+        private async Task<MemoryStream?> TryLoadCompanyLogoAsync(string? logoBlobUrl, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrWhiteSpace(logoBlobUrl))
+            {
+                return null;
+            }
+
+            try
+            {
+                var (logoStream, _) = await _storageCoordinator.RetrieveFileAsync(logoBlobUrl, cancellationToken);
+                using (logoStream)
+                {
+                    var memoryStream = new MemoryStream();
+                    await logoStream.CopyToAsync(memoryStream, cancellationToken);
+
+                    if (memoryStream.Length == 0)
+                    {
+                        memoryStream.Dispose();
+                        return null;
+                    }
+
+                    memoryStream.Position = 0;
+                    return memoryStream;
+                }
+            }
+            catch
+            {
+                return null;
             }
         }
 

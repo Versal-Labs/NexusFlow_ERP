@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Mvc;
 using NexusFlow.AppCore.Constants;
 using NexusFlow.AppCore.Features.Payroll.Commands;
 using NexusFlow.AppCore.Features.Payroll.Queries;
-using NexusFlow.AppCore.Interfaces;
 using NexusFlow.AppCore.Jobs.Interfaces;
 using NexusFlow.Web.Filters;
 
@@ -18,12 +17,10 @@ namespace NexusFlow.Web.Controllers.Api
     public class PayrollController : ControllerBase
     {
         private readonly IMediator _mediator;
-        private readonly IExportService _exportService;
         private readonly IGenerateDraftPayrollJob _payrollGenerator;
-        public PayrollController(IMediator mediator, IExportService exportService, IGenerateDraftPayrollJob payrollGenerator)
+        public PayrollController(IMediator mediator, IGenerateDraftPayrollJob payrollGenerator)
         {
             _mediator = mediator;
-            _exportService = exportService;
             _payrollGenerator = payrollGenerator;
         }
 
@@ -56,15 +53,9 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpGet("slip/{slipId}/pdf")]
-        public async Task<IActionResult> DownloadPayslipPdf(int slipId)
+        public IActionResult DownloadPayslipPdf(int slipId)
         {
-            var result = await _mediator.Send(new GetEmployeePayslipQuery { PayrollSlipId = slipId });
-            if (!result.Succeeded) return BadRequest(result.Message);
-
-            // This calls the beautiful new layout!
-            var pdfBytes = _exportService.GeneratePayslipPdf(result.Data);
-
-            return File(pdfBytes, "application/pdf", $"Payslip_{result.Data.EmployeeCode}_{result.Data.MonthYear}.pdf");
+            return Redirect($"/api/PrintEngine/File/Payslip/{slipId}");
         }
 
         [HttpGet("period")]

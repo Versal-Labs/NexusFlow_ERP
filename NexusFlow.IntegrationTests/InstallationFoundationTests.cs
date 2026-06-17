@@ -1,6 +1,8 @@
 using FluentAssertions;
+using Microsoft.Extensions.Configuration;
 using NexusFlow.AppCore.Constants;
 using NexusFlow.AppCore.Installation;
+using NexusFlow.AppCore.Interfaces;
 using NexusFlow.Infrastructure.Installation;
 
 namespace NexusFlow.IntegrationTests
@@ -61,6 +63,80 @@ namespace NexusFlow.IntegrationTests
         }
 
         [Fact]
+        public async Task Encrypted_file_secret_store_round_trips_without_clear_text()
+        {
+            using var instance = new TemporaryInstallationInstance();
+            var store = new EncryptedFileInstallationSecretStore(instance.Paths);
+
+            await store.SetAsync(InstallationConnectionStringProvider.DefaultConnectionSecret, "Server=sql;Password=very-secret;");
+
+            store.Get(InstallationConnectionStringProvider.DefaultConnectionSecret)
+                .Should().Be("Server=sql;Password=very-secret;");
+            File.ReadAllText(instance.Paths.SecretFilePath).Should().NotContain("very-secret");
+            File.Exists(instance.Paths.SecretKeyPath).Should().BeTrue();
+        }
+
+        [Fact]
+        public async Task Environment_secret_store_reads_platform_connection_string_and_writes_to_fallback()
+        {
+            using var env = new TemporaryEnvironmentVariable("ConnectionStrings__DefaultConnection", "Server=env;");
+            using var instance = new TemporaryInstallationInstance();
+            var configuration = new ConfigurationBuilder().AddEnvironmentVariables().Build();
+            var store = new CompositeInstallationSecretStore(
+                new EnvironmentInstallationSecretStore(configuration),
+                new EncryptedFileInstallationSecretStore(instance.Paths));
+
+            store.Get(InstallationConnectionStringProvider.DefaultConnectionSecret).Should().Be("Server=env;");
+
+            await store.SetAsync(InstallationConnectionStringProvider.HangfireConnectionSecret, "Server=file;");
+
+            store.Get(InstallationConnectionStringProvider.HangfireConnectionSecret).Should().Be("Server=file;");
+            File.ReadAllText(instance.Paths.SecretFilePath).Should().NotContain("Server=file;");
+        }
+
+        [Fact]
+        public void Deployment_profile_defaults_choose_portable_secret_store_when_profile_is_portable()
+        {
+            using var profile = new TemporaryEnvironmentVariable("NEXUSFLOW_DEPLOYMENT_PROFILE", "PortableVm");
+            using var instance = new TemporaryInstallationInstance();
+            var configuration = new ConfigurationBuilder().Build();
+
+            var options = InstallationRuntimeOptionsFactory.Create(configuration, instance.Paths);
+
+            options.Profile.Should().Be(DeploymentProfile.PortableVm);
+            options.SecretStoreMode.Should().Be(InstallationSecretStoreMode.EncryptedFile);
+            options.StateStoreMode.Should().Be(InstallationStateStoreMode.File);
+            options.DataProtectionStoreMode.Should().Be(DataProtectionStoreMode.File);
+        }
+
+        [Fact]
+        public void Azure_profile_uses_cloud_defaults_when_blob_connection_is_configured()
+        {
+            using var profile = new TemporaryEnvironmentVariable("NEXUSFLOW_DEPLOYMENT_PROFILE", "AzureAppService");
+            using var blob = new TemporaryEnvironmentVariable("ConnectionStrings__AzureBlobStorage", "UseDevelopmentStorage=true");
+            using var instance = new TemporaryInstallationInstance();
+            var configuration = new ConfigurationBuilder().AddEnvironmentVariables().Build();
+
+            var options = InstallationRuntimeOptionsFactory.Create(configuration, instance.Paths);
+
+            options.Profile.Should().Be(DeploymentProfile.AzureAppService);
+            options.SecretStoreMode.Should().Be(InstallationSecretStoreMode.Environment);
+            options.StateStoreMode.Should().Be(InstallationStateStoreMode.AzureBlob);
+            options.DataProtectionStoreMode.Should().Be(DataProtectionStoreMode.AzureBlob);
+            options.StorageMode.Should().Be(StorageMode.AzureBlob);
+            options.AzureBlobStorageContainer.Should().Be("tenant-test-instance");
+        }
+
+        [Theory]
+        [InlineData("Customer_A", "customer-a")]
+        [InlineData("..", "tenant-default")]
+        [InlineData("a", "tenant-a")]
+        public void Azure_container_names_are_normalized(string input, string expected)
+        {
+            InstallationRuntimeOptionsFactory.NormalizeContainerName(input).Should().Be(expected);
+        }
+
+        [Fact]
         public void Required_catalogs_are_unique_and_role_manifest_has_protected_superadmin()
         {
             ConfigurationKeys.Required.Should().OnlyHaveUniqueItems();
@@ -112,6 +188,24 @@ namespace NexusFlow.IntegrationTests
                 Environment.SetEnvironmentVariable("NEXUSFLOW_INSTANCE_ID", _previousId);
                 if (Directory.Exists(Root))
                     Directory.Delete(Root, true);
+            }
+        }
+
+        private sealed class TemporaryEnvironmentVariable : IDisposable
+        {
+            private readonly string _name;
+            private readonly string? _previousValue;
+
+            public TemporaryEnvironmentVariable(string name, string? value)
+            {
+                _name = name;
+                _previousValue = Environment.GetEnvironmentVariable(name);
+                Environment.SetEnvironmentVariable(name, value);
+            }
+
+            public void Dispose()
+            {
+                Environment.SetEnvironmentVariable(_name, _previousValue);
             }
         }
     }

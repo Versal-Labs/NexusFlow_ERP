@@ -1,0 +1,13 @@
+**/.git
+**/.vs
+**/.vscode
+**/bin
+**/obj
+**/TestResults
+**/node_modules
+deploy/artifacts
+docs/screenshots
+*.user
+*.suo
+*.nupkg
+*.zip

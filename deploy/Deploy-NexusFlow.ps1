@@ -14,7 +14,25 @@ param(
     [string]$AppPoolName = "NexusFlow-ERP",
     [string]$PhysicalPath = "C:\inetpub\NexusFlow-ERP",
     [string]$HostName = "",
-    [int]$HttpsPort = 443
+    [int]$HttpsPort = 443,
+
+    [string]$DefaultConnectionString = "",
+    [string]$AzureBlobStorageConnectionString = "",
+
+    [ValidateSet("WindowsIis", "PortableVm", "AzureAppService")]
+    [string]$DeploymentProfile = "WindowsIis",
+
+    [ValidateSet("Local", "AzureBlob", "Hybrid")]
+    [string]$StorageMode = "Local",
+
+    [ValidateSet("Dpapi", "EncryptedFile", "Environment")]
+    [string]$SecretStore = "Dpapi",
+
+    [ValidateSet("", "File", "AzureBlob")]
+    [string]$StateStore = "",
+
+    [ValidateSet("", "File", "AzureBlob")]
+    [string]$DataProtectionStore = ""
 )
 
 $ErrorActionPreference = "Stop"
@@ -27,9 +45,131 @@ if (-not $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administra
 
 Import-Module WebAdministration
 
+function Get-OrCreate-XmlElement {
+    param(
+        [Parameter(Mandatory = $true)]
+        [xml]$Document,
+
+        [Parameter(Mandatory = $true)]
+        [System.Xml.XmlNode]$Parent,
+
+        [Parameter(Mandatory = $true)]
+        [string]$Name
+    )
+
+    $child = $Parent.SelectSingleNode($Name)
+    if ($child) {
+        return $child
+    }
+
+    $child = $Document.CreateElement($Name)
+    [void]$Parent.AppendChild($child)
+    return $child
+}
+
+function Set-WebConfigEnvironmentVariable {
+    param(
+        [Parameter(Mandatory = $true)]
+        [xml]$Document,
+
+        [Parameter(Mandatory = $true)]
+        [System.Xml.XmlElement]$EnvironmentVariables,
+
+        [Parameter(Mandatory = $true)]
+        [string]$Name,
+
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyString()]
+        [string]$Value
+    )
+
+    $escapedName = $Name.Replace("'", "&apos;")
+    $existing = $EnvironmentVariables.SelectSingleNode("environmentVariable[@name='$escapedName']")
+    if ($existing) {
+        $existing.SetAttribute("value", $Value)
+        return
+    }
+
+    $variable = $Document.CreateElement("environmentVariable")
+    $variable.SetAttribute("name", $Name)
+    $variable.SetAttribute("value", $Value)
+    [void]$EnvironmentVariables.AppendChild($variable)
+}
+
+function New-NexusFlowWebConfig {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Path,
+
+        [Parameter(Mandatory = $true)]
+        [hashtable]$EnvironmentVariables
+    )
+
+    $document = [System.Xml.XmlDocument]::new()
+    $declaration = $document.CreateXmlDeclaration("1.0", "utf-8", $null)
+    [void]$document.AppendChild($declaration)
+
+    $configuration = $document.CreateElement("configuration")
+    [void]$document.AppendChild($configuration)
+
+    $systemWebServer = $document.CreateElement("system.webServer")
+    [void]$configuration.AppendChild($systemWebServer)
+
+    $handlers = $document.CreateElement("handlers")
+    [void]$systemWebServer.AppendChild($handlers)
+
+    $handler = $document.CreateElement("add")
+    $handler.SetAttribute("name", "aspNetCore")
+    $handler.SetAttribute("path", "*")
+    $handler.SetAttribute("verb", "*")
+    $handler.SetAttribute("modules", "AspNetCoreModuleV2")
+    $handler.SetAttribute("resourceType", "Unspecified")
+    [void]$handlers.AppendChild($handler)
+
+    $aspNetCore = $document.CreateElement("aspNetCore")
+    $aspNetCore.SetAttribute("processPath", "dotnet")
+    $aspNetCore.SetAttribute("arguments", ".\NexusFlow.Web.dll")
+    $aspNetCore.SetAttribute("stdoutLogEnabled", "false")
+    $aspNetCore.SetAttribute("stdoutLogFile", ".\logs\stdout")
+    $aspNetCore.SetAttribute("hostingModel", "inprocess")
+    [void]$systemWebServer.AppendChild($aspNetCore)
+
+    $environmentVariablesElement = $document.CreateElement("environmentVariables")
+    [void]$aspNetCore.AppendChild($environmentVariablesElement)
+
+    foreach ($item in $EnvironmentVariables.GetEnumerator() | Sort-Object Name) {
+        if ($null -eq $item.Value -or [string]::IsNullOrWhiteSpace([string]$item.Value)) {
+            continue
+        }
+
+        $variable = $document.CreateElement("environmentVariable")
+        $variable.SetAttribute("name", [string]$item.Name)
+        $variable.SetAttribute("value", [string]$item.Value)
+        [void]$environmentVariablesElement.AppendChild($variable)
+    }
+
+    $settings = [System.Xml.XmlWriterSettings]::new()
+    $settings.Encoding = [System.Text.UTF8Encoding]::new($false)
+    $settings.Indent = $true
+    $settings.NewLineOnAttributes = $false
+
+    $writer = [System.Xml.XmlWriter]::Create($Path, $settings)
+    try {
+        $document.Save($writer)
+    }
+    finally {
+        $writer.Dispose()
+    }
+}
+
 $runtimeFound = dotnet --list-runtimes | Select-String -Pattern "^Microsoft\.AspNetCore\.App 10\."
 if (-not $runtimeFound) {
     throw "The .NET 10 Hosting Bundle is required before deploying NexusFlow."
+}
+
+$aspNetCoreModule = Get-WebGlobalModule -Name AspNetCoreModuleV2 -ErrorAction SilentlyContinue
+if (-not $aspNetCoreModule) {
+    throw "IIS is missing AspNetCoreModuleV2. Install or repair the .NET 10 Hosting Bundle after IIS is installed, then run iisreset."
 }
 
 $resolvedPackage = (Resolve-Path -LiteralPath $PackagePath).Path
@@ -61,24 +201,17 @@ icacls $PhysicalPath /grant "${appPoolIdentity}:(OI)(CI)(RX)" /T /C | Out-Null
 icacls $instanceRoot /grant "${appPoolIdentity}:(OI)(CI)(M)" /T /C | Out-Null
 
 $webConfigPath = Join-Path $PhysicalPath "web.config"
-[xml]$webConfig = Get-Content -LiteralPath $webConfigPath
-$aspNetCore = $webConfig.configuration.location."system.webServer".aspNetCore
-if (-not $aspNetCore.environmentVariables) {
-    $environmentVariables = $webConfig.CreateElement("environmentVariables")
-    $aspNetCore.AppendChild($environmentVariables) | Out-Null
+$webConfigEnvironmentVariables = @{
+    "NEXUSFLOW_INSTANCE_ID" = $InstanceId
+    "NEXUSFLOW_DEPLOYMENT_PROFILE" = $DeploymentProfile
+    "NEXUSFLOW_STORAGE_MODE" = $StorageMode
+    "NEXUSFLOW_SECRET_STORE" = $SecretStore
+    "NEXUSFLOW_STATE_STORE" = $StateStore
+    "NEXUSFLOW_DATA_PROTECTION_STORE" = $DataProtectionStore
+    "ConnectionStrings__DefaultConnection" = $DefaultConnectionString
+    "ConnectionStrings__AzureBlobStorage" = $AzureBlobStorageConnectionString
 }
-
-$existingVariable = $aspNetCore.environmentVariables.add | Where-Object { $_.name -eq "NEXUSFLOW_INSTANCE_ID" }
-if ($existingVariable) {
-    $existingVariable.value = $InstanceId
-}
-else {
-    $variable = $webConfig.CreateElement("add")
-    $variable.SetAttribute("name", "NEXUSFLOW_INSTANCE_ID")
-    $variable.SetAttribute("value", $InstanceId)
-    $aspNetCore.environmentVariables.AppendChild($variable) | Out-Null
-}
-$webConfig.Save($webConfigPath)
+New-NexusFlowWebConfig -Path $webConfigPath -EnvironmentVariables $webConfigEnvironmentVariables
 
 $setupKeyBytes = [byte[]]::new(32)
 $random = [Security.Cryptography.RNGCryptoServiceProvider]::new()
@@ -91,7 +224,7 @@ finally {
 $setupKey = [Convert]::ToBase64String($setupKeyBytes).TrimEnd("=").Replace("+", "-").Replace("/", "_")
 $bootstrapPath = Join-Path $instanceRoot "bootstrap.key"
 [IO.File]::WriteAllText($bootstrapPath, $setupKey, [Text.UTF8Encoding]::new($false))
-icacls $bootstrapPath /inheritance:r /grant:r "${appPoolIdentity}:(R,W)" /grant:r "BUILTIN\Administrators:(F)" | Out-Null
+icacls $bootstrapPath /inheritance:r /grant:r "${appPoolIdentity}:(M)" /grant:r "BUILTIN\Administrators:(F)" | Out-Null
 
 if (-not (Test-Path "IIS:\Sites\$SiteName")) {
     New-Website -Name $SiteName -PhysicalPath $PhysicalPath -ApplicationPool $AppPoolName -Port 80 -HostHeader $HostName | Out-Null
@@ -103,19 +236,16 @@ $binding = Get-WebBinding -Name $SiteName -Protocol https -Port $HttpsPort -Host
 $sslFlags = if ([string]::IsNullOrWhiteSpace($HostName)) { 0 } else { 1 }
 if (-not $binding) {
     New-WebBinding -Name $SiteName -Protocol https -Port $HttpsPort -HostHeader $HostName -SslFlags $sslFlags | Out-Null
+    $binding = Get-WebBinding -Name $SiteName -Protocol https -Port $HttpsPort -HostHeader $HostName -ErrorAction Stop
 }
 
 $certificate = Get-Item -LiteralPath "Cert:\LocalMachine\My\$CertificateThumbprint"
-$sslBindingPath = if ([string]::IsNullOrWhiteSpace($HostName)) {
-    "IIS:\SslBindings\0.0.0.0!$HttpsPort"
+if (-not $certificate.HasPrivateKey) {
+    throw "Certificate $CertificateThumbprint does not have a private key. Import the Cloudflare origin certificate as a PFX into LocalMachine\My."
 }
-else {
-    "IIS:\SslBindings\0.0.0.0!$HttpsPort!$HostName"
-}
-if (Test-Path $sslBindingPath) {
-    Remove-Item $sslBindingPath -Force
-}
-New-Item $sslBindingPath -Value $certificate | Out-Null
+
+$binding = @($binding)[0]
+$binding.AddSslCertificate($certificate.Thumbprint, "My")
 
 Start-WebAppPool -Name $AppPoolName
 Start-Website -Name $SiteName

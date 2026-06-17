@@ -1,8 +1,10 @@
 using NexusFlow.Domain.Common;
 using NexusFlow.Domain.Enums;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace NexusFlow.Domain.Entities.System
 {
+    [Table("DocumentTemplates", Schema = "System")]
     public class DocumentTemplate : AuditableEntity
     {
         public DocumentType DocumentType { get; set; }

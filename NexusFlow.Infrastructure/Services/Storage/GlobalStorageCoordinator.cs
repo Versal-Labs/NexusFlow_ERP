@@ -1,7 +1,9 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using NexusFlow.AppCore.Installation;
 using NexusFlow.AppCore.Interfaces;
 using NexusFlow.Domain.Entities.System;
+using NexusFlow.Infrastructure.Installation;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -14,17 +16,20 @@ namespace NexusFlow.Infrastructure.Services.Storage
         private readonly LocalDiskStorageProvider _fallbackProvider;
         private readonly IServiceProvider _serviceProvider;
         private readonly ILogger<GlobalStorageCoordinator> _logger;
+        private readonly InstallationRuntimeOptions _runtimeOptions;
 
         public GlobalStorageCoordinator(
             AzureBlobStorageProvider primaryProvider,
             LocalDiskStorageProvider fallbackProvider,
             IServiceProvider serviceProvider,
-            ILogger<GlobalStorageCoordinator> logger)
+            ILogger<GlobalStorageCoordinator> logger,
+            InstallationRuntimeOptions runtimeOptions)
         {
             _primaryProvider = primaryProvider;
             _fallbackProvider = fallbackProvider;
             _serviceProvider = serviceProvider;
             _logger = logger;
+            _runtimeOptions = runtimeOptions;
         }
 
         public async Task<string> SaveFileSecurelyAsync(Stream fileStream, string fileName, string moduleFolder, string contentType, CancellationToken cancellationToken = default)
@@ -32,12 +37,23 @@ namespace NexusFlow.Infrastructure.Services.Storage
             // Ensure stream is at the beginning
             if (fileStream.CanSeek) fileStream.Position = 0;
 
+            if (_runtimeOptions.StorageMode == StorageMode.Local)
+            {
+                return await _fallbackProvider.UploadAsync(fileStream, fileName, moduleFolder, contentType, cancellationToken);
+            }
+
             try
             {
                 return await _primaryProvider.UploadAsync(fileStream, fileName, moduleFolder, contentType, cancellationToken);
             }
             catch (Exception ex)
             {
+                if (_runtimeOptions.StorageMode == StorageMode.AzureBlob)
+                {
+                    _logger.LogError(ex, "Azure Blob Storage failed in AzureBlob storage mode.");
+                    throw;
+                }
+
                 _logger.LogError(ex, "Azure Blob Storage failed. Falling back to local storage.");
 
                 // Audit the failure asynchronously without blocking the main thread

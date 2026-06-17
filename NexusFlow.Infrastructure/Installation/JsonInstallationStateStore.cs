@@ -125,7 +125,17 @@ namespace NexusFlow.Infrastructure.Installation
             }
 
             var value = File.ReadAllText(_paths.BootstrapKeyPath).Trim();
-            File.Delete(_paths.BootstrapKeyPath);
+            try
+            {
+                File.Delete(_paths.BootstrapKeyPath);
+            }
+            catch (IOException)
+            {
+            }
+            catch (UnauthorizedAccessException)
+            {
+            }
+
             return value;
         }
 

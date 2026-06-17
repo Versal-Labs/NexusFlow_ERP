@@ -13,17 +13,20 @@ namespace NexusFlow.Infrastructure.Installation
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IInstallationDatabaseProvisioner _databaseProvisioner;
+        private readonly InstallationRuntimeOptions _runtimeOptions;
 
         public InstallationReadinessChecker(
             ErpDbContext context,
             RoleManager<IdentityRole> roleManager,
             UserManager<ApplicationUser> userManager,
-            IInstallationDatabaseProvisioner databaseProvisioner)
+            IInstallationDatabaseProvisioner databaseProvisioner,
+            InstallationRuntimeOptions runtimeOptions)
         {
             _context = context;
             _roleManager = roleManager;
             _userManager = userManager;
             _databaseProvisioner = databaseProvisioner;
+            _runtimeOptions = runtimeOptions;
         }
 
         public async Task<ReadinessReport> CheckAsync(CancellationToken cancellationToken = default)
@@ -83,7 +86,16 @@ namespace NexusFlow.Infrastructure.Installation
                 missingRoles.Length == 0 ? null : string.Join(", ", missingRoles)));
 
             var localStorage = configs.GetValueOrDefault(ConfigurationKeys.StorageLocalPath);
-            checks.Add(CheckStorage(localStorage));
+            checks.AddRange(CheckStorage(localStorage));
+
+            checks.Add(await CheckDocumentEngineTableAsync(
+                "documents.company-profile",
+                "Company profile table is available",
+                () => _context.CompanyProfiles.AsNoTracking().AnyAsync(cancellationToken)));
+            checks.Add(await CheckDocumentEngineTableAsync(
+                "documents.templates",
+                "Document template table is available",
+                () => _context.DocumentTemplates.AsNoTracking().AnyAsync(cancellationToken)));
 
             checks.Add(new("installation.record", "Installation metadata exists",
                 await _context.InstallationRecords.AnyAsync(cancellationToken)));
@@ -104,7 +116,26 @@ namespace NexusFlow.Infrastructure.Installation
             }
         }
 
-        private static ReadinessCheck CheckStorage(string? path)
+        private IReadOnlyList<ReadinessCheck> CheckStorage(string? path)
+        {
+            var checks = new List<ReadinessCheck>();
+            if (_runtimeOptions.StorageMode is StorageMode.Local or StorageMode.Hybrid)
+            {
+                checks.Add(CheckLocalStorage(path));
+            }
+
+            if (_runtimeOptions.StorageMode is StorageMode.AzureBlob or StorageMode.Hybrid)
+            {
+                var configured = !string.IsNullOrWhiteSpace(_runtimeOptions.AzureBlobStorageConnectionString) &&
+                                 !string.IsNullOrWhiteSpace(_runtimeOptions.AzureBlobStorageContainer);
+                checks.Add(new("storage.azure", "Azure Blob storage is configured", configured,
+                    configured ? _runtimeOptions.AzureBlobStorageContainer : "Connection string or tenant container is missing."));
+            }
+
+            return checks;
+        }
+
+        private static ReadinessCheck CheckLocalStorage(string? path)
         {
             if (string.IsNullOrWhiteSpace(path))
             {
@@ -122,6 +153,22 @@ namespace NexusFlow.Infrastructure.Installation
             catch (Exception ex)
             {
                 return new("storage.local", "Local storage is writable", false, ex.Message);
+            }
+        }
+
+        private static async Task<ReadinessCheck> CheckDocumentEngineTableAsync(
+            string key,
+            string description,
+            Func<Task<bool>> probe)
+        {
+            try
+            {
+                await probe();
+                return new(key, description, true);
+            }
+            catch (Exception ex)
+            {
+                return new(key, description, false, ex.Message);
             }
         }
     }

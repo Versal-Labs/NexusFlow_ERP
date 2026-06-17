@@ -76,8 +76,8 @@ const NexusPrint = (function () {
 
         try {
             // Fetch initial data
-            const response = await fetch(`/api/PrintEngine/Initialize/${documentType}/${documentId}`);
-            if (!response.ok) throw new Error('Failed to fetch document data');
+            const response = await fetch(`/api/PrintEngine/Initialize/${documentType}/${encodeURIComponent(documentId)}`);
+            if (!response.ok) throw new Error(await response.text() || 'Failed to fetch document data');
             
             dtoCache = await response.json();
             
@@ -90,7 +90,7 @@ const NexusPrint = (function () {
             await renderPdf();
         } catch (error) {
             console.error('Print initialization failed:', error);
-            alert('Failed to initialize print preview.');
+            showError(error.message || 'Failed to initialize print preview.');
         } finally {
             toggleLoader(false);
         }
@@ -111,7 +111,7 @@ const NexusPrint = (function () {
             await renderPdf();
         } catch (error) {
             console.error('Failed to refresh preview:', error);
-            alert('Failed to render PDF.');
+            showError(error.message || 'Failed to render PDF.');
         } finally {
             toggleLoader(false);
         }
@@ -120,11 +120,14 @@ const NexusPrint = (function () {
     async function renderPdf() {
         const response = await fetch('/api/PrintEngine/Render', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                'RequestVerificationToken': getToken()
+            },
             body: JSON.stringify(dtoCache)
         });
 
-        if (!response.ok) throw new Error('Render failed');
+        if (!response.ok) throw new Error(await response.text() || 'Render failed');
 
         const blob = await response.blob();
         
@@ -151,9 +154,25 @@ const NexusPrint = (function () {
         document.getElementById('np_pdfFrame').style.opacity = show ? '0.5' : '1';
     }
 
+    function getToken() {
+        if (window.api?.getToken) return window.api.getToken();
+        return document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+    }
+
+    function showError(message) {
+        if (typeof toastr !== 'undefined') {
+            toastr.error(message);
+            return;
+        }
+
+        alert(message);
+    }
+
     return {
         openPreview,
         refreshPreview,
         downloadPdf
     };
 })();
+
+window.NexusPrint = NexusPrint;

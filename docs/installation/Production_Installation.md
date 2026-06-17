@@ -1,5 +1,7 @@
 # NexusFlow Production Installation
 
+This page covers the existing Windows Server/IIS deployment path. For Azure App Service, Azure SQL hybrid, Linux/Windows VM, and container deployments, see [Portable And Cloud Deployment](Portable_Deployment.md).
+
 ## Release Package
 
 Create a framework-dependent IIS release:

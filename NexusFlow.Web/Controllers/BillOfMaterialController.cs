@@ -10,7 +10,7 @@ namespace NexusFlow.Web.Controllers
         [Authorize(Policy = Permissions.MasterData.ManageBOMs)]
         public IActionResult Index()
         {
-            return View("~/Views/MasterData/BillOfMaterials.cshtml");
+            return RedirectToAction("Index", "Bom");
         }
     }
 }

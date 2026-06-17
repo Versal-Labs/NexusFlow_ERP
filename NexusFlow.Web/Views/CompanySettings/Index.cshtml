@@ -1,3 +1,4 @@
+@using NexusFlow.Domain.Enums
 @model NexusFlow.Domain.Entities.System.CompanyProfile
 
 @{
@@ -5,11 +6,11 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<div class="container-fluid">
+<div class="container-fluid py-3 mb-5" id="companySettingsPage">
     <div class="row mb-3">
         <div class="col-12">
-            <h2>@ViewData["Title"]</h2>
-            <p class="text-muted">Manage your instance branding and company details.</p>
+            <h4 class="mb-0 text-dark fw-bold"><i class="fa-solid fa-building text-primary me-2"></i>@ViewData["Title"]</h4>
+            <p class="text-muted mb-0 fs-14">Manage white-label branding, company details, and editable document templates.</p>
         </div>
     </div>
 
@@ -21,63 +22,179 @@
         </div>
     }
 
-    <div class="card shadow-sm">
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-white border-0 pb-0">
+            <ul class="nav nav-tabs card-header-tabs" id="companySettingsTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profilePane" type="button" role="tab">
+                        Company Profile
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="templates-tab" data-bs-toggle="tab" data-bs-target="#templatesPane" type="button" role="tab">
+                        Document Templates
+                    </button>
+                </li>
+            </ul>
+        </div>
         <div class="card-body">
-            <form asp-action="Index" method="post" enctype="multipart/form-data">
-                <div asp-validation-summary="All" class="text-danger mb-3"></div>
+            <div class="tab-content">
+                <div class="tab-pane fade show active" id="profilePane" role="tabpanel" aria-labelledby="profile-tab">
+                    <form asp-action="Index" method="post" enctype="multipart/form-data">
+                        <div asp-validation-summary="All" class="text-danger mb-3"></div>
 
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <label class="form-label">Company Name</label>
-                        <input type="text" name="CompanyName" class="form-control" value="@Model?.CompanyName" required />
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Tax Registration Number (VAT)</label>
-                        <input type="text" name="TaxRegistrationNumber" class="form-control" value="@Model?.TaxRegistrationNumber" />
-                    </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Company Name</label>
+                                <input type="text" name="CompanyName" class="form-control" value="@Model?.CompanyName" required />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Tax Registration Number (VAT)</label>
+                                <input type="text" name="TaxRegistrationNumber" class="form-control" value="@Model?.TaxRegistrationNumber" />
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Business Registration Number</label>
+                                <input type="text" name="BusinessRegistrationNumber" class="form-control" value="@Model?.BusinessRegistrationNumber" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Contact Email</label>
+                                <input type="email" name="ContactEmail" class="form-control" value="@Model?.ContactEmail" />
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Contact Phone</label>
+                                <input type="text" name="ContactPhone" class="form-control" value="@Model?.ContactPhone" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Primary Address</label>
+                                <textarea name="PrimaryAddress" class="form-control" rows="2">@Model?.PrimaryAddress</textarea>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Company Logo</label>
+                                <input type="file" name="logoFile" class="form-control" accept="image/*" />
+                                <small class="text-muted">Used by fallback PDFs and printable documents when no template overrides branding.</small>
+                            </div>
+                            <div class="col-md-6">
+                                @if (!string.IsNullOrWhiteSpace(Model?.LogoBlobUrl))
+                                {
+                                    <label class="form-label d-block">Current Logo</label>
+                                    <img src="@Url.Action("Logo", "CompanySettings")?v=@DateTime.UtcNow.Ticks" alt="Company logo" class="border rounded bg-white p-2" style="max-height: 90px; max-width: 260px;" />
+                                }
+                                else
+                                {
+                                    <label class="form-label d-block">Current Logo</label>
+                                    <span class="badge bg-secondary">No logo uploaded</span>
+                                }
+                            </div>
+                        </div>
+
+                        <hr />
+                        <button type="submit" class="btn btn-primary fw-bold">Save Settings</button>
+                    </form>
                 </div>
 
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <label class="form-label">Business Registration Number</label>
-                        <input type="text" name="BusinessRegistrationNumber" class="form-control" value="@Model?.BusinessRegistrationNumber" />
+                <div class="tab-pane fade" id="templatesPane" role="tabpanel" aria-labelledby="templates-tab">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <h6 class="fw-bold mb-0">Document Template Management</h6>
+                            <small class="text-muted">Upload editable Word `.docx` templates for the reusable print preview engine.</small>
+                        </div>
+                        <button type="button" class="btn btn-primary btn-sm fw-bold" onclick="companySettings.openDocumentTemplateModal()">
+                            <i class="fa-solid fa-plus me-1"></i> New Template
+                        </button>
                     </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Contact Email</label>
-                        <input type="email" name="ContactEmail" class="form-control" value="@Model?.ContactEmail" />
+
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Document Type</th>
+                                    <th>Template Name</th>
+                                    <th>Tax Profile</th>
+                                    <th>File</th>
+                                    <th class="text-center">Default</th>
+                                    <th class="text-center">Active</th>
+                                    <th class="text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="documentTemplateRows">
+                                <tr><td colspan="7" class="text-center text-muted py-3">Loading templates...</td></tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
-
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <label class="form-label">Contact Phone</label>
-                        <input type="text" name="ContactPhone" class="form-control" value="@Model?.ContactPhone" />
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Primary Address</label>
-                        <textarea name="PrimaryAddress" class="form-control" rows="2">@Model?.PrimaryAddress</textarea>
-                    </div>
-                </div>
-
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <label class="form-label">Company Logo</label>
-                        <input type="file" name="logoFile" class="form-control" accept="image/*" />
-                        <small class="text-muted">Upload a new logo to replace the current one. This will be used on all generated documents.</small>
-                    </div>
-                    <div class="col-md-6 text-center">
-                        @if (!string.IsNullOrEmpty(Model?.LogoBlobUrl))
-                        {
-                            <p class="mb-2">Current Logo</p>
-                            @* In a real app we'd have an endpoint to serve the image, but for now we'll just indicate it exists *@
-                            <span class="badge bg-success">Logo Uploaded</span>
-                        }
-                    </div>
-                </div>
-
-                <hr />
-                <button type="submit" class="btn btn-primary">Save Settings</button>
-            </form>
+            </div>
         </div>
     </div>
 </div>
+
+<div class="modal fade" id="documentTemplateModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-dark text-white">
+                <h5 class="modal-title fs-6 fw-bold">Document Template</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body bg-light">
+                <form id="documentTemplateForm" class="row g-3">
+                    <input type="hidden" id="documentTemplateId" value="0" />
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Document Type</label>
+                        <select id="documentTemplateType" name="DocumentType" class="form-select" required>
+                            @foreach (DocumentType documentType in Enum.GetValues(typeof(DocumentType)))
+                            {
+                                <option value="@((int)documentType)">@documentType</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Tax Profile</label>
+                        <select id="documentTemplateTaxProfile" name="TaxProfile" class="form-select" required>
+                            @foreach (TaxProfile taxProfile in Enum.GetValues(typeof(TaxProfile)))
+                            {
+                                <option value="@((int)taxProfile)">@taxProfile</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-12">
+                        <label class="form-label fw-semibold">Template Name</label>
+                        <input id="documentTemplateName" name="TemplateName" class="form-control" maxlength="150" required />
+                    </div>
+                    <div class="col-md-12">
+                        <label class="form-label fw-semibold">Word Template (.docx)</label>
+                        <input id="documentTemplateFile" name="TemplateFile" type="file" class="form-control" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" />
+                        <small class="text-muted">Required for new templates. Optional when editing template metadata.</small>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-check form-switch">
+                            <input id="documentTemplateIsDefault" name="IsDefault" class="form-check-input" type="checkbox" />
+                            <label class="form-check-label fw-semibold" for="documentTemplateIsDefault">Default for this document type and tax profile</label>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-check form-switch">
+                            <input id="documentTemplateIsActive" name="IsActive" class="form-check-input" type="checkbox" checked />
+                            <label class="form-check-label fw-semibold" for="documentTemplateIsActive">Active</label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary fw-bold" onclick="companySettings.saveDocumentTemplate(event)">Save Template</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/system/company-settings.js" asp-append-version="true"></script>
+}

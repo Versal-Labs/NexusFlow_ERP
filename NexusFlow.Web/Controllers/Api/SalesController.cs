@@ -72,6 +72,13 @@ namespace NexusFlow.Web.Controllers.Api
             return res.Succeeded ? Ok(res.Data) : NotFound();
         }
 
+        [HttpGet("credit-notes/{id}/pdf")]
+        [Authorize(Policy = Permissions.Sales.ViewCreditNotes)]
+        public IActionResult DownloadCreditNotePdf(int id)
+        {
+            return Redirect($"/api/PrintEngine/File/CreditNote/{id}");
+        }
+
         [HttpPost("credit-notes")]
         [Authorize(Policy = Permissions.Sales.CreateCreditNote)]
         public async Task<IActionResult> CreateCreditNote([FromBody] CreateCreditNoteCommand command)
@@ -123,15 +130,9 @@ namespace NexusFlow.Web.Controllers.Api
 
         [HttpGet("orders/{id}/pdf")]
         [Authorize(Policy = Permissions.Sales.ViewOrders)]
-        public async Task<IActionResult> DownloadOrderPdf(int id)
+        public IActionResult DownloadOrderPdf(int id)
         {
-            var result = await _mediator.Send(new GetSalesOrderPdfQuery { OrderId = id });
-
-            if (!result.Succeeded)
-                return NotFound(result.Message);
-
-            // Returns a true PDF file stream to the browser
-            return File(result.Data, "application/pdf", $"Order_{id}_{DateTime.UtcNow:yyyyMMdd}.pdf");
+            return Redirect($"/api/PrintEngine/File/SalesOrder/{id}");
         }
 
         [HttpGet("orders/{id}/document")]
@@ -160,6 +161,13 @@ namespace NexusFlow.Web.Controllers.Api
             var result = await _mediator.Send(new VoidInvoiceCommand(id));
             if (result.Succeeded) return Ok(result);
             return BadRequest(result.Message);
+        }
+
+        [HttpGet("invoices/{id}/pdf")]
+        [Authorize(Policy = Permissions.Sales.ViewInvoices)]
+        public IActionResult DownloadInvoicePdf(int id)
+        {
+            return Redirect($"/api/PrintEngine/File/SalesInvoice/{id}");
         }
     }
 }

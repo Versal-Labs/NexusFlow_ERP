@@ -30,7 +30,7 @@
 
         // Print & Void Bindings
         $('#btnModalVoid').click(() => self.voidReceipt(self._currentDocId));
-        $('#btnModalPrint').click(() => window.open(`/api/treasury/receipts/${self._currentDocId}/pdf`, '_blank'));
+        $('#btnModalPrint').click(() => NexusPrint.openPreview('CustomerReceipt', self._currentDocId));
     },
 
     // ==========================================
@@ -92,7 +92,7 @@
                     render: function (data, type, row) {
                         // Assuming IsVoided might be a field. If voided, we wouldn't show a void button inside, or we disable it.
                         let btns = `<button class="btn btn-sm btn-outline-dark shadow-sm me-1" onclick="receiptApp.viewReceipt(${row.id})" title="View Details"><i class="fa-solid fa-eye"></i></button>`;
-                        btns += `<a href="/api/treasury/receipts/${row.id}/pdf" target="_blank" class="btn btn-sm btn-outline-danger shadow-sm" title="Print PDF"><i class="fa-solid fa-file-pdf"></i></a>`;
+                        btns += `<button class="btn btn-sm btn-outline-danger shadow-sm" onclick="NexusPrint.openPreview('CustomerReceipt', ${row.id})" title="Print PDF"><i class="fa-solid fa-file-pdf"></i></button>`;
                         return btns;
                     }
                 }

@@ -2,19 +2,29 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using NexusFlow.AppCore.Constants;
 using NexusFlow.AppCore.Features.System.CompanyProfileFeature;
+using NexusFlow.AppCore.Interfaces;
 using System.Threading.Tasks;
 
 namespace NexusFlow.Web.Controllers
 {
-    [Authorize(Roles = "SuperAdmin")] // Assuming SuperAdmin role manages company settings
+    [Authorize(AuthenticationSchemes = AuthConstants.IdentityScheme)]
+    [Authorize(Policy = Permissions.System.ManageConfigs)]
     public class CompanySettingsController : Controller
     {
         private readonly IMediator _mediator;
+        private readonly ICompanyProfileService _companyProfileService;
+        private readonly IGlobalStorageCoordinator _storageCoordinator;
 
-        public CompanySettingsController(IMediator mediator)
+        public CompanySettingsController(
+            IMediator mediator,
+            ICompanyProfileService companyProfileService,
+            IGlobalStorageCoordinator storageCoordinator)
         {
             _mediator = mediator;
+            _companyProfileService = companyProfileService;
+            _storageCoordinator = storageCoordinator;
         }
 
         [HttpGet]
@@ -53,6 +63,26 @@ namespace NexusFlow.Web.Controllers
             // Reload data
             var profileResult = await _mediator.Send(new GetCompanyProfileQuery());
             return View(profileResult.Data);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Logo()
+        {
+            var profile = await _companyProfileService.GetProfileAsync(HttpContext.RequestAborted);
+            if (string.IsNullOrWhiteSpace(profile.LogoBlobUrl))
+            {
+                return NotFound();
+            }
+
+            try
+            {
+                var (stream, contentType) = await _storageCoordinator.RetrieveFileAsync(profile.LogoBlobUrl, HttpContext.RequestAborted);
+                return File(stream, string.IsNullOrWhiteSpace(contentType) ? "application/octet-stream" : contentType);
+            }
+            catch
+            {
+                return NotFound();
+            }
         }
     }
 }

@@ -12,9 +12,15 @@ namespace NexusFlow.Web.Models.Installation
         public IReadOnlyList<ReadinessCheck> ReadinessChecks { get; set; } = Array.Empty<ReadinessCheck>();
         public IReadOnlyList<ReadinessCheck> PreflightChecks { get; set; } = Array.Empty<ReadinessCheck>();
 
-        [Required] public string Server { get; set; } = string.Empty;
-        [Required] public string Database { get; set; } = string.Empty;
+        public string Server { get; set; } = string.Empty;
+        public string Database { get; set; } = string.Empty;
         public bool UseWindowsAuthentication { get; set; } = true;
+        public bool UsePreconfiguredConnectionString { get; set; }
+        public bool PreconfiguredConnectionStringAvailable { get; set; }
+        public string DeploymentProfile { get; set; } = string.Empty;
+        public string StorageMode { get; set; } = string.Empty;
+        public string StateStoreMode { get; set; } = string.Empty;
+        public string SecretStoreMode { get; set; } = string.Empty;
         public string? SqlUsername { get; set; }
         public string? SqlPassword { get; set; }
         public bool TrustServerCertificate { get; set; }
@@ -31,7 +37,7 @@ namespace NexusFlow.Web.Models.Installation
         [Required] public string WarehouseCode { get; set; } = "WH-MAIN";
         [Required] public string WarehouseName { get; set; } = "Main Warehouse";
         public string? WarehouseLocation { get; set; }
-        [Required] public string LocalStoragePath { get; set; } = string.Empty;
+        public string LocalStoragePath { get; set; } = string.Empty;
 
         [Required] public string AdminFullName { get; set; } = string.Empty;
         [Required, EmailAddress] public string AdminEmail { get; set; } = string.Empty;

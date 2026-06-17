@@ -183,9 +183,13 @@ namespace NexusFlow.Infrastructure.Installation
 
         private static string? ValidateRequest(InstallationRequest request)
         {
-            if (string.IsNullOrWhiteSpace(request.Database.Server) || string.IsNullOrWhiteSpace(request.Database.Database))
-                return "SQL Server and database name are required.";
-            if (!request.Database.UseWindowsAuthentication &&
+            if (!request.Database.UsePreconfiguredConnectionString &&
+                string.IsNullOrWhiteSpace(request.Database.ConnectionString) &&
+                (string.IsNullOrWhiteSpace(request.Database.Server) || string.IsNullOrWhiteSpace(request.Database.Database)))
+                return "SQL Server and database name are required, unless a preconfigured connection string is selected.";
+            if (!request.Database.UsePreconfiguredConnectionString &&
+                string.IsNullOrWhiteSpace(request.Database.ConnectionString) &&
+                !request.Database.UseWindowsAuthentication &&
                 (string.IsNullOrWhiteSpace(request.Database.Username) || string.IsNullOrWhiteSpace(request.Database.Password)))
                 return "SQL username and password are required when Windows Authentication is not selected.";
             if (string.IsNullOrWhiteSpace(request.CompanyName) || string.IsNullOrWhiteSpace(request.CanonicalUrl))

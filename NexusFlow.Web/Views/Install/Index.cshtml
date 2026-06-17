@@ -32,6 +32,12 @@
             <div class="text-uppercase small opacity-75 mb-1">Production setup</div>
             <h1 class="h3 mb-1">NexusFlow ERP Installer</h1>
             <p class="mb-0 opacity-75">This instance remains locked until every required readiness check passes.</p>
+            <div class="d-flex flex-wrap gap-2 mt-3">
+                <span class="badge text-bg-light">Profile: @Model.DeploymentProfile</span>
+                <span class="badge text-bg-light">State: @Model.StateStoreMode</span>
+                <span class="badge text-bg-light">Secrets: @Model.SecretStoreMode</span>
+                <span class="badge text-bg-light">Storage: @Model.StorageMode</span>
+            </div>
         </div>
         <span class="badge text-bg-light">@Model.Mode</span>
     </div>
@@ -60,8 +66,8 @@
             <div class="card-body p-4 p-md-5">
                 <h2 class="h5">Unlock first-run setup</h2>
                 <p class="text-muted">
-                    Enter the one-time setup key produced by the IIS deployment script or by the server-side
-                    <code>New-NexusFlowSetupKey.ps1</code> recovery command.
+                    Enter the one-time setup key from <code>NEXUSFLOW_SETUP_KEY</code>, the IIS deployment script, or the
+                    server-side <code>New-NexusFlowSetupKey.ps1</code> recovery command.
                 </p>
                 <form asp-action="Unlock" method="post" class="row g-3">
                     @Html.AntiForgeryToken()
@@ -89,12 +95,25 @@
                     <h2 class="h5 mb-3"><span class="section-number me-2">1</span>Database connection</h2>
                     <p class="required-note">The database must already exist. NexusFlow will never create or drop it.</p>
                     <div class="row g-3">
-                        <div class="col-md-6"><label asp-for="Server" class="form-label required-label">SQL Server</label><input asp-for="Server" class="form-control" placeholder="SERVER\INSTANCE or tcp:server,1433" /><span asp-validation-for="Server" class="text-danger"></span></div>
-                        <div class="col-md-6"><label asp-for="Database" class="form-label required-label">Database name</label><input asp-for="Database" class="form-control" /><span asp-validation-for="Database" class="text-danger"></span></div>
-                        <div class="col-12"><div class="form-check form-switch"><input asp-for="UseWindowsAuthentication" class="form-check-input" id="windowsAuth" /><label class="form-check-label" for="windowsAuth">Use Windows Authentication with the IIS app-pool identity</label></div></div>
-                        <div class="col-md-6"><label asp-for="SqlUsername" class="form-label">SQL username</label><input asp-for="SqlUsername" class="form-control" autocomplete="off" /></div>
-                        <div class="col-md-6"><label asp-for="SqlPassword" class="form-label">SQL password</label><input asp-for="SqlPassword" class="form-control" type="password" autocomplete="new-password" /></div>
-                        <div class="col-12"><div class="form-check"><input asp-for="TrustServerCertificate" class="form-check-input" /><label asp-for="TrustServerCertificate" class="form-check-label">Trust SQL Server certificate</label></div></div>
+                        @if (Model.PreconfiguredConnectionStringAvailable)
+                        {
+                            <div class="col-12">
+                                <div class="form-check form-switch">
+                                    <input asp-for="UsePreconfiguredConnectionString" class="form-check-input" id="preconfiguredConnection" />
+                                    <label class="form-check-label" for="preconfiguredConnection">
+                                        Use preconfigured database connection string from environment, App Service connection strings, or Key Vault reference
+                                    </label>
+                                    <div class="form-text">Use this for Azure SQL, managed identity, and container deployments where secrets are injected by the platform.</div>
+                                    <span asp-validation-for="UsePreconfiguredConnectionString" class="text-danger"></span>
+                                </div>
+                            </div>
+                        }
+                        <div class="col-md-6 manual-db-field"><label asp-for="Server" class="form-label required-label">SQL Server</label><input asp-for="Server" class="form-control" placeholder="SERVER\INSTANCE or tcp:server,1433" /><span asp-validation-for="Server" class="text-danger"></span></div>
+                        <div class="col-md-6 manual-db-field"><label asp-for="Database" class="form-label required-label">Database name</label><input asp-for="Database" class="form-control" /><span asp-validation-for="Database" class="text-danger"></span></div>
+                        <div class="col-12 manual-db-field"><div class="form-check form-switch"><input asp-for="UseWindowsAuthentication" class="form-check-input" id="windowsAuth" /><label class="form-check-label" for="windowsAuth">Use Windows Authentication with the IIS app-pool identity</label></div></div>
+                        <div class="col-md-6 manual-db-field"><label asp-for="SqlUsername" class="form-label">SQL username</label><input asp-for="SqlUsername" class="form-control" autocomplete="off" /></div>
+                        <div class="col-md-6 manual-db-field"><label asp-for="SqlPassword" class="form-label">SQL password</label><input asp-for="SqlPassword" class="form-control" type="password" autocomplete="new-password" /></div>
+                        <div class="col-12 manual-db-field"><div class="form-check"><input asp-for="TrustServerCertificate" class="form-check-input" /><label asp-for="TrustServerCertificate" class="form-check-label">Trust SQL Server certificate</label></div></div>
                     </div>
                 </div>
             </div>
@@ -122,7 +141,7 @@
                         <div class="col-md-3"><label asp-for="WarehouseCode" class="form-label required-label">Warehouse code</label><input asp-for="WarehouseCode" class="form-control" /><span asp-validation-for="WarehouseCode"></span></div>
                         <div class="col-md-5"><label asp-for="WarehouseName" class="form-label required-label">Warehouse name</label><input asp-for="WarehouseName" class="form-control" /><span asp-validation-for="WarehouseName"></span></div>
                         <div class="col-md-4"><label asp-for="WarehouseLocation" class="form-label">Warehouse location <span class="text-muted">(optional)</span></label><input asp-for="WarehouseLocation" class="form-control" /><span asp-validation-for="WarehouseLocation"></span></div>
-                        <div class="col-12"><label asp-for="LocalStoragePath" class="form-label required-label">Local storage path</label><input asp-for="LocalStoragePath" class="form-control font-monospace" /><span asp-validation-for="LocalStoragePath"></span></div>
+                        <div class="col-12"><label asp-for="LocalStoragePath" class="form-label">Local storage path</label><input asp-for="LocalStoragePath" class="form-control font-monospace" /><span asp-validation-for="LocalStoragePath"></span><div class="form-text">Used for Windows IIS, portable VM, and hybrid storage. Fully cloud storage uses Azure Blob as configured by deployment settings.</div></div>
                     </div>
                 </div>
             </div>
@@ -181,6 +200,17 @@
         const summary = document.querySelector(".validation-summary-errors");
         if (summary) {
             summary.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+
+        const preconfiguredConnection = document.getElementById("preconfiguredConnection");
+        const manualFields = Array.from(document.querySelectorAll(".manual-db-field input"));
+        const toggleManualFields = () => {
+            const usePreconfigured = preconfiguredConnection && preconfiguredConnection.checked;
+            manualFields.forEach(input => input.disabled = usePreconfigured);
+        };
+        if (preconfiguredConnection) {
+            preconfiguredConnection.addEventListener("change", toggleManualFields);
+            toggleManualFields();
         }
     }
 </script>

@@ -10,7 +10,7 @@
         this._initFilters();
         this._initGrid();
 
-        $('#btnModalPrint').click(() => window.open(`/api/purchasing/debit-notes/${this._currentDocId}/pdf`, '_blank'));
+        $('#btnModalPrint').click(() => NexusPrint.openPreview('DebitNote', this._currentDocId));
     },
 
     _initFilters: async function() {
@@ -53,7 +53,7 @@
                     data: null, className: 'text-center pe-3', orderable: false,
                     render: function(data, type, row) {
                         return `<button class="btn btn-sm btn-outline-dark shadow-sm me-1" onclick="dnApp.viewDocument(${row.id})" title="View Details"><i class="fa-solid fa-eye"></i></button>
-                                <button class="btn btn-sm btn-outline-secondary shadow-sm" onclick="window.open('/api/purchasing/debit-notes/${row.id}/pdf', '_blank')" title="Print Document"><i class="fa-solid fa-print"></i></button>`;
+                                <button class="btn btn-sm btn-outline-secondary shadow-sm" onclick="NexusPrint.openPreview('DebitNote', ${row.id})" title="Print Document"><i class="fa-solid fa-print"></i></button>`;
                     }
                 }
             ],

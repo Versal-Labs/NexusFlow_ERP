@@ -22,5 +22,12 @@ namespace NexusFlow.Web.Controllers
             // Returns the HTML Shell for the SPA-like DataTable experience
             return View();
         }
+
+        [HttpGet]
+        [Authorize(Policy = Permissions.SuperAdmin)]
+        public IActionResult Secrets()
+        {
+            return View();
+        }
     }
 }

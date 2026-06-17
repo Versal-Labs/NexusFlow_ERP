@@ -20,6 +20,8 @@ namespace NexusFlow.Web.Controllers
         private readonly IInstallerAccessService _access;
         private readonly IMediator _mediator;
         private readonly InstallationPaths _paths;
+        private readonly InstallationRuntimeOptions _runtimeOptions;
+        private readonly IInstallationConnectionStringProvider _connectionProvider;
         private readonly IInstallationPreflightChecker _preflight;
         private readonly IHostApplicationLifetime _lifetime;
         private readonly ILogger<InstallController> _logger;
@@ -29,6 +31,8 @@ namespace NexusFlow.Web.Controllers
             IInstallerAccessService access,
             IMediator mediator,
             InstallationPaths paths,
+            InstallationRuntimeOptions runtimeOptions,
+            IInstallationConnectionStringProvider connectionProvider,
             IInstallationPreflightChecker preflight,
             IHostApplicationLifetime lifetime,
             ILogger<InstallController> logger)
@@ -37,6 +41,8 @@ namespace NexusFlow.Web.Controllers
             _access = access;
             _mediator = mediator;
             _paths = paths;
+            _runtimeOptions = runtimeOptions;
+            _connectionProvider = connectionProvider;
             _preflight = preflight;
             _lifetime = lifetime;
             _logger = logger;
@@ -62,15 +68,18 @@ namespace NexusFlow.Web.Controllers
                 }
             }
 
-            return View(new InstallViewModel
+            var model = new InstallViewModel
             {
                 Mode = state.Mode,
                 IsUnlocked = _access.HasAccess(HttpContext),
                 Error = state.LastError,
                 PreflightChecks = _preflight.Check(Request),
                 LocalStoragePath = _paths.StoragePath,
-                CanonicalUrl = $"{Request.Scheme}://{Request.Host}"
-            });
+                CanonicalUrl = $"{Request.Scheme}://{Request.Host}",
+                UsePreconfiguredConnectionString = !string.IsNullOrWhiteSpace(_connectionProvider.GetConnectionString())
+            };
+            PopulateRuntimeModel(model);
+            return View(model);
         }
 
         [HttpPost("unlock")]
@@ -82,10 +91,11 @@ namespace NexusFlow.Web.Controllers
                 (string.IsNullOrWhiteSpace(state.SetupKeyHash) || string.IsNullOrWhiteSpace(state.SetupKeySalt)))
             {
                 ModelState.AddModelError(string.Empty,
-                    "No setup key is configured for this instance. Run New-NexusFlowSetupKey.ps1 on the server.");
+                    "No setup key is configured for this instance. Configure NEXUSFLOW_SETUP_KEY or run New-NexusFlowSetupKey.ps1 on a Windows/IIS server.");
                 model.Mode = state.Mode;
                 model.IsUnlocked = false;
                 model.PreflightChecks = _preflight.Check(Request);
+                PopulateRuntimeModel(model);
                 return View("Index", model);
             }
 
@@ -95,6 +105,7 @@ namespace NexusFlow.Web.Controllers
                 model.Mode = state.Mode;
                 model.IsUnlocked = false;
                 model.PreflightChecks = _preflight.Check(Request);
+                PopulateRuntimeModel(model);
                 return View("Index", model);
             }
 
@@ -121,6 +132,37 @@ namespace NexusFlow.Web.Controllers
                 ModelState.AddModelError(string.Empty, "Server preflight checks must pass before installation can run.");
             }
 
+            var preconfiguredConnectionString = model.UsePreconfiguredConnectionString
+                ? _connectionProvider.GetConnectionString()
+                : null;
+            if (model.UsePreconfiguredConnectionString)
+            {
+                if (string.IsNullOrWhiteSpace(preconfiguredConnectionString))
+                {
+                    ModelState.AddModelError(nameof(model.UsePreconfiguredConnectionString),
+                        "A preconfigured database connection string was selected, but none is available.");
+                }
+            }
+            else
+            {
+                if (string.IsNullOrWhiteSpace(model.Server))
+                {
+                    ModelState.AddModelError(nameof(model.Server), "SQL Server is required.");
+                }
+
+                if (string.IsNullOrWhiteSpace(model.Database))
+                {
+                    ModelState.AddModelError(nameof(model.Database), "Database name is required.");
+                }
+
+                if (!model.UseWindowsAuthentication &&
+                    (string.IsNullOrWhiteSpace(model.SqlUsername) || string.IsNullOrWhiteSpace(model.SqlPassword)))
+                {
+                    ModelState.AddModelError(nameof(model.SqlUsername),
+                        "SQL username and password are required when Windows Authentication is not selected.");
+                }
+            }
+
             if (!ModelState.IsValid)
             {
                 var invalidFields = ModelState
@@ -135,6 +177,7 @@ namespace NexusFlow.Web.Controllers
                     "Installation has not started. Review the validation errors below and submit again.");
                 model.IsUnlocked = true;
                 model.Mode = _stateStore.Get().Mode;
+                PopulateRuntimeModel(model);
                 return View("Index", model);
             }
 
@@ -142,7 +185,8 @@ namespace NexusFlow.Web.Controllers
             {
                 Database = new DatabaseConnectionRequest(
                     model.Server, model.Database, model.UseWindowsAuthentication,
-                    model.SqlUsername, model.SqlPassword, model.TrustServerCertificate),
+                    model.SqlUsername, model.SqlPassword, model.TrustServerCertificate,
+                    preconfiguredConnectionString, model.UsePreconfiguredConnectionString),
                 CompanyName = model.CompanyName,
                 TaxRegistrationNumber = model.TaxRegistrationNumber,
                 CanonicalUrl = model.CanonicalUrl,
@@ -168,6 +212,7 @@ namespace NexusFlow.Web.Controllers
             model.Mode = _stateStore.Get().Mode;
             model.Error = result.Succeeded ? null : result.Message;
             model.ReadinessChecks = result.Readiness?.Checks ?? Array.Empty<ReadinessCheck>();
+            PopulateRuntimeModel(model);
 
             if (!result.Succeeded)
             {
@@ -181,6 +226,19 @@ namespace NexusFlow.Web.Controllers
                 return Task.CompletedTask;
             });
             return View("Complete");
+        }
+
+        private void PopulateRuntimeModel(InstallViewModel model)
+        {
+            model.DeploymentProfile = _runtimeOptions.Profile.ToString();
+            model.StorageMode = _runtimeOptions.StorageMode.ToString();
+            model.StateStoreMode = _runtimeOptions.StateStoreMode.ToString();
+            model.SecretStoreMode = _runtimeOptions.SecretStoreMode.ToString();
+            model.PreconfiguredConnectionStringAvailable = !string.IsNullOrWhiteSpace(_connectionProvider.GetConnectionString());
+            if (string.IsNullOrWhiteSpace(model.LocalStoragePath))
+            {
+                model.LocalStoragePath = _paths.StoragePath;
+            }
         }
     }
 }

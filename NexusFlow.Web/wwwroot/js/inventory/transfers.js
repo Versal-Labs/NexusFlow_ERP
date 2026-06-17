@@ -15,7 +15,7 @@
         this._loadLookups();
 
         $('#btnModalReverse').click(() => this.reverseTransfer(this._currentRefNo));
-        $('#btnModalPrint').click(() => window.open(`/api/inventory/transfers/${this._currentRefNo}/pdf`, '_blank'));
+        $('#btnModalPrint').click(() => NexusPrint.openPreview('StockTransferDeliveryNote', this._currentRefNo));
 
         // TIER-1 ERP FEATURE: If they change the warehouses mid-entry, clear the lines!
         $('#SourceWarehouseId, #TargetWarehouseId').on('change', () => {
@@ -54,9 +54,10 @@
                     // TIER-1 ERP FEATURE: THE ACTIONS COLUMN
                     data: null, className: 'text-end pe-3', orderable: false,
                     render: function(data, type, row) {
+                        const safeRefNo = String(row.referenceNo || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
                         return `<button class="btn btn-sm btn-outline-dark shadow-sm me-1" onclick="transferApp.viewTransfer('${row.referenceNo}')" title="View Transfer"><i class="fa-solid fa-eye"></i></button>
                                 <button class="btn btn-sm btn-outline-danger shadow-sm me-1" onclick="transferApp.reverseTransfer('${row.referenceNo}')" title="Reverse Movement"><i class="fa-solid fa-rotate-left"></i></button>
-                                <button class="btn btn-sm btn-outline-secondary shadow-sm" onclick="window.open('/api/inventory/transfers/${row.referenceNo}/pdf', '_blank')" title="Print Delivery Note"><i class="fa-solid fa-print"></i></button>`;
+                                <button class="btn btn-sm btn-outline-secondary shadow-sm" onclick="NexusPrint.openPreview('StockTransferDeliveryNote', '${safeRefNo}')" title="Print Delivery Note"><i class="fa-solid fa-print"></i></button>`;
                     }
                 }
             ],

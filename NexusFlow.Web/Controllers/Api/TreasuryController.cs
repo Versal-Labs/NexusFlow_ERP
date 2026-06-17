@@ -44,6 +44,13 @@ namespace NexusFlow.Web.Controllers.Api
             return NotFound(result.Message);
         }
 
+        [HttpGet("receipts/{id}/pdf")]
+        [Authorize(Policy = Permissions.Treasury.ViewReceipts)]
+        public IActionResult DownloadReceiptPdf(int id)
+        {
+            return Redirect($"/api/PrintEngine/File/CustomerReceipt/{id}");
+        }
+
         [HttpPost("receipts/{id}/void")]
         [Authorize(Policy = Permissions.Treasury.VoidReceipt)]
         public async Task<IActionResult> VoidReceipt(int id)
@@ -81,6 +88,13 @@ namespace NexusFlow.Web.Controllers.Api
             var result = await _mediator.Send(new GetSupplierPaymentByIdQuery { PaymentId = id });
             if (result.Succeeded) return Ok(result.Data);
             return NotFound(result.Message);
+        }
+
+        [HttpGet("payments/{id}/remittance")]
+        [Authorize(Policy = Permissions.Treasury.ViewPayments)]
+        public IActionResult DownloadSupplierPaymentRemittance(int id)
+        {
+            return Redirect($"/api/PrintEngine/File/SupplierPaymentRemittance/{id}");
         }
 
         // =======================================================

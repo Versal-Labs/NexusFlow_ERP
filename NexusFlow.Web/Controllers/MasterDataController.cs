@@ -10,7 +10,7 @@ namespace NexusFlow.Web.Controllers
         [Authorize(Policy = Permissions.MasterData.ManageProducts)]
         public IActionResult Index()
         {
-            return View();
+            return RedirectToAction(nameof(Definitions));
         }
 
         [HttpGet("MasterData/Brands")]

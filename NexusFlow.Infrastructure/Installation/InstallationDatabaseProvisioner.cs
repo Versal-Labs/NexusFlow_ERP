@@ -16,6 +16,13 @@ namespace NexusFlow.Infrastructure.Installation
 
         public string BuildConnectionString(DatabaseConnectionRequest request)
         {
+            if (request.UsePreconfiguredConnectionString ||
+                !string.IsNullOrWhiteSpace(request.ConnectionString))
+            {
+                return request.ConnectionString
+                    ?? _connectionStrings.GetRequiredConnectionString();
+            }
+
             var builder = new SqlConnectionStringBuilder
             {
                 DataSource = request.Server.Trim(),

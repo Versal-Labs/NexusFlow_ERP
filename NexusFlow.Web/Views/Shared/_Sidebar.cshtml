@@ -161,6 +161,10 @@
                             {
                                 <a href="/Inventory/BarcodeCenter" class="nav-link py-1 small">Barcode Center</a>
                             }
+                            @if (CurrentUser.HasPermission(Permissions.Inventory.ManageBarcodeTemplates))
+                            {
+                                <a href="/Inventory/BarcodeTemplates" class="nav-link py-1 small">Barcode Templates</a>
+                            }
                             @if (CurrentUser.HasPermission(Permissions.SuperAdmin))
                             {
                                 <a href="/InventoryImport" class="nav-link py-1 small">Opening Balances Wizard</a>
@@ -315,9 +319,14 @@
                             {
                                 <a href="/System/AuditExplorer" class="nav-link py-1 small">System Audit Explorer</a>
                             }
+                            @if (CurrentUser.HasPermission(Permissions.SuperAdmin))
+                            {
+                                <a href="/System/Secrets" class="nav-link py-1 small">Secret Vault</a>
+                            }
                             @if (CurrentUser.HasPermission(Permissions.System.ManageConfigs))
                             {
                                 <a href="/Config" class="nav-link py-1 small">System Parameters</a>
+                                <a href="/CompanySettings" class="nav-link py-1 small">Company Settings</a>
                                 <a href="#" class="nav-link py-1 small opacity-50">Tax Engine (WIP)</a>
                             }
                         </nav>

@@ -54,6 +54,18 @@ namespace NexusFlow.Web.Controllers.Api
             return metadata;
         }
 
+        private async Task<ExportMetadata> BuildMetadataAsync(string reportTitle)
+        {
+            string companyName = await _mediator.Send(new GetCompanyNameQuery());
+
+            return new ExportMetadata
+            {
+                CompanyName = companyName,
+                ReportTitle = reportTitle,
+                AppliedFilters = new Dictionary<string, string>()
+            };
+        }
+
         [HttpGet("sales-register/export/excel")]
         [Authorize(Policy = Permissions.Reporting.ViewSalesRegister)]
         public async Task<IActionResult> ExportSalesRegisterExcel([FromQuery] GetSalesRegisterQuery query)
@@ -105,7 +117,7 @@ namespace NexusFlow.Web.Controllers.Api
             var result = await _mediator.Send(query);
             if (!result.Succeeded || !result.Data.Any()) return BadRequest("No data to export.");
 
-            var metadata = new ExportMetadata { ReportTitle = "Accounts Receivable Aging Summary", CompanyName = "NexusFlow Enterprise" }; // You can wire up the CompanyName query here too
+            var metadata = await BuildMetadataAsync("Accounts Receivable Aging Summary");
             var fileBytes = _exportService.ExportToExcel(result.Data, metadata, "AR Aging");
             return File(fileBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"AR_Aging_{DateTime.Now:yyyyMMdd}.xlsx");
         }
@@ -117,7 +129,7 @@ namespace NexusFlow.Web.Controllers.Api
             var result = await _mediator.Send(query);
             if (!result.Succeeded || !result.Data.Any()) return BadRequest("No data to export.");
 
-            var metadata = new ExportMetadata { ReportTitle = "Accounts Receivable Aging Summary", CompanyName = "NexusFlow Enterprise" };
+            var metadata = await BuildMetadataAsync("Accounts Receivable Aging Summary");
             var fileBytes = _exportService.ExportToPdf(result.Data, metadata);
             return File(fileBytes, "application/pdf", $"AR_Aging_{DateTime.Now:yyyyMMdd}.pdf");
         }
@@ -138,7 +150,7 @@ namespace NexusFlow.Web.Controllers.Api
             var result = await _mediator.Send(query);
             if (!result.Succeeded || !result.Data.Any()) return BadRequest("No data to export.");
 
-            var metadata = new ExportMetadata { ReportTitle = "Customer Statement of Account", CompanyName = "NexusFlow Enterprise" };
+            var metadata = await BuildMetadataAsync("Customer Statement of Account");
             metadata.AppliedFilters.Add("Date Range", $"{query.StartDate:yyyy-MM-dd} to {query.EndDate:yyyy-MM-dd}");
 
             var fileBytes = _exportService.ExportToExcel(result.Data, metadata, "Statement");
@@ -152,7 +164,7 @@ namespace NexusFlow.Web.Controllers.Api
             var result = await _mediator.Send(query);
             if (!result.Succeeded || !result.Data.Any()) return BadRequest("No data to export.");
 
-            var metadata = new ExportMetadata { ReportTitle = "Customer Statement of Account", CompanyName = "NexusFlow Enterprise" };
+            var metadata = await BuildMetadataAsync("Customer Statement of Account");
             metadata.AppliedFilters.Add("Date Range", $"{query.StartDate:yyyy-MM-dd} to {query.EndDate:yyyy-MM-dd}");
 
             var fileBytes = _exportService.ExportToPdf(result.Data, metadata);
@@ -211,7 +223,7 @@ namespace NexusFlow.Web.Controllers.Api
             if (!result.Succeeded || !result.Data.Any()) return BadRequest("No data to export.");
 
             // Uses the BuildMetadataAsync helper we created in Phase 1
-            var metadata = new ExportMetadata { ReportTitle = "Supplier Statement of Account", CompanyName = "NexusFlow Enterprise" };
+            var metadata = await BuildMetadataAsync("Supplier Statement of Account");
             metadata.AppliedFilters.Add("Date Range", $"{query.StartDate:yyyy-MM-dd} to {query.EndDate:yyyy-MM-dd}");
 
             var fileBytes = _exportService.ExportToExcel(result.Data, metadata, "AP Statement");
@@ -225,7 +237,7 @@ namespace NexusFlow.Web.Controllers.Api
             var result = await _mediator.Send(query);
             if (!result.Succeeded || !result.Data.Any()) return BadRequest("No data to export.");
 
-            var metadata = new ExportMetadata { ReportTitle = "Supplier Statement of Account", CompanyName = "NexusFlow Enterprise" };
+            var metadata = await BuildMetadataAsync("Supplier Statement of Account");
             metadata.AppliedFilters.Add("Date Range", $"{query.StartDate:yyyy-MM-dd} to {query.EndDate:yyyy-MM-dd}");
 
             var fileBytes = _exportService.ExportToPdf(result.Data, metadata);
@@ -251,7 +263,7 @@ namespace NexusFlow.Web.Controllers.Api
             var result = await _mediator.Send(query);
             if (!result.Succeeded || !result.Data.Any()) return BadRequest("No data to export.");
 
-            var metadata = new ExportMetadata { ReportTitle = "Inventory Analytics Cube", CompanyName = "NexusFlow Enterprise" };
+            var metadata = await BuildMetadataAsync("Inventory Analytics Cube");
             if (query.StartDate.HasValue) metadata.AppliedFilters.Add("From Date", query.StartDate.Value.ToString("yyyy-MM-dd"));
             if (query.EndDate.HasValue) metadata.AppliedFilters.Add("To Date", query.EndDate.Value.ToString("yyyy-MM-dd"));
             if (query.TransactionType.HasValue) metadata.AppliedFilters.Add("Transaction Type", query.TransactionType.Value.ToString());
@@ -267,7 +279,7 @@ namespace NexusFlow.Web.Controllers.Api
             var result = await _mediator.Send(query);
             if (!result.Succeeded || !result.Data.Any()) return BadRequest("No data to export.");
 
-            var metadata = new ExportMetadata { ReportTitle = "Inventory Analytics Cube", CompanyName = "NexusFlow Enterprise" };
+            var metadata = await BuildMetadataAsync("Inventory Analytics Cube");
             if (query.StartDate.HasValue) metadata.AppliedFilters.Add("From Date", query.StartDate.Value.ToString("yyyy-MM-dd"));
             if (query.EndDate.HasValue) metadata.AppliedFilters.Add("To Date", query.EndDate.Value.ToString("yyyy-MM-dd"));
             if (query.TransactionType.HasValue) metadata.AppliedFilters.Add("Transaction Type", query.TransactionType.Value.ToString());
@@ -335,7 +347,7 @@ namespace NexusFlow.Web.Controllers.Api
             var result = await _mediator.Send(query);
             if (!result.Succeeded || !result.Data.Any()) return BadRequest("No data to export.");
 
-            var metadata = new ExportMetadata { ReportTitle = "General Ledger & Expense Report", CompanyName = "NexusFlow Enterprise" };
+            var metadata = await BuildMetadataAsync("General Ledger & Expense Report");
             metadata.AppliedFilters.Add("Date Range", $"{query.StartDate:yyyy-MM-dd} to {query.EndDate:yyyy-MM-dd}");
             if (!string.IsNullOrEmpty(query.Module)) metadata.AppliedFilters.Add("Module Filter", query.Module);
 
@@ -350,7 +362,7 @@ namespace NexusFlow.Web.Controllers.Api
             var result = await _mediator.Send(query);
             if (!result.Succeeded || !result.Data.Any()) return BadRequest("No data to export.");
 
-            var metadata = new ExportMetadata { ReportTitle = "General Ledger & Expense Report", CompanyName = "NexusFlow Enterprise" };
+            var metadata = await BuildMetadataAsync("General Ledger & Expense Report");
             metadata.AppliedFilters.Add("Date Range", $"{query.StartDate:yyyy-MM-dd} to {query.EndDate:yyyy-MM-dd}");
             if (!string.IsNullOrEmpty(query.Module)) metadata.AppliedFilters.Add("Module Filter", query.Module);
 
@@ -377,7 +389,7 @@ namespace NexusFlow.Web.Controllers.Api
             var result = await _mediator.Send(query);
             if (!result.Succeeded || !result.Data.Any()) return BadRequest("No data to export.");
 
-            var metadata = new ExportMetadata { ReportTitle = "Commission Control Report", CompanyName = "NexusFlow Enterprise" };
+            var metadata = await BuildMetadataAsync("Commission Control Report");
             if (query.StartDate.HasValue) metadata.AppliedFilters.Add("From Date", query.StartDate.Value.ToString("yyyy-MM-dd"));
             if (query.EndDate.HasValue) metadata.AppliedFilters.Add("To Date", query.EndDate.Value.ToString("yyyy-MM-dd"));
 

@@ -25,11 +25,20 @@ namespace NexusFlow.Infrastructure
             this IServiceCollection services,
             InstallationPaths paths,
             IInstallationStateStore stateStore,
-            IInstallationSecretStore secretStore)
+            IInstallationSecretStore secretStore,
+            InstallationRuntimeOptions? runtimeOptions = null)
         {
+            runtimeOptions ??= InstallationRuntimeOptionsFactory.Create(
+                new ConfigurationBuilder().AddEnvironmentVariables().Build(),
+                paths);
             services.AddSingleton(paths);
+            services.AddSingleton(runtimeOptions);
             services.AddSingleton(stateStore);
             services.AddSingleton(secretStore);
+            services.AddSingleton<IInstallationSecretStoreDiagnostics>(serviceProvider =>
+                secretStore as IInstallationSecretStoreDiagnostics
+                ?? throw new InvalidOperationException("The active installation secret store does not support diagnostics."));
+            services.AddSingleton<IInstallationRuntimeContext, InstallationRuntimeContext>();
             services.AddSingleton<IInstallationConnectionStringProvider, InstallationConnectionStringProvider>();
             services.AddSingleton<IInstallationDatabaseProvisioner, InstallationDatabaseProvisioner>();
             services.AddScoped<IInstallationTemplateProvider, StandardInstallationTemplateProvider>();
@@ -56,7 +65,9 @@ namespace NexusFlow.Infrastructure
             services.AddSingleton<AzureBlobStorageProvider>(serviceProvider =>
                 new AzureBlobStorageProvider(
                     serviceProvider.GetRequiredService<IInstallationSecretStore>()
-                        .Get(InstallationConnectionStringProvider.AzureBlobStorageSecret)));
+                        .Get(InstallationConnectionStringProvider.AzureBlobStorageSecret)
+                    ?? serviceProvider.GetRequiredService<InstallationRuntimeOptions>().AzureBlobStorageConnectionString,
+                    serviceProvider.GetRequiredService<InstallationRuntimeOptions>().AzureBlobStorageContainer));
             services.AddSingleton<LocalDiskStorageProvider>(serviceProvider =>
                 new LocalDiskStorageProvider(serviceProvider.GetRequiredService<InstallationPaths>().StoragePath));
 
@@ -75,6 +86,8 @@ namespace NexusFlow.Infrastructure
             services.AddScoped<IFinancialAccountResolver, FinancialAccountResolver>();
             services.AddScoped<IExportService, SyncfusionExportService>();
             services.AddScoped<ISmsGatewayService, SmsGatewayService>();
+            services.AddScoped<ISecretValidationService, SecretValidationService>();
+            services.AddScoped<ICurrentUserPasswordValidator, CurrentUserPasswordValidator>();
 
             services.AddSingleton<IUserIdProvider, NameUserIdProvider>();
 

@@ -10,7 +10,7 @@ namespace NexusFlow.Web.Controllers
         [Authorize(Policy = Permissions.Treasury.ViewReceipts)]
         public IActionResult Index()
         {
-            return View();
+            return RedirectToAction(nameof(Receipts));
         }
 
         [Authorize(Policy = Permissions.Treasury.ViewReceipts)]

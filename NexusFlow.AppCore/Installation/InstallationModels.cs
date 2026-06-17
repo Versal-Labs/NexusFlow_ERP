@@ -6,7 +6,9 @@ namespace NexusFlow.AppCore.Installation
         bool UseWindowsAuthentication,
         string? Username,
         string? Password,
-        bool TrustServerCertificate);
+        bool TrustServerCertificate,
+        string? ConnectionString = null,
+        bool UsePreconfiguredConnectionString = false);
 
     public sealed record DatabaseValidationResult(
         bool Succeeded,

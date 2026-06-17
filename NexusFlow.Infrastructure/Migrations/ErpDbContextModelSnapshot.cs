@@ -4773,16 +4773,20 @@ namespace NexusFlow.Infrastructure.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("BusinessRegistrationNumber")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("CompanyName")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<string>("ContactEmail")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<string>("ContactPhone")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -4797,13 +4801,15 @@ namespace NexusFlow.Infrastructure.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("LogoBlobUrl")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<string>("PrimaryAddress")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("TaxRegistrationNumber")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<DateTime>("ValidFrom")
                         .ValueGeneratedOnAddOrUpdate()
@@ -4817,11 +4823,11 @@ namespace NexusFlow.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("CompanyProfiles", "dbo");
+                    b.ToTable("CompanyProfiles", "System");
 
                     b.ToTable(tb => tb.IsTemporal(ttb =>
                             {
-                                ttb.UseHistoryTable("CompanyProfiles_History", "dbo");
+                                ttb.UseHistoryTable("CompanyProfiles_History", "System");
                                 ttb
                                     .HasPeriodStart("ValidFrom")
                                     .HasColumnName("ValidFrom");
@@ -4841,7 +4847,8 @@ namespace NexusFlow.Infrastructure.Migrations
 
                     b.Property<string>("BlobUrl")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -4869,7 +4876,8 @@ namespace NexusFlow.Infrastructure.Migrations
 
                     b.Property<string>("TemplateName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
 
                     b.Property<DateTime>("ValidFrom")
                         .ValueGeneratedOnAddOrUpdate()
@@ -4883,11 +4891,16 @@ namespace NexusFlow.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("DocumentTemplates", "dbo");
+                    b.HasIndex("DocumentType", "TaxProfile", "IsDefault")
+                        .IsUnique()
+                        .HasDatabaseName("IX_DocumentTemplates_DefaultPerTypeTax")
+                        .HasFilter("[IsDefault] = 1");
+
+                    b.ToTable("DocumentTemplates", "System");
 
                     b.ToTable(tb => tb.IsTemporal(ttb =>
                             {
-                                ttb.UseHistoryTable("DocumentTemplates_History", "dbo");
+                                ttb.UseHistoryTable("DocumentTemplates_History", "System");
                                 ttb
                                     .HasPeriodStart("ValidFrom")
                                     .HasColumnName("ValidFrom");

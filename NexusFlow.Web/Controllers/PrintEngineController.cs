@@ -1,49 +1,40 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using MediatR;
+using NexusFlow.AppCore.Constants;
 using NexusFlow.AppCore.DTOs.Print;
+using NexusFlow.AppCore.Features.Print;
 using NexusFlow.AppCore.Interfaces;
 using NexusFlow.Domain.Enums;
+using NexusFlow.Web.Filters;
 using System;
 using System.Threading.Tasks;
 
 namespace NexusFlow.Web.Controllers
 {
-    [Authorize]
+    [Authorize(Policy = AuthConstants.HybridPolicy)]
+    [HybridAuthorize]
     [Route("api/[controller]")]
     [ApiController]
     public class PrintEngineController : ControllerBase
     {
         private readonly IDocumentRenderingService _renderingService;
+        private readonly IMediator _mediator;
 
-        public PrintEngineController(IDocumentRenderingService renderingService)
+        public PrintEngineController(IDocumentRenderingService renderingService, IMediator mediator)
         {
             _renderingService = renderingService;
+            _mediator = mediator;
         }
 
         [HttpGet("Initialize/{documentType}/{documentId}")]
-        public IActionResult Initialize(string documentType, string documentId)
+        public async Task<IActionResult> Initialize(string documentType, string documentId)
         {
-            // In a real application, you would dispatch a MediatR query to fetch the actual
-            // document details (e.g. GetSalesInvoicePrintDtoQuery).
-            // For now, we return a mock DTO to initialize the form.
-            var dummyData = new PrintDocumentDto
-            {
-                DocumentId = documentId,
-                DocumentType = documentType,
-                DocumentNumber = $"{documentType.ToUpper()}-{documentId}",
-                DocumentDate = DateTime.UtcNow,
-                CustomerOrSupplierName = "Sample Customer",
-                BillingAddress = "123 Business Road\nCity, Country",
-                SubTotal = 1000m,
-                TaxTotal = 150m,
-                DiscountTotal = 0m,
-                GrandTotal = 1150m,
-                LineItems = new System.Collections.Generic.List<PrintLineItemDto>
-                {
-                    new PrintLineItemDto { ItemCode = "ITM-001", Description = "Sample Item", Quantity = 10, UnitPrice = 100, LineTotal = 1000 }
-                }
-            };
-            return Ok(dummyData);
+            if (!Enum.TryParse<DocumentType>(documentType, true, out var type))
+                return BadRequest("Invalid document type.");
+
+            var result = await _mediator.Send(new GetPrintDocumentQuery(type, documentId));
+            return result.Succeeded ? Ok(result.Data) : BadRequest(string.Join(", ", result.Errors ?? new[] { result.Message }));
         }
 
         [HttpPost("Render")]
@@ -59,6 +50,29 @@ namespace NexusFlow.Web.Controllers
             {
                 var pdfBytes = await _renderingService.RenderDocumentToPdfAsync(type, dto);
                 return File(pdfBytes, "application/pdf");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error rendering document: {ex.Message}");
+            }
+        }
+
+        [HttpGet("File/{documentType}/{documentId}")]
+        public async Task<IActionResult> DownloadFile(string documentType, string documentId)
+        {
+            if (!Enum.TryParse<DocumentType>(documentType, true, out var type))
+                return BadRequest("Invalid document type.");
+
+            var result = await _mediator.Send(new GetPrintDocumentQuery(type, documentId));
+            if (!result.Succeeded)
+                return BadRequest(string.Join(", ", result.Errors ?? new[] { result.Message }));
+
+            try
+            {
+                var actualType = Enum.TryParse<DocumentType>(result.Data.DocumentType, true, out var parsedType) ? parsedType : type;
+                var pdfBytes = await _renderingService.RenderDocumentToPdfAsync(actualType, result.Data);
+                var fileName = $"{result.Data.DocumentType}-{result.Data.DocumentNumber}.pdf";
+                return base.File(pdfBytes, "application/pdf", fileName);
             }
             catch (Exception ex)
             {

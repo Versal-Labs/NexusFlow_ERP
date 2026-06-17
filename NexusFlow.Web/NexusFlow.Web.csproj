@@ -32,6 +32,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="SeedData\DocumentTemplates\Defaults\*.docx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
     <Folder Include="SeedData\" />
     <Folder Include="wwwroot\Assets\" />
     <Folder Include="wwwroot\data\" />

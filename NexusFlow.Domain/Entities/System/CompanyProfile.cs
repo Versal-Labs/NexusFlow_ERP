@@ -1,7 +1,9 @@
 using NexusFlow.Domain.Common;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace NexusFlow.Domain.Entities.System
 {
+    [Table("CompanyProfiles", Schema = "System")]
     public class CompanyProfile : AuditableEntity
     {
         public string? CompanyName { get; set; }

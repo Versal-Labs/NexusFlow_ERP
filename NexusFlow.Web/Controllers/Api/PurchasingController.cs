@@ -48,6 +48,13 @@ namespace NexusFlow.Web.Controllers.Api
             return result.Succeeded ? Ok(result) : BadRequest(result);
         }
 
+        [HttpGet("purchase-orders/{id}/pdf")]
+        [Authorize(Policy = Permissions.Purchasing.ViewPOs)]
+        public IActionResult DownloadPurchaseOrderPdf(int id)
+        {
+            return Redirect($"/api/PrintEngine/File/PurchaseOrder/{id}");
+        }
+
         [HttpPost("purchase-orders")]
         [Authorize(Policy = Permissions.Purchasing.CreatePO)]
         public async Task<IActionResult> CreatePurchaseOrder([FromBody] CreatePurchaseOrderCommand command)
@@ -99,6 +106,13 @@ namespace NexusFlow.Web.Controllers.Api
             return result.Succeeded ? Ok(result) : BadRequest(result);
         }
 
+        [HttpGet("grns/{id}/pdf")]
+        [Authorize(Policy = Permissions.Purchasing.ViewGRNs)]
+        public IActionResult DownloadGrnPdf(int id)
+        {
+            return Redirect($"/api/PrintEngine/File/GRN/{id}");
+        }
+
         // ==========================================
         // 3. SUPPLIER BILLS (AP INVOICES)
         // ==========================================
@@ -143,6 +157,13 @@ namespace NexusFlow.Web.Controllers.Api
             return result.Succeeded ? Ok(result) : BadRequest(result);
         }
 
+        [HttpGet("supplier-bills/{id}/pdf")]
+        [Authorize(Policy = Permissions.Purchasing.ViewBills)]
+        public IActionResult DownloadSupplierBillPdf(int id)
+        {
+            return Redirect($"/api/PrintEngine/File/SupplierBill/{id}");
+        }
+
         [HttpPut("supplier-bills/{id}")]
         [Authorize(Policy = Permissions.Purchasing.CreateBill)]
         public async Task<IActionResult> UpdateSupplierBill(int id, [FromBody] UpdateSupplierBillCommand command)
@@ -171,6 +192,13 @@ namespace NexusFlow.Web.Controllers.Api
         {
             var res = await _mediator.Send(new GetDebitNoteByIdQuery { Id = id });
             return res.Succeeded ? Ok(res.Data) : NotFound();
+        }
+
+        [HttpGet("debit-notes/{id}/pdf")]
+        [Authorize(Policy = Permissions.Purchasing.ViewDebitNotes)]
+        public IActionResult DownloadDebitNotePdf(int id)
+        {
+            return Redirect($"/api/PrintEngine/File/DebitNote/{id}");
         }
 
         [HttpPost("debit-notes")]

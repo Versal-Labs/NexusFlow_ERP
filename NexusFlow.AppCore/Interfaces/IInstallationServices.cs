@@ -18,6 +18,39 @@ namespace NexusFlow.AppCore.Interfaces
         Task RemoveAsync(string key, CancellationToken cancellationToken = default);
     }
 
+    public sealed class InstallationSecretDiagnostic
+    {
+        public bool HasValue { get; init; }
+        public bool HasStoredValue { get; init; }
+        public bool HasPlatformValue { get; init; }
+        public bool CanWrite { get; init; }
+        public string Source { get; init; } = "Missing";
+        public string? Fingerprint { get; init; }
+    }
+
+    public interface IInstallationSecretStoreDiagnostics
+    {
+        InstallationSecretDiagnostic Inspect(string key);
+    }
+
+    public interface IInstallationRuntimeContext
+    {
+        string InstanceId { get; }
+        string DeploymentProfile { get; }
+        string StorageMode { get; }
+        string? AzureBlobStorageContainer { get; }
+    }
+
+    public interface ICurrentUserPasswordValidator
+    {
+        Task<bool> ValidateCurrentPasswordAsync(string password, CancellationToken cancellationToken = default);
+    }
+
+    public interface IApplicationRestartService
+    {
+        Task RequestRestartAsync(CancellationToken cancellationToken = default);
+    }
+
     public interface IInstallationConnectionStringProvider
     {
         string? GetConnectionString();

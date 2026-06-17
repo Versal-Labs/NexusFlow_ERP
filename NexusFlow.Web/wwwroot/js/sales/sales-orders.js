@@ -69,8 +69,8 @@
                             btns += `<button class="btn btn-sm btn-danger shadow-sm me-1" onclick="window.orderApp.changeStatus(${row.id}, 1)" title="Revoke to Draft"><i class="fa-solid fa-rotate-left"></i></button>`;
                         }
 
-                        // 3. PDF Export
-                        btns += `<a href="/api/sales/orders/${row.id}/pdf" target="_blank" class="btn btn-sm btn-outline-danger shadow-sm" title="Export PDF Quote"><i class="fa-solid fa-file-pdf"></i></a>`;
+                        // 3. Print Preview
+                        btns += `<button class="btn btn-sm btn-outline-danger shadow-sm" onclick="NexusPrint.openPreview('SalesOrder', ${row.id})" title="Preview PDF Quote"><i class="fa-solid fa-file-pdf"></i></button>`;
                         return btns;
                     }
                 }

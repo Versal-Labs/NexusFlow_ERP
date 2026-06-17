@@ -153,7 +153,7 @@
     },
 
     viewSlip: function (slipId) {
-        window.open(`/api/payroll/slip/${slipId}/pdf`, '_blank');
+        NexusPrint.openPreview('Payslip', slipId);
     },
 
     exportBank: function () {

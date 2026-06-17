@@ -40,7 +40,7 @@
                 window.location.href = `/Treasury/Receipts?invoiceId=${this._currentDocId}`;
             });
             $('#btnModalPrint').click(() => {
-                window.open(`/api/sales/invoices/${this._currentDocId}/pdf`, '_blank');
+                NexusPrint.openPreview('SalesInvoice', this._currentDocId);
             });
 
         } catch (e) {

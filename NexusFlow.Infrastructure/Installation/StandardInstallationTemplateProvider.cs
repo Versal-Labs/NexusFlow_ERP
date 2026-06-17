@@ -21,15 +21,18 @@ namespace NexusFlow.Infrastructure.Installation
         private readonly ErpDbContext _context;
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly InstallationRuntimeOptions _runtimeOptions;
 
         public StandardInstallationTemplateProvider(
             ErpDbContext context,
             RoleManager<IdentityRole> roleManager,
-            UserManager<ApplicationUser> userManager)
+            UserManager<ApplicationUser> userManager,
+            InstallationRuntimeOptions runtimeOptions)
         {
             _context = context;
             _roleManager = roleManager;
             _userManager = userManager;
+            _runtimeOptions = runtimeOptions;
         }
 
         public string TemplateVersion => "lk-light-manufacturing-1.0";
@@ -303,7 +306,11 @@ namespace NexusFlow.Infrastructure.Installation
                 });
             }
 
-            Directory.CreateDirectory(request.LocalStoragePath);
+            if (_runtimeOptions.StorageMode is StorageMode.Local or StorageMode.Hybrid)
+            {
+                Directory.CreateDirectory(request.LocalStoragePath);
+            }
+
             await _context.SaveChangesAsync(cancellationToken);
         }
 

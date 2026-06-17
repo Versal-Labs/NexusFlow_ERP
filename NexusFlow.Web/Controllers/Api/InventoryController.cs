@@ -217,6 +217,13 @@ namespace NexusFlow.Web.Controllers.Api
             return result.Succeeded ? Ok(result.Data) : NotFound();
         }
 
+        [HttpGet("transfers/{refNo}/pdf")]
+        [Authorize(Policy = Permissions.Inventory.ViewStock)]
+        public IActionResult DownloadTransferPdf(string refNo)
+        {
+            return Redirect($"/api/PrintEngine/File/StockTransferDeliveryNote/{Uri.EscapeDataString(refNo)}");
+        }
+
         [HttpPost("transfers/{refNo}/reverse")]
         [Authorize(Policy = Permissions.Inventory.TransferStock)]
         public async Task<IActionResult> ReverseTransfer(string refNo)

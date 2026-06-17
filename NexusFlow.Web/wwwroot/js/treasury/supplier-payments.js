@@ -62,7 +62,7 @@
                     data: null, className: 'text-end pe-3', orderable: false,
                     render: function (data, type, row) {
                         let btns = `<button class="btn btn-sm btn-outline-dark shadow-sm me-1" onclick="paymentApp.viewPayment(${row.id})" title="View Details"><i class="fa-solid fa-eye"></i></button>`;
-                        btns += `<button class="btn btn-sm btn-outline-secondary shadow-sm" title="Print Remittance" onclick="window.open('/api/treasury/payments/${row.id}/remittance', '_blank')"><i class="fa-solid fa-print"></i></button>`;
+                        btns += `<button class="btn btn-sm btn-outline-secondary shadow-sm" title="Print Remittance" onclick="NexusPrint.openPreview('SupplierPaymentRemittance', ${row.id})"><i class="fa-solid fa-print"></i></button>`;
                         return btns;
                     }
                 }

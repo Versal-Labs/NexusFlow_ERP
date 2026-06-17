@@ -10,7 +10,7 @@ namespace NexusFlow.Web.Controllers
         [Authorize(Policy = Permissions.Finance.ViewChartOfAccounts)]
         public IActionResult Index()
         {
-            return View();
+            return RedirectToAction(nameof(TrialBalance));
         }
 
         [Authorize(Policy = Permissions.Finance.ViewReports)]
