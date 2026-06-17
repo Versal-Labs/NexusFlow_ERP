@@ -1,6 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace NexusFlow.AppCore.Interfaces
 {
@@ -21,5 +24,6 @@ namespace NexusFlow.AppCore.Interfaces
     {
         Task<string> SaveFileSecurelyAsync(Stream fileStream, string fileName, string moduleFolder, string contentType, CancellationToken cancellationToken = default);
         Task<(Stream Stream, string ContentType)> RetrieveFileAsync(string fileReference, CancellationToken cancellationToken = default);
+        Task DeleteFileAsync(string fileReference, CancellationToken cancellationToken = default);
     }
 }

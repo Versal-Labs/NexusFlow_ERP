@@ -50,9 +50,24 @@ namespace NexusFlow.Infrastructure.Installation
             await EnsureRolesAsync(cancellationToken);
             await EnsureInitialSuperAdminAsync(request, cancellationToken);
             await EnsureReferenceDataAsync(cancellationToken);
+            await EnsureCompanyProfileAsync(request, cancellationToken);
             await EnsureInstallationRecordAsync(cancellationToken);
 
             await transaction.CommitAsync(cancellationToken);
+        }
+
+        private async Task EnsureCompanyProfileAsync(InstallationRequest request, CancellationToken cancellationToken)
+        {
+            if (!await _context.CompanyProfiles.AnyAsync(cancellationToken))
+            {
+                _context.CompanyProfiles.Add(new CompanyProfile
+                {
+                    CompanyName = request.CompanyName.Trim(),
+                    TaxRegistrationNumber = request.TaxRegistrationNumber.Trim(),
+                    ContactEmail = request.AdminEmail.Trim()
+                });
+                await _context.SaveChangesAsync(cancellationToken);
+            }
         }
 
         private async Task EnsureAccountsAsync(CancellationToken cancellationToken)

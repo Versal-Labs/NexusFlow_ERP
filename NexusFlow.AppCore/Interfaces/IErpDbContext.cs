@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using NexusFlow.Domain.Entities.Config;
 using NexusFlow.Domain.Entities.Finance;
@@ -81,6 +81,8 @@ namespace NexusFlow.AppCore.Interfaces
         DbSet<PayrollSlipLineItem> PayrollSlipLineItems { get; set; }
         DbSet<InstallationRecord> InstallationRecords { get; set; }
         DbSet<AppliedInstallationStep> AppliedInstallationSteps { get; set; }
+        DbSet<CompanyProfile> CompanyProfiles { get; set; }
+        DbSet<DocumentTemplate> DocumentTemplates { get; set; }
 
         Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 

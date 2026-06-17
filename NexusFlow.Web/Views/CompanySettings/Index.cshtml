@@ -1,0 +1,83 @@
+@model NexusFlow.Domain.Entities.System.CompanyProfile
+
+@{
+    ViewData["Title"] = "Company Settings";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col-12">
+            <h2>@ViewData["Title"]</h2>
+            <p class="text-muted">Manage your instance branding and company details.</p>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <form asp-action="Index" method="post" enctype="multipart/form-data">
+                <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Company Name</label>
+                        <input type="text" name="CompanyName" class="form-control" value="@Model?.CompanyName" required />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Tax Registration Number (VAT)</label>
+                        <input type="text" name="TaxRegistrationNumber" class="form-control" value="@Model?.TaxRegistrationNumber" />
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Business Registration Number</label>
+                        <input type="text" name="BusinessRegistrationNumber" class="form-control" value="@Model?.BusinessRegistrationNumber" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Contact Email</label>
+                        <input type="email" name="ContactEmail" class="form-control" value="@Model?.ContactEmail" />
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Contact Phone</label>
+                        <input type="text" name="ContactPhone" class="form-control" value="@Model?.ContactPhone" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Primary Address</label>
+                        <textarea name="PrimaryAddress" class="form-control" rows="2">@Model?.PrimaryAddress</textarea>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Company Logo</label>
+                        <input type="file" name="logoFile" class="form-control" accept="image/*" />
+                        <small class="text-muted">Upload a new logo to replace the current one. This will be used on all generated documents.</small>
+                    </div>
+                    <div class="col-md-6 text-center">
+                        @if (!string.IsNullOrEmpty(Model?.LogoBlobUrl))
+                        {
+                            <p class="mb-2">Current Logo</p>
+                            @* In a real app we'd have an endpoint to serve the image, but for now we'll just indicate it exists *@
+                            <span class="badge bg-success">Logo Uploaded</span>
+                        }
+                    </div>
+                </div>
+
+                <hr />
+                <button type="submit" class="btn btn-primary">Save Settings</button>
+            </form>
+        </div>
+    </div>
+</div>

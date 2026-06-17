@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using NexusFlow.AppCore.Interfaces;
@@ -98,6 +98,8 @@ namespace NexusFlow.Infrastructure
         public DbSet<PayrollSlipLineItem> PayrollSlipLineItems { get; set; }
         public DbSet<InstallationRecord> InstallationRecords { get; set; }
         public DbSet<AppliedInstallationStep> AppliedInstallationSteps { get; set; }
+        public DbSet<CompanyProfile> CompanyProfiles { get; set; }
+        public DbSet<DocumentTemplate> DocumentTemplates { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

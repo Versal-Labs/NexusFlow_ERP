@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -65,6 +65,8 @@ namespace NexusFlow.Infrastructure
             services.AddMemoryCache();
             services.AddTransient<ITokenService, JwtTokenService>();
             services.AddScoped<IConfigService, ConfigService>();
+            services.AddScoped<ICompanyProfileService, CompanyProfileService>();
+            services.AddScoped<IDocumentRenderingService, DocumentRenderingService>();
             services.AddScoped<ITaxService, TaxService>();
             services.AddScoped<IStockService, StockService>();
             services.AddScoped<IJournalService, JournalService>();

@@ -1,4 +1,4 @@
-﻿using Azure.Storage.Blobs;
+using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using NexusFlow.AppCore.Interfaces;
 using System;
@@ -47,7 +47,8 @@ namespace NexusFlow.Infrastructure.Services.Storage
 
             var parts = fileReference.Replace(_providerPrefix, "").Split('/');
             var containerClient = _blobServiceClient.GetBlobContainerClient(parts[0]);
-            var blobClient = containerClient.GetBlobClient(parts[1]);
+            var blobName = string.Join('/', parts.Skip(1));
+            var blobClient = containerClient.GetBlobClient(blobName);
 
             var downloadInfo = await blobClient.DownloadAsync(cancellationToken);
             return (downloadInfo.Value.Content, downloadInfo.Value.Details.ContentType);
@@ -60,7 +61,8 @@ namespace NexusFlow.Infrastructure.Services.Storage
 
             var parts = fileReference.Replace(_providerPrefix, "").Split('/');
             var containerClient = _blobServiceClient.GetBlobContainerClient(parts[0]);
-            var blobClient = containerClient.GetBlobClient(parts[1]);
+            var blobName = string.Join('/', parts.Skip(1));
+            var blobClient = containerClient.GetBlobClient(blobName);
             await blobClient.DeleteIfExistsAsync(cancellationToken: cancellationToken);
         }
     }

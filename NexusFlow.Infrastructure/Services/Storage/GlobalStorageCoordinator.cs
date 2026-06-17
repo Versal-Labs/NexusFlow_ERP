@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NexusFlow.AppCore.Interfaces;
 using NexusFlow.Domain.Entities.System;
@@ -57,6 +57,23 @@ namespace NexusFlow.Infrastructure.Services.Storage
 
             if (_fallbackProvider.CanHandle(fileReference))
                 return await _fallbackProvider.DownloadAsync(fileReference, cancellationToken);
+
+            throw new InvalidOperationException("Unrecognized file storage reference.");
+        }
+
+        public async Task DeleteFileAsync(string fileReference, CancellationToken cancellationToken = default)
+        {
+            if (_primaryProvider.CanHandle(fileReference))
+            {
+                await _primaryProvider.DeleteAsync(fileReference, cancellationToken);
+                return;
+            }
+
+            if (_fallbackProvider.CanHandle(fileReference))
+            {
+                await _fallbackProvider.DeleteAsync(fileReference, cancellationToken);
+                return;
+            }
 
             throw new InvalidOperationException("Unrecognized file storage reference.");
         }
