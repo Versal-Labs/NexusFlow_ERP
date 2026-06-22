@@ -38,5 +38,9 @@ namespace NexusFlow.Domain.Entities.Finance
 
         public ChequeStatus Status { get; set; } = ChequeStatus.InSafe;
         public string? BounceReason { get; set; }
+        public DateTime? EndorsedDate { get; set; }
+        public DateTime? ClearedDate { get; set; }
+        public DateTime? DishonoredDate { get; set; }
+        public string? ReversalReferenceNo { get; set; }
     }
 }

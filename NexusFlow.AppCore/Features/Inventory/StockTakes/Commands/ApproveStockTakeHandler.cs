@@ -10,10 +10,12 @@ using System.Text;
 
 namespace NexusFlow.AppCore.Features.Inventory.StockTakes.Commands
 {
-    public class ApproveStockTakeCommand : IRequest<Result<int>>
+    public class ApproveStockTakeCommand : IRequest<Result<int>>, IFinancialPeriodControlledRequest
     {
         public int StockTakeId { get; set; }
         public string ApproverName { get; set; } = "System Admin";
+        public DateTime ApprovalDate { get; set; } = DateTime.UtcNow.Date;
+        public DateTime FinancialDate => ApprovalDate;
     }
 
     public class ApproveStockTakeHandler : IRequestHandler<ApproveStockTakeCommand, Result<int>>
@@ -147,7 +149,7 @@ namespace NexusFlow.AppCore.Features.Inventory.StockTakes.Commands
 
                     var jResult = await _journalService.PostJournalAsync(new JournalEntryRequest
                     {
-                        Date = DateTime.UtcNow,
+                        Date = request.ApprovalDate,
                         Description = $"Stock Take Variance Reconciliation: {stockTake.StockTakeNumber}",
                         Module = "Inventory",
                         ReferenceNo = stockTake.StockTakeNumber,

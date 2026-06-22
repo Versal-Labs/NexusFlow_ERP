@@ -48,7 +48,8 @@ namespace NexusFlow.AppCore.Features.Purchasing.Queries
                 .AsNoTracking()
                 .Where(b => b.SupplierId == request.SupplierId
                          && b.IsPosted
-                         && b.PaymentStatus != InvoicePaymentStatus.Paid)
+                         && b.PaymentStatus != InvoicePaymentStatus.Voided
+                         && b.GrandTotal > b.AmountPaid)
                 .OrderBy(b => b.DueDate) // Order by Due Date so oldest bills appear first for allocation
                 .Select(b => new UnpaidSupplierBillDto
                 {

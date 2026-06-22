@@ -122,6 +122,7 @@ namespace NexusFlow.Infrastructure.Installation
                 [ConfigurationKeys.FinanceBaseCurrency] = "LKR",
                 [ConfigurationKeys.InventoryAllowNegativeStock] = "False",
                 [ConfigurationKeys.StorageLocalPath] = request.LocalStoragePath,
+                [ConfigurationKeys.ProductionOverproductionTolerancePercent] = "5",
                 [AccountMappingKeys.AccountsReceivable] = "1120",
                 [AccountMappingKeys.AccountsPayable] = "2110",
                 [AccountMappingKeys.UndepositedFunds] = "1113",
@@ -179,17 +180,7 @@ namespace NexusFlow.Infrastructure.Installation
 
         private async Task EnsureNumberSequencesAsync(CancellationToken cancellationToken)
         {
-            var definitions = new Dictionary<string, string>
-            {
-                [NumberSequenceKeys.CreditNote] = "CN", [NumberSequenceKeys.DebitNote] = "DN",
-                [NumberSequenceKeys.Employee] = "EMP", [NumberSequenceKeys.GoodsReceipt] = "GRN",
-                [NumberSequenceKeys.Journal] = "JE", [NumberSequenceKeys.MaterialIssue] = "MI",
-                [NumberSequenceKeys.SalesOrder] = "SO", [NumberSequenceKeys.Payment] = "PAY",
-                [NumberSequenceKeys.ProductionReceipt] = "PRD", [NumberSequenceKeys.Purchasing] = "PO",
-                [NumberSequenceKeys.Receipt] = "REC", [NumberSequenceKeys.SalesInvoice] = "INV",
-                [NumberSequenceKeys.StockAdjustment] = "ADJ", [NumberSequenceKeys.StockTake] = "ST",
-                [NumberSequenceKeys.StockTransfer] = "TRF", [NumberSequenceKeys.SupplierBill] = "BILL"
-            };
+            var definitions = NumberSequenceKeys.Defaults;
 
             var existing = await _context.NumberSequences.ToDictionaryAsync(x => x.Module, StringComparer.OrdinalIgnoreCase, cancellationToken);
             foreach (var definition in definitions)

@@ -60,7 +60,7 @@
                 headers: this._headers,
                 dataType: 'json',
                 delay: 250,
-                // Strict Domain Guard: Filters by ProductType (0 = RM, 1 = FG)
+                // ProductType is persisted as RawMaterial=1 and FinishedGood=2.
                 data: params => ({ query: params.term, productType: productType }),
                 processResults: data => ({
                     results: $.map(data, item => ({ id: item.id, text: `${item.sku} - ${item.name}` }))
@@ -87,18 +87,19 @@
             </tr>`;
         $('#rmList').append(rowHtml);
         
-        // 0 = RawMaterial enum mapping
-        this.initSelect2ForRow($(`select[data-rowid="${rowId}"]`), 0); 
+        this.initSelect2ForRow($(`select[data-rowid="${rowId}"]`), 1);
     },
 
     openCreateModal: function () {
         $('#bomForm')[0].reset();
         $('#bomId').val(0);
+        $('#bomRowVersion').val('');
+        $('#basisQuantity').val(1);
+        document.getElementById('effectiveFrom').valueAsDate = new Date();
         $('#rmList').empty();
         $('#productVariantId').empty().trigger('change');
         
-        // 1 = FinishedGood enum mapping
-        this.initSelect2ForRow($('#productVariantId'), 1); 
+        this.initSelect2ForRow($('#productVariantId'), 2);
         this._modal.show();
     },
 
@@ -110,10 +111,13 @@
             
             $('#bomId').val(bom.id);
             $('#bomName').val(bom.name);
+            $('#bomRowVersion').val(bom.rowVersion || '');
+            $('#basisQuantity').val(bom.basisQuantity || 1);
+            $('#effectiveFrom').val((bom.effectiveFrom || new Date().toISOString()).split('T')[0]);
             $('#isActive').prop('checked', bom.isActive);
             
             $('#productVariantId').empty().append(new Option(bom.productVariantName, bom.productVariantId, true, true)).trigger('change');
-            this.initSelect2ForRow($('#productVariantId'), 1);
+            this.initSelect2ForRow($('#productVariantId'), 2);
 
             $('#rmList').empty();
             bom.components.forEach(c => this.appendComponentRow(c.materialVariantId, c.materialVariantName, c.quantity));
@@ -136,6 +140,9 @@
             name: $('#bomName').val(),
             productVariantId: parseInt($('#productVariantId').val()),
             isActive: $('#isActive').is(':checked'),
+            basisQuantity: parseFloat($('#basisQuantity').val()) || 1,
+            effectiveFrom: $('#effectiveFrom').val(),
+            rowVersion: $('#bomRowVersion').val() || '',
             components: []
         };
 

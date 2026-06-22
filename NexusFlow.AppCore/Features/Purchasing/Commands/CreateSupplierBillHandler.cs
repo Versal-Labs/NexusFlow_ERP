@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using NexusFlow.AppCore.DTOs.Finance;
 using NexusFlow.AppCore.DTOs.Purchasing;
+using NexusFlow.AppCore.Constants;
 using NexusFlow.AppCore.Interfaces;
 using NexusFlow.Domain.Entities.Purchasing;
 using NexusFlow.Shared.Wrapper;
@@ -11,9 +12,10 @@ using System.Text;
 
 namespace NexusFlow.AppCore.Features.Purchasing.Commands
 {
-    public class CreateSupplierBillCommand : IRequest<Result<int>>
+    public class CreateSupplierBillCommand : IRequest<Result<int>>, IFinancialPeriodControlledRequest
     {
         public CreateSupplierBillRequest Bill { get; set; } = null!;
+        public DateTime FinancialDate => Bill.BillDate;
     }
 
     public class CreateSupplierBillHandler : IRequestHandler<CreateSupplierBillCommand, Result<int>>
@@ -37,6 +39,8 @@ namespace NexusFlow.AppCore.Features.Purchasing.Commands
         {
             var dto = request.Bill;
             if (!dto.Items.Any()) return Result<int>.Failure("Bill must contain at least one line item.");
+            if (dto.LinkedGrnIds.Any() && dto.ProductionReceiptIds.Any())
+                return Result<int>.Failure("GRN goods and production sewing accruals must be billed separately.");
 
             using var transaction = await _context.BeginTransactionAsync(cancellationToken);
 
@@ -64,6 +68,21 @@ namespace NexusFlow.AppCore.Features.Purchasing.Commands
 
                 decimal vatRate = dto.ApplyVat ? await _taxService.GetTaxRateAsync("VAT", dto.BillDate) : 0m;
                 var debitGrouping = new Dictionary<int, decimal>();
+                decimal productionAccrual = 0m;
+                List<NexusFlow.Domain.Entities.Inventory.ProductionReceipt> productionReceipts = new();
+
+                if (dto.ProductionReceiptIds.Any())
+                {
+                    if (dto.IsDraft) return Result<int>.Failure("Production sewing accruals can only be matched on a posted bill.");
+                    productionReceipts = await _context.ProductionReceipts
+                        .Include(x => x.ProductionOrder)
+                        .Where(x => dto.ProductionReceiptIds.Contains(x.Id)).ToListAsync(cancellationToken);
+                    if (productionReceipts.Count != dto.ProductionReceiptIds.Distinct().Count())
+                        return Result<int>.Failure("One or more production receipts were not found.");
+                    if (productionReceipts.Any(x => x.SupplierBillId.HasValue)) return Result<int>.Failure("A production receipt sewing charge has already been billed.");
+                    if (productionReceipts.Any(x => x.ProductionOrder.ContractorId != dto.SupplierId)) return Result<int>.Failure("Production receipts belong to a different contractor.");
+                    productionAccrual = productionReceipts.Sum(x => x.SewingCharge);
+                }
 
                 int unbilledAccountId = await _financialAccountResolver.ResolveAccountIdAsync("Account.Purchasing.UnbilledReceipts", cancellationToken);
 
@@ -72,7 +91,7 @@ namespace NexusFlow.AppCore.Features.Purchasing.Commands
 
                 foreach (var item in dto.Items)
                 {
-                    if (item.ProductVariantId == null && item.ExpenseAccountId == null)
+                    if (item.ProductVariantId == null && item.ExpenseAccountId == null && productionReceipts.Count == 0)
                         throw new Exception("Line item must be either a Product or a Direct Expense.");
 
                     decimal lineTotal = item.Quantity * item.UnitPrice;
@@ -110,7 +129,16 @@ namespace NexusFlow.AppCore.Features.Purchasing.Commands
                 bill.TaxAmount = bill.SubTotal * (vatRate / 100m);
                 bill.GrandTotal = bill.SubTotal + bill.TaxAmount;
 
+                if (productionReceipts.Count > 0)
+                {
+                    // Sewing was accrued at receipt; the supplier bill clears that liability and isolates price variance.
+                    debitGrouping.Clear();
+                    var serviceAccrualId = await _financialAccountResolver.ResolveAccountIdAsync(AccountMappingKeys.ServiceAccrual, cancellationToken);
+                    debitGrouping[serviceAccrualId] = productionAccrual;
+                }
+
                 _context.SupplierBills.Add(bill);
+                foreach (var receipt in productionReceipts) receipt.SupplierBill = bill;
                 if (dto.LinkedGrnIds.Any())
                 {
                     var linkedGrns = await _context.GRNs
@@ -146,6 +174,16 @@ namespace NexusFlow.AppCore.Features.Purchasing.Commands
                     foreach (var debit in debitGrouping)
                     {
                         journalLines.Add(new JournalLineRequest { AccountId = debit.Key, Debit = debit.Value, Credit = 0, Note = $"Bill Lines - {billNo}" });
+                    }
+
+                    if (productionReceipts.Count > 0 && bill.SubTotal != productionAccrual)
+                    {
+                        var varianceId = await _financialAccountResolver.ResolveAccountIdAsync(AccountMappingKeys.PurchaseVariance, cancellationToken);
+                        var variance = bill.SubTotal - productionAccrual;
+                        if (variance > 0)
+                            journalLines.Add(new JournalLineRequest { AccountId = varianceId, Debit = variance, Note = $"Sewing charge variance - {billNo}" });
+                        else
+                            journalLines.Add(new JournalLineRequest { AccountId = varianceId, Credit = Math.Abs(variance), Note = $"Sewing charge variance - {billNo}" });
                     }
 
                     // DEBIT: Input Tax Receivable

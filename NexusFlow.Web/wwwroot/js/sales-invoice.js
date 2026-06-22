@@ -40,8 +40,9 @@
                 window.location.href = `/Treasury/Receipts?invoiceId=${this._currentDocId}`;
             });
             $('#btnModalPrint').click(() => {
-                NexusPrint.openPreview('SalesInvoice', this._currentDocId);
+                NexusPrint.printDocument('SalesInvoice', this._currentDocId);
             });
+            $('#btnModalPdf').click(() => NexusPrint.downloadDocument('SalesInvoice', this._currentDocId));
 
         } catch (e) {
             console.error("[InvoiceApp] Init Error:", e);
@@ -173,6 +174,7 @@
                         if (row.paymentStatus === '0' || row.paymentStatus === 'Unpaid') return '<span class="badge bg-warning text-dark">Unpaid</span>';
                         if (row.paymentStatus === '1' || row.paymentStatus === 'Partial') return '<span class="badge bg-info text-dark">Partial</span>';
                         if (row.paymentStatus === '2' || row.paymentStatus === 'Paid') return '<span class="badge bg-success">Paid</span>';
+                        if (row.paymentStatus === '4' || row.paymentStatus === 'PendingClearance') return '<span class="badge bg-warning text-dark">Pending Clearance</span>';
 
                         return '-';
                     }
@@ -183,8 +185,10 @@
                     data: null, className: 'text-end pe-3', orderable: false,
                     render: function (data, type, row) {
                         let btns = `<button class="btn btn-sm btn-outline-dark shadow-sm me-1" onclick="window.invoiceApp.viewDocument(${row.id})" title="View Document"><i class="fa-solid fa-eye"></i></button>`;
+                        btns += `<button class="btn btn-sm btn-outline-secondary shadow-sm me-1" onclick="NexusPrint.printDocument('SalesInvoice', ${row.id})" title="Print"><i class="fa-solid fa-print"></i></button>`;
+                        btns += `<button class="btn btn-sm btn-outline-danger shadow-sm me-1" onclick="NexusPrint.downloadDocument('SalesInvoice', ${row.id})" title="Download PDF"><i class="fa-solid fa-file-pdf"></i></button>`;
 
-                        if (row.isPosted && row.paymentStatus !== 3 && row.paymentStatus !== 'Voided') {
+                        if (row.isPosted && row.paymentStatus !== 3 && row.paymentStatus !== 'Voided' && (row.grandTotal - row.amountPaid) > 0) {
                             btns += `<button class="btn btn-sm btn-outline-danger shadow-sm" title="Process Return" onclick="invoiceApp.openReturnModal(${row.id}, '${row.invoiceNumber}')"><i class="fa-solid fa-arrow-rotate-left"></i> RMA</button>`;
                         }
                         return btns;
@@ -619,7 +623,7 @@
                 if (paid > 0) $('#btnModalVoid').hide();
                 else $('#btnModalVoid').show();
 
-                if (doc.paymentStatus === 2 || doc.paymentStatus === 'Paid') $('#btnModalReceive').hide();
+                if (doc.paymentStatus === 2 || doc.paymentStatus === 'Paid' || doc.paymentStatus === 4 || doc.paymentStatus === 'PendingClearance' || balance <= 0) $('#btnModalReceive').hide();
                 else $('#btnModalReceive').show();
             }
 

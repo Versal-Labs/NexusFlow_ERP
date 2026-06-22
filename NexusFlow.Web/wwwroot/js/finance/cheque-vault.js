@@ -31,9 +31,10 @@
     // ==========================================
     _initFilters: async function () {
         try {
-            const [custRes, bankRes] = await Promise.all([
+            const [custRes, bankRes, accountRes] = await Promise.all([
                 api.get('/api/customer'),
-                api.get('/api/finance/banks')
+                api.get('/api/finance/banks'),
+                api.get('/api/finance/accounts?type=Bank')
             ]);
 
             let $cust = $('#filterCustomer').empty().append('<option value="">All Customers</option>');
@@ -45,6 +46,9 @@
             $bank.select2();
 
             $('#filterBranch').empty().append('<option value="">All Branches</option>').select2();
+
+            let $feeAccount = $('#BounceFeeAccountId').empty().append('<option value="">Use deposited bank account when available</option>');
+            (accountRes.data || accountRes || []).forEach(a => $feeAccount.append(`<option value="${a.id}">[${a.code}] ${a.name}</option>`));
 
         } catch (e) { console.error("Filter Load Error", e); }
     },
@@ -69,7 +73,7 @@
 
     resetFilters: function() {
         $('#filterCustomer').val('').trigger('change');
-        $('#filterStatus').val('0'); // Default back to In Safe
+        $('#filterStatus').val('');
         $('#filterBank').val('').trigger('change');
         this.reloadGrid();
     },
@@ -129,6 +133,10 @@
                         // You can only bounce cheques that are NOT already bounced or cleared.
                         if (row.statusId === 0 || row.statusId === 1 || row.statusId === 2) {
                             btns += `<button class="btn btn-sm btn-outline-danger shadow-sm" onclick="vaultApp.openBounceModal(${row.id})" title="Dishonor / Bounce"><i class="fa-solid fa-burst"></i> Bounce</button>`;
+                        }
+
+                        if (row.statusId === 2) {
+                            btns += `<button class="btn btn-sm btn-outline-success shadow-sm ms-1" onclick="vaultApp.markCleared(${row.id})" title="Mark Endorsed Cheque Cleared"><i class="fa-solid fa-check-double"></i> Clear</button>`;
                         }
 
                         // ACTIONS ONLY AVAILABLE WHEN THE CHEQUE IS PHYSICALLY IN THE SAFE
@@ -272,6 +280,7 @@
             if (res && res.succeeded) {
                 toastr.success("Cheque successfully endorsed to supplier!");
                 this._endorseModal.hide();
+                $('#filterStatus').val('2');
                 this._table.ajax.reload(null, false);
             } else if (res && res.messages) { toastr.error(res.messages[0]); }
         } catch (e) { toastr.error("Failed to endorse cheque."); }
@@ -285,7 +294,28 @@
         $('#bounceForm')[0].reset();
         $('#BounceChequeId').val(id);
         document.getElementById('BounceDate').valueAsDate = new Date();
+        $('#BounceBankFee, #BounceRecoverable').val('0.00');
+        $('#BounceFeeAccountId').val('');
         this._bounceModal.show();
+    },
+
+    markCleared: async function(id) {
+        const result = await Swal.fire({
+            title: 'Mark cheque as cleared?',
+            text: 'Use the date the supplier confirmed the endorsed cheque was honored.',
+            input: 'date',
+            inputValue: new Date().toISOString().split('T')[0],
+            showCancelButton: true,
+            confirmButtonText: 'Mark Cleared',
+            inputValidator: value => !value ? 'Clearance date is required.' : null
+        });
+        if (!result.isConfirmed) return;
+
+        const response = await api.post(`/api/treasury/cheques/${id}/clear`, { ClearedDate: result.value });
+        if (response?.succeeded) {
+            toastr.success(response.message || 'Cheque marked as cleared.');
+            this._table.ajax.reload(null, false);
+        }
     },
 
     executeBounce: async function() {
@@ -295,7 +325,10 @@
         const payload = {
             ChequeId: parseInt($('#BounceChequeId').val()),
             Reason: $('#BounceReason').val(),
-            BounceDate: $('#BounceDate').val()
+            BounceDate: $('#BounceDate').val(),
+            BankFeeAmount: parseFloat($('#BounceBankFee').val()) || 0,
+            RecoverableFromCustomerAmount: parseFloat($('#BounceRecoverable').val()) || 0,
+            FeeSourceAccountId: parseInt($('#BounceFeeAccountId').val()) || null
         };
 
         var $btn = $(event.currentTarget);
@@ -307,6 +340,7 @@
             if (res && res.succeeded) {
                 toastr.success("Cheque Bounced. Accounting records have been successfully reversed.");
                 this._bounceModal.hide();
+                $('#filterStatus').val('4');
                 this._table.ajax.reload(null, false);
             } else if (res && res.messages) {
                 toastr.error(res.messages[0]);

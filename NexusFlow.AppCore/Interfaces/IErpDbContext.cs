@@ -30,6 +30,14 @@ namespace NexusFlow.AppCore.Interfaces
         DbSet<Warehouse> Warehouses { get; set; }
         DbSet<StockLayer> StockLayers { get; set; }
         DbSet<StockTransaction> StockTransactions { get; set; }
+        DbSet<ProductionOrder> ProductionOrders { get; set; }
+        DbSet<ProductionOrderComponent> ProductionOrderComponents { get; set; }
+        DbSet<ProductionOrderRevision> ProductionOrderRevisions { get; set; }
+        DbSet<ProductionMaterialMovement> ProductionMaterialMovements { get; set; }
+        DbSet<ProductionMaterialMovementLine> ProductionMaterialMovementLines { get; set; }
+        DbSet<ProductionReceipt> ProductionReceipts { get; set; }
+        DbSet<ProductionReceiptConsumption> ProductionReceiptConsumptions { get; set; }
+        DbSet<ProductionSupplierClaim> ProductionSupplierClaims { get; set; }
         DbSet<JournalEntry> JournalEntries { get; set; }
         DbSet<JournalLine> JournalLines { get; set; }
         DbSet<FinancialPeriod> FinancialPeriods { get; set; }
@@ -54,6 +62,7 @@ namespace NexusFlow.AppCore.Interfaces
         DbSet<CommissionLedger> CommissionLedgers { get; set; }
         DbSet<CreditNote> CreditNotes { get; set; }
         DbSet<CreditNoteItem> CreditNoteItems { get; set; }
+        DbSet<CustomerDebitMemo> CustomerDebitMemos { get; set; }
         DbSet<StockTake> StockTakes { get; set; }
         DbSet<StockTakeItem> StockTakeItems { get; set; }
         DbSet<ChequeRegister> ChequeRegisters { get; set; }
@@ -83,6 +92,7 @@ namespace NexusFlow.AppCore.Interfaces
         DbSet<AppliedInstallationStep> AppliedInstallationSteps { get; set; }
         DbSet<CompanyProfile> CompanyProfiles { get; set; }
         DbSet<DocumentTemplate> DocumentTemplates { get; set; }
+        DbSet<GeneratedDocument> GeneratedDocuments { get; set; }
 
         Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 

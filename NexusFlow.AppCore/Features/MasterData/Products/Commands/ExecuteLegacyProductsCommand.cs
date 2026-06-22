@@ -168,7 +168,7 @@ namespace NexusFlow.AppCore.Features.MasterData.Products.Commands
                                     Date = DateTime.UtcNow,
                                     ProductVariant = variant,
                                     Warehouse = defaultWarehouse,
-                                    Type = StockTransactionType.Receipt,
+                                    Type = StockTransactionType.OpeningBalance,
                                     Qty = record.TotalQuantity,
                                     UnitCost = record.AverageCost,
                                     TotalValue = lineValue,

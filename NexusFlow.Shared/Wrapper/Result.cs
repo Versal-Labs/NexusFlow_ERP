@@ -10,6 +10,7 @@ namespace NexusFlow.Shared.Wrapper
         public bool Succeeded { get; set; }
         public string[] Errors { get; set; }
         public string Message { get; set; }
+        public string? Code { get; set; }
 
         // Static Factory Method for Success
         public static Result<T> Success(T data, string message = null)
@@ -51,6 +52,7 @@ namespace NexusFlow.Shared.Wrapper
         public bool Succeeded { get; set; }
         public string[] Errors { get; set; }
         public string Message { get; set; }
+        public string? Code { get; set; }
 
         public static Result Success(string message = null)
         {

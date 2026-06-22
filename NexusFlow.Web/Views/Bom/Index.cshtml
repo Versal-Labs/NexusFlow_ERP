@@ -48,6 +48,7 @@
             <div class="modal-body p-4 fs-13">
                 <form id="bomForm">
                     <input type="hidden" id="bomId" value="0" />
+                    <input type="hidden" id="bomRowVersion" />
                     
                     <div class="card border-0 shadow-sm mb-4">
                         <div class="card-body">
@@ -59,6 +60,16 @@
                                 <div class="col-md-6">
                                     <label class="form-label fw-bold fs-13 mb-1">Target Finished Good <span class="text-danger">*</span></label>
                                     <select class="form-select form-select-sm" id="productVariantId" required style="width: 100%;"></select>
+                                </div>
+                            </div>
+                            <div class="row g-3 mt-1">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold fs-13 mb-1">Basis Quantity</label>
+                                    <input type="number" class="form-control form-control-sm" id="basisQuantity" min="0.001" step="0.001" value="1" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold fs-13 mb-1">Effective From</label>
+                                    <input type="date" class="form-control form-control-sm" id="effectiveFrom" required>
                                 </div>
                             </div>
                             <div class="form-check mt-2">

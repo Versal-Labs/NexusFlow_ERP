@@ -14,6 +14,8 @@ namespace NexusFlow.Domain.Enums
     {
         Cash = 1,
         BankTransfer = 2,
-        Cheque = 3
+        Cheque = 3,
+        OwnCheque = 4,
+        EndorsedCustomerCheque = 5
     }
 }

@@ -1,0 +1,109 @@
+@{
+    ViewData["Title"] = "Production Orders";
+}
+
+<div class="container-fluid py-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h4 class="mb-1 fw-bold">Job Work Production Orders</h4>
+            <div class="text-muted small">Control contractor materials, receipts, losses, sewing accruals, and closure.</div>
+        </div>
+        <button class="btn btn-primary" onclick="productionOrderApp.openCreate()"><i class="fa-solid fa-plus me-1"></i> New Production Order</button>
+    </div>
+
+    <ul class="nav nav-tabs mb-3" role="tablist">
+        <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#ordersTab">Production Orders</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#legacyTab">Legacy History</button></li>
+    </ul>
+    <div class="tab-content">
+        <div class="tab-pane fade show active" id="ordersTab">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle w-100" id="productionOrdersGrid">
+                    <thead class="table-light"><tr><th>Order</th><th>Date</th><th>Contractor</th><th>Finished Good</th><th class="text-end">Target</th><th class="text-end">Accepted</th><th>Status</th><th class="text-end">Actions</th></tr></thead>
+                </table>
+            </div>
+        </div>
+        <div class="tab-pane fade" id="legacyTab">
+            <div class="alert alert-secondary py-2 small"><i class="fa-solid fa-lock me-1"></i> Legacy issue and receipt transactions are read-only. New postings must use a production order.</div>
+            <div class="row g-4">
+                <div class="col-lg-6"><h6>Material Issues</h6><table class="table table-sm" id="legacyIssues"><thead><tr><th>Reference</th><th>Date</th><th class="text-end">Cost</th></tr></thead><tbody></tbody></table></div>
+                <div class="col-lg-6"><h6>Production Receipts</h6><table class="table table-sm" id="legacyReceipts"><thead><tr><th>Reference</th><th>Date</th><th class="text-end">Value</th></tr></thead><tbody></tbody></table></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="productionOrderModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable"><div class="modal-content">
+        <div class="modal-header bg-dark text-white py-2"><h5 class="modal-title fs-6">Production Order</h5><button class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body">
+            <form id="productionOrderForm">
+                <input type="hidden" id="poId" value="0"><input type="hidden" id="poRowVersion">
+                <div class="row g-3">
+                    <div class="col-md-3"><label class="form-label">Order Date</label><input type="date" id="poDate" class="form-control" required></div>
+                    <div class="col-md-5"><label class="form-label">Contractor</label><select id="poContractor" class="form-select" required></select></div>
+                    <div class="col-md-4"><label class="form-label">Approved BOM Revision</label><select id="poBom" class="form-select" required></select></div>
+                    <div class="col-md-5"><label class="form-label">Finished Good</label><select id="poFinishedGood" class="form-select" disabled required></select></div>
+                    <div class="col-md-3"><label class="form-label">Target Quantity</label><input type="number" id="poTarget" class="form-control" min="1" step="1" required></div>
+                    <div class="col-md-2"><label class="form-label">Tolerance %</label><input type="number" id="poTolerance" class="form-control" min="0" step="0.01" placeholder="System default"></div>
+                    <div class="col-md-2"><label class="form-label">Planned Start</label><input type="date" id="poStart" class="form-control"></div>
+                    <div class="col-md-4"><label class="form-label">Raw Material Warehouse</label><select id="poSourceWarehouse" class="form-select" required></select></div>
+                    <div class="col-md-4"><label class="form-label">Finished Goods Warehouse</label><select id="poDestinationWarehouse" class="form-select" required></select></div>
+                    <div class="col-md-4"><label class="form-label">Due Date</label><input type="date" id="poDue" class="form-control"></div>
+                    <div class="col-12"><label class="form-label">Notes</label><textarea id="poNotes" class="form-control" rows="2"></textarea></div>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button><button class="btn btn-primary" id="btnSaveProductionOrder"><i class="fa-solid fa-check me-1"></i> Save Draft</button></div>
+    </div></div>
+</div>
+
+<div class="modal fade" id="productionDetailModal" tabindex="-1">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable"><div class="modal-content">
+        <div class="modal-header bg-dark text-white py-2">
+            <div><h5 class="modal-title fs-6 mb-0" id="podNumber"></h5><small id="podStatus"></small></div>
+            <div class="ms-auto me-3">
+                <button class="btn btn-sm btn-light" onclick="productionOrderApp.printOrder()" title="Print order"><i class="fa-solid fa-print"></i></button>
+                <button class="btn btn-sm btn-danger" onclick="productionOrderApp.pdfOrder()" title="Download PDF"><i class="fa-solid fa-file-pdf"></i></button>
+            </div>
+            <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-0">
+            <div class="p-3 border-bottom bg-light"><div class="row g-3 small">
+                <div class="col-md-3"><span class="text-muted">Contractor</span><div class="fw-bold" id="podContractor"></div></div>
+                <div class="col-md-3"><span class="text-muted">Finished Good</span><div class="fw-bold" id="podFinishedGood"></div></div>
+                <div class="col-md-2"><span class="text-muted">Target / Accepted</span><div class="fw-bold" id="podOutput"></div></div>
+                <div class="col-md-2"><span class="text-muted">Sewing Accrual</span><div class="fw-bold" id="podSewing"></div></div>
+                <div class="col-md-2"><span class="text-muted">Open Claims</span><div class="fw-bold" id="podClaims"></div></div>
+            </div></div>
+            <div class="p-3">
+                <div class="d-flex gap-2 flex-wrap mb-3" id="podActions"></div>
+                <h6>Material Reconciliation</h6>
+                <div class="table-responsive"><table class="table table-sm align-middle"><thead class="table-light"><tr><th>Material</th><th class="text-end">Planned</th><th class="text-end">Issued</th><th class="text-end">Returned</th><th class="text-end">Consumed</th><th class="text-end">Normal Waste</th><th class="text-end">Abnormal</th><th class="text-end">Recoverable</th><th class="text-end">Held</th><th class="text-end">WIP Cost</th></tr></thead><tbody id="podComponents"></tbody></table></div>
+                <div class="row g-4 mt-1"><div class="col-lg-6"><h6>Movements</h6><div id="podMovements" class="small"></div></div><div class="col-lg-6"><h6>Receipts</h6><div id="podReceipts" class="small"></div></div></div>
+            </div>
+        </div>
+    </div></div>
+</div>
+
+<div class="modal fade" id="productionActionModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable"><div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title fs-6" id="productionActionTitle"></h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body">
+            <input type="hidden" id="productionActionType">
+            <div class="row g-3 mb-3"><div class="col-md-3"><label class="form-label">Date</label><input type="date" id="productionActionDate" class="form-control" required></div><div class="col-md-9"><label class="form-label">Notes</label><input id="productionActionNotes" class="form-control"></div></div>
+            <div id="receiptHeader" class="row g-3 mb-3 d-none">
+                <div class="col-md-2"><label class="form-label">Accepted</label><input type="number" id="receiptAccepted" class="form-control" min="0" step="1"></div>
+                <div class="col-md-2"><label class="form-label">Rejected</label><input type="number" id="receiptRejected" class="form-control" min="0" step="1"></div>
+                <div class="col-md-3"><label class="form-label">Sewing Charge</label><input type="number" id="receiptSewing" class="form-control" min="0" step="0.01"></div>
+                <div class="col-md-3"><label class="form-label">Batch No.</label><input id="receiptBatch" class="form-control"></div>
+            </div>
+            <div class="table-responsive"><table class="table table-sm align-middle"><thead id="productionActionHead"></thead><tbody id="productionActionBody"></tbody></table></div>
+        </div>
+        <div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button><button class="btn btn-primary" id="btnPostProductionAction"><i class="fa-solid fa-check me-1"></i> Post</button></div>
+    </div></div>
+</div>
+
+@section Scripts {
+    <script src="~/js/inventory/production-orders.js" asp-append-version="true"></script>
+}

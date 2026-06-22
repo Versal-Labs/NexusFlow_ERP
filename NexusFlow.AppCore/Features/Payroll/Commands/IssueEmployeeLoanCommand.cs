@@ -9,7 +9,7 @@ using System.Text;
 
 namespace NexusFlow.AppCore.Features.Payroll.Commands
 {
-    public class IssueEmployeeLoanCommand : IRequest<Result<int>>
+    public class IssueEmployeeLoanCommand : IRequest<Result<int>>, IFinancialPeriodControlledRequest
     {
         public int EmployeeId { get; set; }
         public decimal PrincipalAmount { get; set; }
@@ -17,6 +17,7 @@ namespace NexusFlow.AppCore.Features.Payroll.Commands
         public int TermInMonths { get; set; }
         public DateTime DisbursementDate { get; set; }
         public string StartDeductionMonth { get; set; } = string.Empty; // Format: "YYYY-MM"
+        public DateTime FinancialDate => DisbursementDate;
     }
 
     public class IssueEmployeeLoanHandler : IRequestHandler<IssueEmployeeLoanCommand, Result<int>>

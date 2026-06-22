@@ -20,13 +20,17 @@ namespace NexusFlow.AppCore.Features.Finance.Commands
 
         public async Task<Result<int>> Handle(CreateFinancialPeriodCommand request, CancellationToken cancellationToken)
         {
-            // Validation: Check if period already exists
-            var exists = await _context.FinancialPeriods
-                .AnyAsync(p => p.Year == request.Year && p.Month == request.Month, cancellationToken);
+            if (request.EndDate.Date < request.StartDate.Date)
+                return Result<int>.Failure("Financial period end date cannot be before its start date.");
+
+            // Period ranges may never overlap; otherwise posting-date resolution becomes ambiguous.
+            var exists = await _context.FinancialPeriods.AnyAsync(p =>
+                request.StartDate.Date <= p.EndDate.Date && request.EndDate.Date >= p.StartDate.Date,
+                cancellationToken);
 
             if (exists)
             {
-                return Result<int>.Failure("Financial Period for this Year and Month already exists.");
+                return Result<int>.Failure("The financial period overlaps an existing period.");
             }
 
             var period = new FinancialPeriod

@@ -15,6 +15,7 @@ namespace NexusFlow.AppCore.DTOs.Purchasing
         public bool ApplyVat { get; set; }
         public bool IsDraft { get; set; }
         public List<int> LinkedGrnIds { get; set; } = new();
+        public List<int> ProductionReceiptIds { get; set; } = new();
 
         public List<CreateSupplierBillItemRequest> Items { get; set; } = new();
     }

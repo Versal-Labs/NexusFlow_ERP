@@ -10,12 +10,13 @@ using System.Text;
 
 namespace NexusFlow.AppCore.Features.Finance.Banks.Commands
 {
-    public class FinalizeReconciliationCommand : IRequest<Result<int>>
+    public class FinalizeReconciliationCommand : IRequest<Result<int>>, IFinancialPeriodControlledRequest
     {
         public int BankAccountId { get; set; }
         public DateTime StatementDate { get; set; }
         public decimal StatementEndingBalance { get; set; }
         public List<int> ClearedJournalLineIds { get; set; } = new();
+        public DateTime FinancialDate => StatementDate;
     }
 
     public class FinalizeReconciliationHandler : IRequestHandler<FinalizeReconciliationCommand, Result<int>>
@@ -70,6 +71,9 @@ namespace NexusFlow.AppCore.Features.Finance.Banks.Commands
                 // 4. THE ENTERPRISE CHEQUE CLEARING ENGINE
                 // Find any cheques that were deposited to this bank account and match the cleared journal references
                 var depositedCheques = await _context.ChequeRegisters
+                    .Include(c => c.OriginalReceipt)
+                        .ThenInclude(r => r.Allocations)
+                            .ThenInclude(a => a.SalesInvoice)
                     .Where(c => c.DepositedBankAccountId == request.BankAccountId
                              && c.Status == ChequeStatus.Deposited)
                     .ToListAsync(cancellationToken);
@@ -83,9 +87,28 @@ namespace NexusFlow.AppCore.Features.Finance.Banks.Commands
                     if (clearedReferenceNumbers.Contains(expectedDepRef))
                     {
                         cheque.Status = ChequeStatus.Cleared;
+                        cheque.ClearedDate = request.StatementDate;
+                        foreach (var allocation in cheque.OriginalReceipt.Allocations.Where(x => x.SalesInvoice != null))
+                        {
+                            var invoice = allocation.SalesInvoice!;
+                            invoice.PaymentStatus = invoice.AmountPaid >= invoice.GrandTotal
+                                ? InvoicePaymentStatus.Paid
+                                : invoice.AmountPaid > 0 ? InvoicePaymentStatus.Partial : InvoicePaymentStatus.Unpaid;
+                        }
                         chequesClearedCount++;
                     }
                 }
+
+                var clearedInvoiceIds = depositedCheques
+                    .Where(x => x.Status == ChequeStatus.Cleared)
+                    .SelectMany(x => x.OriginalReceipt.Allocations)
+                    .Where(x => x.SalesInvoiceId.HasValue)
+                    .Select(x => x.SalesInvoiceId!.Value)
+                    .Distinct().ToList();
+                var pendingCommissions = await _context.CommissionLedgers
+                    .Where(x => clearedInvoiceIds.Contains(x.SalesInvoiceId) && x.Status == CommissionStatus.PendingClearance)
+                    .ToListAsync(cancellationToken);
+                pendingCommissions.ForEach(x => x.Status = CommissionStatus.ReadyToPay);
 
                 await _context.SaveChangesAsync(cancellationToken);
                 await transaction.CommitAsync(cancellationToken);

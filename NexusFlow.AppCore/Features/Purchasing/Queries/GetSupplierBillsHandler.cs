@@ -37,7 +37,8 @@ namespace NexusFlow.AppCore.Features.Purchasing.Queries
                 SELECT 
                     b.Id, b.BillNumber, b.SupplierInvoiceNo, b.BillDate, b.DueDate,
                     s.Name AS SupplierName, b.GrandTotal, b.AmountPaid,
-                    CASE b.PaymentStatus WHEN 0 THEN 'Unpaid' WHEN 1 THEN 'Partial' ELSE 'Paid' END AS PaymentStatus,
+                    CASE b.PaymentStatus WHEN 0 THEN 'Unpaid' WHEN 1 THEN 'Partial' WHEN 2 THEN 'Paid'
+                        WHEN 3 THEN 'Voided' WHEN 4 THEN 'PendingClearance' ELSE 'Unknown' END AS PaymentStatus,
                     b.IsPosted
                 FROM Purchasing.SupplierBills b
                 INNER JOIN Purchasing.Suppliers s ON b.SupplierId = s.Id

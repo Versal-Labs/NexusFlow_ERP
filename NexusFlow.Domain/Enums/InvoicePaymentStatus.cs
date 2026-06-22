@@ -9,6 +9,7 @@ namespace NexusFlow.Domain.Enums
         Unpaid = 0,
         Partial = 1,
         Paid = 2,
-        Voided = 3
+        Voided = 3,
+        PendingClearance = 4
     }
 }

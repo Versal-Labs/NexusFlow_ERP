@@ -17,7 +17,7 @@
                     <label class="form-label mb-1 fw-bold text-muted">Cheque Status</label>
                     <select class="form-select form-select-sm" id="filterStatus">
                         <option value="">All Statuses</option>
-                        <option value="0" selected>In Safe (Undeposited)</option>
+                        <option value="0">In Safe (Undeposited)</option>
                         <option value="1">Deposited (Awaiting Clear)</option>
                         <option value="2">Endorsed to Supplier</option>
                         <option value="3">Cleared</option>
@@ -94,6 +94,23 @@
                             <option value="Payment Stopped by Drawer">Payment Stopped by Drawer</option>
                             <option value="Other">Other</option>
                         </select>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Bank Dishonor Fee</label>
+                            <input type="number" class="form-control" id="BounceBankFee" min="0" step="0.01" value="0.00" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Recover from Customer</label>
+                            <input type="number" class="form-control" id="BounceRecoverable" min="0" step="0.01" value="0.00" />
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-bold">Fee Charged To</label>
+                            <select class="form-select" id="BounceFeeAccountId">
+                                <option value="">Use deposited bank account when available</option>
+                            </select>
+                        </div>
                     </div>
                 </form>
             </div>

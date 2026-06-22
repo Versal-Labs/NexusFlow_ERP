@@ -1,6 +1,8 @@
 @inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Antiforgery
 @{
     var requestToken = Antiforgery.GetAndStoreTokens(Context).RequestToken;
+    var canManagePeriods = User.HasClaim("Permission", NexusFlow.AppCore.Constants.Permissions.Finance.ManagePeriods)
+        || User.HasClaim("Permission", NexusFlow.AppCore.Constants.Permissions.SuperAdmin);
 }
 
 <!DOCTYPE html>
@@ -50,6 +52,16 @@
 
             <div style="height: 64px; flex-shrink: 0;">
                 <partial name="_Header" />
+            </div>
+
+            <div id="financialPeriodBanner" class="alert alert-danger rounded-0 border-start-0 border-end-0 mb-0 d-none" role="alert">
+                <div class="d-flex align-items-center justify-content-between gap-3 px-3">
+                    <span><i class="fa-solid fa-calendar-xmark me-2"></i><span id="financialPeriodBannerText"></span></span>
+                    @if (canManagePeriods)
+                    {
+                        <a href="/FinancialPeriod" class="btn btn-sm btn-outline-danger text-nowrap">Manage Periods</a>
+                    }
+                </div>
             </div>
 
             <div class="container-fluid px-4 py-4 overflow-auto" style="flex: 1;">

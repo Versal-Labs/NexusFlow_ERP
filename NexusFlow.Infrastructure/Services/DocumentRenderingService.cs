@@ -5,8 +5,10 @@ using NexusFlow.Domain.Enums;
 using Syncfusion.DocIO;
 using Syncfusion.DocIO.DLS;
 using Syncfusion.DocIORenderer;
+using Syncfusion.Drawing;
 using Syncfusion.Pdf;
 using Syncfusion.Pdf.Graphics;
+using Syncfusion.Pdf.Grid;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -190,6 +192,10 @@ namespace NexusFlow.Infrastructure.Services
                 DocumentType.DebitNote => "DebitNoteLines",
                 DocumentType.CustomerReceipt or DocumentType.SupplierPaymentRemittance => "PaymentAllocations",
                 DocumentType.StockTransferDeliveryNote => "TransferLines",
+                DocumentType.ProductionOrder or DocumentType.MaterialRequirementIssueSheet => "ProductionMaterials",
+                DocumentType.MaterialReturn => "MaterialReturnLines",
+                DocumentType.ProductionReceipt => "ProductionConsumptionLines",
+                DocumentType.ProductionClosureReconciliation => "ProductionReconciliationLines",
                 _ => null
             };
         }
@@ -230,13 +236,21 @@ namespace NexusFlow.Infrastructure.Services
             var profile = await _companyProfileService.GetProfileAsync(cancellationToken);
 
             using var pdfDocument = new PdfDocument();
+            pdfDocument.PageSettings.Size = PdfPageSize.A4;
+            pdfDocument.PageSettings.Margins.All = 36;
             var page = pdfDocument.Pages.Add();
             var graphics = page.Graphics;
 
-            var titleFont = new PdfStandardFont(PdfFontFamily.Helvetica, 20, PdfFontStyle.Bold);
-            var regularFont = new PdfStandardFont(PdfFontFamily.Helvetica, 12);
-
-            float yPos = 20;
+            var companyFont = new PdfStandardFont(PdfFontFamily.Helvetica, 15, PdfFontStyle.Bold);
+            var titleFont = new PdfStandardFont(PdfFontFamily.Helvetica, 18, PdfFontStyle.Bold);
+            var headingFont = new PdfStandardFont(PdfFontFamily.Helvetica, 9, PdfFontStyle.Bold);
+            var regularFont = new PdfStandardFont(PdfFontFamily.Helvetica, 8.5f);
+            var totalFont = new PdfStandardFont(PdfFontFamily.Helvetica, 11, PdfFontStyle.Bold);
+            var accent = new PdfSolidBrush(Color.FromArgb(31, 78, 121));
+            var muted = new PdfSolidBrush(Color.FromArgb(90, 98, 108));
+            var linePen = new PdfPen(Color.FromArgb(210, 214, 220), 0.75f);
+            var pageWidth = page.GetClientSize().Width;
+            float yPos = 0;
 
             if (!string.IsNullOrWhiteSpace(profile.LogoBlobUrl))
             {
@@ -247,37 +261,111 @@ namespace NexusFlow.Infrastructure.Services
                     await logoStream.CopyToAsync(ms, cancellationToken);
                     ms.Position = 0;
                     var pdfImage = new PdfBitmap(ms);
-                    graphics.DrawImage(pdfImage, 10, yPos, 150, 50);
-                    yPos += 70;
+                    graphics.DrawImage(pdfImage, 0, yPos, 110, 38);
                 }
                 catch
                 {
-                    // Ignore logo errors in fallback
+                    // A missing logo must not prevent legally important documents from being produced.
                 }
             }
 
-            graphics.DrawString(profile.CompanyName ?? "Company Name", titleFont, PdfBrushes.Black, new Syncfusion.Drawing.PointF(10, yPos));
-            yPos += 30;
+            var right = new PdfStringFormat { Alignment = PdfTextAlignment.Right };
+            graphics.DrawString(profile.CompanyName ?? "Company Name", companyFont, accent, new PointF(120, 2));
+            graphics.DrawString(profile.PrimaryAddress ?? string.Empty, regularFont, muted, new RectangleF(120, 22, pageWidth - 120, 28));
+            graphics.DrawString(documentType.ToString().Replace("DeliveryNote", " Delivery Note").ToUpperInvariant(), titleFont, accent, new RectangleF(0, 52, pageWidth, 24), right);
+            graphics.DrawString($"No: {data.DocumentNumber}\nDate: {data.DocumentDate:dd MMM yyyy}", regularFont, PdfBrushes.Black, new RectangleF(pageWidth - 200, 78, 200, 34), right);
+            graphics.DrawLine(linePen, new PointF(0, 116), new PointF(pageWidth, 116));
 
-            graphics.DrawString($"{documentType} - {data.DocumentNumber}", titleFont, PdfBrushes.Black, new Syncfusion.Drawing.PointF(10, yPos));
-            yPos += 40;
-
-            graphics.DrawString($"Customer/Supplier: {data.CustomerOrSupplierName}", regularFont, PdfBrushes.Black, new Syncfusion.Drawing.PointF(10, yPos));
-            yPos += 20;
-            graphics.DrawString($"Date: {data.DocumentDate:yyyy-MM-dd}", regularFont, PdfBrushes.Black, new Syncfusion.Drawing.PointF(10, yPos));
-            yPos += 40;
-
-            graphics.DrawString("Line Items:", new PdfStandardFont(PdfFontFamily.Helvetica, 14, PdfFontStyle.Bold), PdfBrushes.Black, new Syncfusion.Drawing.PointF(10, yPos));
-            yPos += 25;
-
-            foreach (var item in data.LineItems)
+            graphics.DrawString("BILL / DELIVER TO", headingFont, accent, new PointF(0, 128));
+            graphics.DrawString(data.CustomerOrSupplierName ?? string.Empty, headingFont, PdfBrushes.Black, new PointF(0, 145));
+            graphics.DrawString(data.BillingAddress ?? string.Empty, regularFont, muted, new RectangleF(0, 162, pageWidth * 0.48f, 46));
+            if (!string.IsNullOrWhiteSpace(data.ShippingAddress))
             {
-                graphics.DrawString($"{item.ItemCode} - {item.Description} (Qty: {item.Quantity} {item.Unit}) - {item.LineTotal:N2} {data.CurrencyCode}", regularFont, PdfBrushes.Black, new Syncfusion.Drawing.PointF(10, yPos));
-                yPos += 20;
+                graphics.DrawString("SHIPPING / LOCATION", headingFont, accent, new PointF(pageWidth * 0.55f, 128));
+                graphics.DrawString(data.ShippingAddress, regularFont, muted, new RectangleF(pageWidth * 0.55f, 145, pageWidth * 0.45f, 58));
             }
 
-            yPos += 20;
-            graphics.DrawString($"Grand Total: {data.GrandTotal:N2} {data.CurrencyCode}", titleFont, PdfBrushes.Black, new Syncfusion.Drawing.PointF(10, yPos));
+            yPos = 218;
+            var grid = new PdfGrid();
+            grid.Columns.Add(7);
+            grid.RepeatHeader = true;
+            grid.Style.CellPadding = new PdfPaddings(4, 4, 4, 4);
+            grid.Columns[0].Width = 65;
+            grid.Columns[1].Width = pageWidth - 315;
+            grid.Columns[2].Width = 48;
+            grid.Columns[3].Width = 38;
+            grid.Columns[4].Width = 64;
+            grid.Columns[5].Width = 45;
+            grid.Columns[6].Width = 55;
+
+            var header = grid.Headers.Add(1)[0];
+            var headings = new[] { "Code", "Description", "Qty", "Unit", "Unit Price", "Tax", "Total" };
+            for (var i = 0; i < headings.Length; i++) header.Cells[i].Value = headings[i];
+            header.ApplyStyle(new PdfGridCellStyle { BackgroundBrush = accent, TextBrush = PdfBrushes.White, Font = headingFont });
+            for (var i = 2; i < grid.Columns.Count; i++)
+                grid.Columns[i].Format = new PdfStringFormat { Alignment = PdfTextAlignment.Right, LineAlignment = PdfVerticalAlignment.Middle };
+
+            var alternate = false;
+            foreach (var item in data.LineItems)
+            {
+                var row = grid.Rows.Add();
+                row.Style.Font = regularFont;
+                if (alternate) row.Style.BackgroundBrush = new PdfSolidBrush(Color.FromArgb(246, 248, 250));
+                alternate = !alternate;
+                row.Cells[0].Value = item.ItemCode;
+                row.Cells[1].Value = item.Description;
+                row.Cells[2].Value = item.Quantity.ToString("N2");
+                row.Cells[3].Value = item.Unit;
+                row.Cells[4].Value = item.UnitPrice.ToString("N2");
+                row.Cells[5].Value = item.TaxAmount.ToString("N2");
+                row.Cells[6].Value = item.LineTotal.ToString("N2");
+            }
+
+            var gridResult = grid.Draw(page, new PointF(0, yPos), new PdfGridLayoutFormat { Layout = PdfLayoutType.Paginate });
+            page = gridResult.Page;
+            graphics = page.Graphics;
+            yPos = gridResult.Bounds.Bottom + 16;
+            if (yPos > page.GetClientSize().Height - 145)
+            {
+                page = pdfDocument.Pages.Add();
+                graphics = page.Graphics;
+                yPos = 20;
+            }
+
+            var labelX = page.GetClientSize().Width - 225;
+            var valueX = page.GetClientSize().Width - 105;
+            DrawTotal("Subtotal", data.SubTotal, false);
+            if (data.DiscountTotal != 0) DrawTotal("Discount", -data.DiscountTotal, false);
+            if (data.TaxTotal != 0) DrawTotal("Tax", data.TaxTotal, false);
+            graphics.DrawLine(linePen, new PointF(labelX, yPos), new PointF(page.GetClientSize().Width, yPos));
+            yPos += 7;
+            DrawTotal("Grand Total", data.GrandTotal, true);
+
+            if (!string.IsNullOrWhiteSpace(data.Notes))
+            {
+                yPos += 8;
+                graphics.DrawString("NOTES", headingFont, accent, new PointF(0, yPos));
+                yPos += 15;
+                graphics.DrawString(data.Notes, regularFont, muted, new RectangleF(0, yPos, page.GetClientSize().Width * 0.62f, 55));
+            }
+
+            var generated = DateTime.UtcNow;
+            for (var i = 0; i < pdfDocument.Pages.Count; i++)
+            {
+                var footerPage = pdfDocument.Pages[i];
+                var footerY = footerPage.GetClientSize().Height - 12;
+                footerPage.Graphics.DrawLine(linePen, new PointF(0, footerY - 6), new PointF(footerPage.GetClientSize().Width, footerY - 6));
+                footerPage.Graphics.DrawString($"Generated {generated:yyyy-MM-dd HH:mm} UTC", regularFont, muted, new PointF(0, footerY));
+                footerPage.Graphics.DrawString($"Page {i + 1} of {pdfDocument.Pages.Count}", regularFont, muted, new RectangleF(0, footerY, footerPage.GetClientSize().Width, 12), right);
+            }
+
+            void DrawTotal(string label, decimal amount, bool prominent)
+            {
+                var font = prominent ? totalFont : regularFont;
+                graphics.DrawString(label, font, PdfBrushes.Black, new RectangleF(labelX, yPos, 115, 16), right);
+                graphics.DrawString($"{data.CurrencyCode} {amount:N2}", font, prominent ? accent : PdfBrushes.Black, new RectangleF(valueX, yPos, 105, 16), right);
+                yPos += prominent ? 22 : 17;
+            }
 
             using var msOut = new MemoryStream();
             pdfDocument.Save(msOut);

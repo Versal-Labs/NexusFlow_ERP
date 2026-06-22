@@ -175,7 +175,10 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.ExpireTimeSpan = TimeSpan.FromHours(30);
     options.SlidingExpiration = true;
     options.Cookie.HttpOnly = true;
-    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+    // Local Visual Studio HTTP profiles cannot return a Secure cookie. Production stays HTTPS-only.
+    options.Cookie.SecurePolicy = builder.Environment.IsDevelopment()
+        ? CookieSecurePolicy.SameAsRequest
+        : CookieSecurePolicy.Always;
     options.Cookie.Name = $"NexusFlow.{paths.InstanceId}.Auth";
     options.Events.OnRedirectToLogin = context =>
     {

@@ -10,10 +10,12 @@ using System.Text;
 
 namespace NexusFlow.AppCore.Features.Inventory.StockTakes.Commands
 {
-    public class InitiateStockTakeCommand : IRequest<Result<int>>
+    public class InitiateStockTakeCommand : IRequest<Result<int>>, IFinancialPeriodControlledRequest
     {
         public int WarehouseId { get; set; }
         public string Notes { get; set; } = string.Empty;
+        public DateTime CountDate { get; set; } = DateTime.UtcNow.Date;
+        public DateTime FinancialDate => CountDate;
     }
 
     public class InitiateStockTakeHandler : IRequestHandler<InitiateStockTakeCommand, Result<int>>
@@ -63,7 +65,7 @@ namespace NexusFlow.AppCore.Features.Inventory.StockTakes.Commands
             var stockTake = new StockTake
             {
                 StockTakeNumber = stNumber,
-                Date = DateTime.UtcNow,
+                Date = request.CountDate,
                 WarehouseId = request.WarehouseId,
                 Status = StockTakeStatus.Initiated,
                 Notes = request.Notes,

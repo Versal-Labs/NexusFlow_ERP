@@ -29,7 +29,9 @@ var configApp = (function () {
         document.getElementById('sequences-tab').addEventListener('shown.bs.tab', function () {
             if (!_seqTable) _initSequenceGrid();
             else _seqTable.columns.adjust();
+            _loadSequenceHealth();
         });
+        _loadSequenceHealth();
     }
 
     function _registerEvents() {
@@ -294,6 +296,23 @@ var configApp = (function () {
         }
     }
 
+    async function _loadSequenceHealth() {
+        const result = await api.get('/api/config/health');
+        const health = result?.data || result;
+        const missing = health?.missingNumberSequences || [];
+        $('#sequenceHealthMissing').text(missing.join(', '));
+        $('#sequenceHealthAlert').toggleClass('d-none', missing.length === 0);
+    }
+
+    async function repairSequences() {
+        const result = await api.post('/api/config/repair-number-sequences', {});
+        if (result?.succeeded) {
+            toastr.success(result.message || 'Missing sequences repaired.');
+            if (_seqTable) _seqTable.ajax.reload();
+            await _loadSequenceHealth();
+        }
+    }
+
     // --- Public API ---
     return {
         init: init,
@@ -303,7 +322,8 @@ var configApp = (function () {
 
         openSequencePanel: openSequencePanel,
         editSequence: editSequence,
-        updatePreview: updatePreview
+        updatePreview: updatePreview,
+        repairSequences: repairSequences
     };
 })();
 

@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using NexusFlow.AppCore.DTOs.Finance;
+using NexusFlow.AppCore.Constants;
 using NexusFlow.AppCore.Interfaces;
 using NexusFlow.Domain.Entities.Finance;
 using NexusFlow.Domain.Enums;
@@ -11,12 +12,13 @@ using System.Text;
 
 namespace NexusFlow.AppCore.Features.Treasury.Commands
 {
-    public class EndorseChequeCommand : IRequest<Result<int>>
+    public class EndorseChequeCommand : IRequest<Result<int>>, IFinancialPeriodControlledRequest
     {
         public int ChequeId { get; set; }
         public int SupplierId { get; set; }
         public DateTime EndorsementDate { get; set; }
         public List<PaymentAllocationRequest> Allocations { get; set; } = new();
+        public DateTime FinancialDate => EndorsementDate;
     }
 
     public class EndorseChequeHandler : IRequestHandler<EndorseChequeCommand, Result<int>>
@@ -33,6 +35,9 @@ namespace NexusFlow.AppCore.Features.Treasury.Commands
 
         public async Task<Result<int>> Handle(EndorseChequeCommand request, CancellationToken cancellationToken)
         {
+            if (request.Allocations.GroupBy(x => x.InvoiceId).Any(x => x.Count() > 1))
+                return Result<int>.Failure("Duplicate supplier bill allocations are not allowed.");
+
             using var transaction = await _context.BeginTransactionAsync(cancellationToken);
 
             try
@@ -48,19 +53,35 @@ namespace NexusFlow.AppCore.Features.Treasury.Commands
                 if (supplier == null || supplier.DefaultPayableAccountId == 0)
                     return Result<int>.Failure("Supplier or AP Account mapping missing.");
 
+                if (request.Allocations.Any(x => x.Amount <= 0))
+                    return Result<int>.Failure("Allocation amounts must be greater than zero.");
+
                 decimal totalAllocated = request.Allocations.Sum(a => a.Amount);
                 if (totalAllocated > cheque.Amount)
                     return Result<int>.Failure("You cannot allocate more money to bills than the cheque is worth.");
 
+                var billIds = request.Allocations.Select(x => x.InvoiceId).ToList();
+                var bills = await _context.SupplierBills
+                    .Where(x => billIds.Contains(x.Id))
+                    .ToDictionaryAsync(x => x.Id, cancellationToken);
+
+                foreach (var allocation in request.Allocations)
+                {
+                    if (!bills.TryGetValue(allocation.InvoiceId, out var bill) || bill.SupplierId != request.SupplierId || !bill.IsPosted)
+                        return Result<int>.Failure($"Supplier bill {allocation.InvoiceId} is invalid for this endorsement.");
+                    if (allocation.Amount > bill.GrandTotal - bill.AmountPaid)
+                        return Result<int>.Failure($"Allocation exceeds the remaining balance of bill {bill.BillNumber}.");
+                }
+
                 // 2. CREATE SUPPLIER PAYMENT TRANSACTION
-                string payRef = await _sequenceService.GenerateNextNumberAsync("Payment", cancellationToken);
+                string payRef = await _sequenceService.GenerateNextNumberAsync(NumberSequenceKeys.Payment, cancellationToken);
 
                 var payment = new PaymentTransaction
                 {
                     ReferenceNo = payRef,
                     Date = request.EndorsementDate,
-                    Type = PaymentType.SupplierPayment, // Ensure you have this enum!
-                    Method = PaymentMethod.Cheque,      // Or PaymentMethod.Endorsement if you created one
+                    Type = PaymentType.SupplierPayment,
+                    Method = PaymentMethod.EndorsedCustomerCheque,
                     Amount = cheque.Amount,
                     SupplierId = request.SupplierId,
                     Remarks = $"Endorsed Customer Cheque: {cheque.ChequeNumber}"
@@ -68,36 +89,21 @@ namespace NexusFlow.AppCore.Features.Treasury.Commands
 
                 _context.PaymentTransactions.Add(payment);
 
-                // 3. APPLY TO SUPPLIER BILLS (Assuming you have a PurchaseInvoice / SupplierBill entity)
-                // *Note: Adjust 'PurchaseInvoices' to match your actual AP entity name*
                 if (request.Allocations.Any())
                 {
-                    var billIds = request.Allocations.Select(a => a.InvoiceId).ToList();
-
-                    // Fetch the bills so we can update their AmountPaid and Status
-                    var bills = await _context.SupplierBills
-                        .Where(b => billIds.Contains(b.Id))
-                        .ToDictionaryAsync(b => b.Id, cancellationToken);
-
                     foreach (var alloc in request.Allocations)
                     {
-                        if (alloc.Amount <= 0) continue;
-
-                        // Create the Allocation link specifically for the Supplier Bill
                         payment.Allocations.Add(new PaymentAllocation
                         {
-                            SupplierBillId = alloc.InvoiceId, // Mapped to SupplierBillId!
+                            SupplierBillId = alloc.InvoiceId,
                             AmountAllocated = alloc.Amount
                         });
 
-                        // Update the Bill's status
-                        if (bills.TryGetValue(alloc.InvoiceId, out var bill))
-                        {
-                            bill.AmountPaid += alloc.Amount;
-                            bill.PaymentStatus = bill.AmountPaid >= bill.GrandTotal
-                                ? InvoicePaymentStatus.Paid
-                                : InvoicePaymentStatus.Partial;
-                        }
+                        var bill = bills[alloc.InvoiceId];
+                        bill.AmountPaid += alloc.Amount;
+                        bill.PaymentStatus = bill.AmountPaid >= bill.GrandTotal
+                            ? InvoicePaymentStatus.PendingClearance
+                            : InvoicePaymentStatus.Partial;
                     }
                 }
 
@@ -106,15 +112,15 @@ namespace NexusFlow.AppCore.Features.Treasury.Commands
                 // 4. UPDATE CHEQUE STATUS
                 cheque.Status = ChequeStatus.Endorsed;
                 cheque.EndorsedPaymentId = payment.Id;
+                cheque.EndorsedDate = request.EndorsementDate;
 
                 // 5. POST GENERAL LEDGER
-                int safeAccountId = await _accountResolver.ResolveAccountIdAsync("Account.Asset.UndepositedFunds", cancellationToken);
+                int safeAccountId = await _accountResolver.ResolveAccountIdAsync(AccountMappingKeys.UndepositedFunds, cancellationToken);
 
                 var journalLines = new List<JournalLineRequest>
                 {
-                    // DEBIT: Accounts Payable (Reduces Liability)
+                    // Accounting invariant: endorsement transfers the cheque asset to the supplier and conditionally settles AP.
                     new JournalLineRequest { AccountId = supplier.DefaultPayableAccountId ?? 0, Debit = cheque.Amount, Credit = 0, Note = $"Endorsed Cheque {cheque.ChequeNumber}" },
-                    // CREDIT: Undeposited Funds (Removes Asset from Safe)
                     new JournalLineRequest { AccountId = safeAccountId, Debit = 0, Credit = cheque.Amount, Note = $"Cheque Swapped to {supplier.Name}" }
                 };
 

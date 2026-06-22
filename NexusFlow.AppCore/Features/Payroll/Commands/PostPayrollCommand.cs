@@ -12,9 +12,11 @@ using System.Text;
 
 namespace NexusFlow.AppCore.Features.Payroll.Commands
 {
-    public class PostPayrollCommand : IRequest<Result<string>>
+    public class PostPayrollCommand : IRequest<Result<string>>, IFinancialPeriodControlledRequest
     {
         public int PayrollPeriodId { get; set; }
+        public DateTime PostingDate { get; set; } = DateTime.UtcNow.Date;
+        public DateTime FinancialDate => PostingDate;
     }
 
     public class PostPayrollHandler : IRequestHandler<PostPayrollCommand, Result<string>>
@@ -125,7 +127,7 @@ namespace NexusFlow.AppCore.Features.Payroll.Commands
                 string jeRef = $"PR-{period.MonthYear.Replace("-", "")}";
                 var jResult = await _journalService.PostJournalAsync(new JournalEntryRequest
                 {
-                    Date = DateTime.UtcNow.Date,
+                    Date = request.PostingDate,
                     Description = $"Payroll Posting for {period.MonthYear}",
                     Module = "Payroll",
                     ReferenceNo = jeRef,

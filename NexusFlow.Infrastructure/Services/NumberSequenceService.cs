@@ -2,6 +2,7 @@ using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using NexusFlow.AppCore.Interfaces;
+using NexusFlow.AppCore.Exceptions;
 
 namespace NexusFlow.Infrastructure.Services
 {
@@ -26,7 +27,7 @@ namespace NexusFlow.Infrastructure.Services
 
             // Used only by non-SQL test providers. Production always takes the atomic SQL path.
             var sequence = await _context.NumberSequences.FirstOrDefaultAsync(x => x.Module == moduleName, ct)
-                ?? throw new InvalidOperationException($"Number sequence for '{moduleName}' is not defined.");
+                ?? throw new MissingNumberSequenceException(moduleName);
 
             var number = sequence.NextNumber++;
             sequence.LastUsed = DateTime.UtcNow;
@@ -54,7 +55,7 @@ namespace NexusFlow.Infrastructure.Services
             await using var reader = await command.ExecuteReaderAsync(cancellationToken);
             if (!await reader.ReadAsync(cancellationToken))
             {
-                throw new InvalidOperationException($"Number sequence for '{moduleName}' is not defined.");
+                throw new MissingNumberSequenceException(moduleName);
             }
 
             return Format(

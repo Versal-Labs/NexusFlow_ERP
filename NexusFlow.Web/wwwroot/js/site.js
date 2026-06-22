@@ -52,8 +52,7 @@ const api = {
                 console.error("API Error:", response.status, result);
                 let errorMsg = getErrorMsg(result) || `System Error (${response.status})`;
                 
-                // We keep global toasts for catastrophic HTTP failures
-                if (typeof toastr !== 'undefined') toastr.error(errorMsg);
+                // Callers own user feedback. Auto-toasting here produced duplicate success/error messages in modal workflows.
                 return result || { succeeded: false, messages: [errorMsg] };
             }
 
@@ -63,8 +62,7 @@ const api = {
 
         } catch (error) {
             console.error("Network Error:", error);
-            if (typeof toastr !== 'undefined') toastr.error("Network connection failed.");
-            return { succeeded: false, messages: [error.message] };
+            return { succeeded: false, messages: [error.message || "Network connection failed."] };
         }
     },
 
@@ -85,7 +83,27 @@ document.addEventListener("DOMContentLoaded", function () {
             "timeOut": "3000"
         };
     }
+
+    loadFinancialPeriodBanner();
 });
+
+async function loadFinancialPeriodBanner() {
+    const banner = document.getElementById('financialPeriodBanner');
+    if (!banner) return;
+
+    const now = new Date();
+    const businessDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    const response = await api.get(`/api/finance/period-status?date=${businessDate}`);
+    const status = response?.data || response;
+
+    if (!status || status.canCreateTransactions) {
+        banner.classList.add('d-none');
+        return;
+    }
+
+    document.getElementById('financialPeriodBannerText').textContent = status.message || 'No open financial period covers today.';
+    banner.classList.remove('d-none');
+}
 
 $(document).ready(function () {
 

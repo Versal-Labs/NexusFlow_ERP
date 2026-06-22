@@ -11,9 +11,10 @@ using System.Text;
 
 namespace NexusFlow.AppCore.Features.Purchasing.Commands
 {
-    public class UpdateSupplierBillCommand : IRequest<Result<int>>
+    public class UpdateSupplierBillCommand : IRequest<Result<int>>, IFinancialPeriodControlledRequest
     {
         public CreateSupplierBillRequest Bill { get; set; } = null!;
+        public DateTime FinancialDate => Bill.BillDate;
     }
 
     public class UpdateSupplierBillHandler : IRequestHandler<UpdateSupplierBillCommand, Result<int>>

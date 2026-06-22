@@ -70,7 +70,8 @@
                         }
 
                         // 3. Print Preview
-                        btns += `<button class="btn btn-sm btn-outline-danger shadow-sm" onclick="NexusPrint.openPreview('SalesOrder', ${row.id})" title="Preview PDF Quote"><i class="fa-solid fa-file-pdf"></i></button>`;
+                        btns += `<button class="btn btn-sm btn-outline-secondary shadow-sm me-1" onclick="NexusPrint.printDocument('SalesOrder', ${row.id})" title="Print"><i class="fa-solid fa-print"></i></button>`;
+                        btns += `<button class="btn btn-sm btn-outline-danger shadow-sm" onclick="NexusPrint.downloadDocument('SalesOrder', ${row.id})" title="Download PDF"><i class="fa-solid fa-file-pdf"></i></button>`;
                         return btns;
                     }
                 }

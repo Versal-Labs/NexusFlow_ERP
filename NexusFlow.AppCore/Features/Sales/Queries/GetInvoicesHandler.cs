@@ -32,7 +32,8 @@ namespace NexusFlow.AppCore.Features.Sales.Queries
             i.GrandTotal, 
             i.AmountPaid,    
             i.IsPosted,
-            i.PaymentStatus
+            CASE i.PaymentStatus WHEN 0 THEN 'Unpaid' WHEN 1 THEN 'Partial' WHEN 2 THEN 'Paid'
+                WHEN 3 THEN 'Voided' WHEN 4 THEN 'PendingClearance' ELSE 'Unknown' END AS PaymentStatus
         FROM Sales.SalesInvoices i
         INNER JOIN Sales.Customers c ON i.CustomerId = c.Id
         ORDER BY i.InvoiceDate DESC, i.Id DESC";

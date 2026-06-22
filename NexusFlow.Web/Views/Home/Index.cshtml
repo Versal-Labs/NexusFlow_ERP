@@ -15,6 +15,27 @@
     </div>
 </div>
 
+@if (Model.FinancialPeriodStatus is { CanCreateTransactions: false } periodStatus)
+{
+    <div class="alert alert-danger border-danger d-flex align-items-center justify-content-between gap-3" role="alert">
+        <div>
+            <i class="fa-solid fa-calendar-xmark me-2"></i>
+            <strong>Transactions are blocked.</strong> @periodStatus.Message
+        </div>
+        <a href="/FinancialPeriod" class="btn btn-sm btn-outline-danger text-nowrap">Manage Periods</a>
+    </div>
+}
+
+@if (Model.MissingNumberSequences.Count > 0 &&
+    (User.HasClaim("Permission", NexusFlow.AppCore.Constants.Permissions.System.ManageConfigs) ||
+     User.HasClaim("Permission", NexusFlow.AppCore.Constants.Permissions.SuperAdmin)))
+{
+    <div class="alert alert-warning border-warning d-flex align-items-center justify-content-between gap-3" role="alert">
+        <div><i class="fa-solid fa-triangle-exclamation me-2"></i>Required number sequences are missing: @string.Join(", ", Model.MissingNumberSequences)</div>
+        <a href="/Config#sequences-pane" class="btn btn-sm btn-outline-warning text-dark text-nowrap">Review Configuration</a>
+    </div>
+}
+
 <div class="row g-3 mb-4">
     <div class="col-12 col-sm-6 col-xl-3">
         <div class="card shadow-sm border-0 border-start border-4 border-success h-100 rounded-3">

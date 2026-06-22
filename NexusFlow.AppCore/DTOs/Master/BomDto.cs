@@ -11,6 +11,11 @@ namespace NexusFlow.AppCore.DTOs.Master
         public int ProductVariantId { get; set; } // The target Finished Good
         public string? ProductVariantName { get; set; }
         public bool IsActive { get; set; } = true;
+        public int RevisionNumber { get; set; } = 1;
+        public decimal BasisQuantity { get; set; } = 1m;
+        public DateTime EffectiveFrom { get; set; } = DateTime.UtcNow.Date;
+        public bool IsApproved { get; set; } = true;
+        public byte[] RowVersion { get; set; } = Array.Empty<byte>();
         public List<BomComponentDto> Components { get; set; } = new();
     }
 
@@ -25,9 +30,13 @@ namespace NexusFlow.AppCore.DTOs.Master
     public class BomListDto
     {
         public int Id { get; set; }
+        public int ProductVariantId { get; set; }
         public string Name { get; set; } = string.Empty;
         public string ProductVariantName { get; set; } = string.Empty;
         public int ComponentCount { get; set; }
         public bool IsActive { get; set; }
+        public int RevisionNumber { get; set; }
+        public decimal BasisQuantity { get; set; }
+        public bool IsApproved { get; set; }
     }
 }

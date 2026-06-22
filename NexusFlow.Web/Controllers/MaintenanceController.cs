@@ -37,6 +37,11 @@ namespace NexusFlow.Web.Controllers
         {
             if (!IsAuthorized())
             {
+                if (User.Identity?.IsAuthenticated == true)
+                {
+                    return RedirectToAction("AccessDenied", "Account");
+                }
+
                 return RedirectToAction("Login", "Account", new { returnUrl = "/maintenance/upgrade" });
             }
 
@@ -50,7 +55,7 @@ namespace NexusFlow.Web.Controllers
         {
             if (!IsAuthorized())
             {
-                return Unauthorized();
+                return User.Identity?.IsAuthenticated == true ? Forbid() : Unauthorized();
             }
 
             if (!backupConfirmed)
@@ -84,6 +89,8 @@ namespace NexusFlow.Web.Controllers
             _installerAccess.HasAccess(HttpContext) ||
             (User.Identity?.IsAuthenticated == true &&
              (User.IsInRole(DefaultRoleManifest.SuperAdmin) ||
+              // Existing installations used Admin as the upgrade authority before SuperAdmin was introduced.
+              User.IsInRole(DefaultRoleManifest.Admin) ||
               User.Claims.Any(x => x.Type == "Permission" && x.Value == Permissions.SuperAdmin)));
     }
 }

@@ -10,7 +10,12 @@ using System.Text;
 
 namespace NexusFlow.AppCore.Features.MasterData.Products.Queries
 {
-    public record SearchVariantsQuery(string? Query, int? ProductType) : IRequest<IEnumerable<VariantSearchResultDto>>;
+    public record SearchVariantsQuery(
+        string? Query,
+        int? ProductType = null,
+        bool StockedOnly = false,
+        int? WarehouseId = null,
+        bool ExcludeWarehouseActivity = false) : IRequest<IEnumerable<VariantSearchResultDto>>;
 
     public class SearchVariantsHandler : IRequestHandler<SearchVariantsQuery, IEnumerable<VariantSearchResultDto>>
     {
@@ -31,18 +36,37 @@ namespace NexusFlow.AppCore.Features.MasterData.Products.Queries
             SELECT TOP 50
                 pv.Id,
                 pv.SKU,
-                p.Name + COALESCE(' - ' + pv.Size, '') + COALESCE(' - ' + pv.Color, '') AS Name
+                p.Name + COALESCE(' - ' + pv.Size, '') + COALESCE(' - ' + pv.Color, '') AS Name,
+                COALESCE(NULLIF(pv.CostPrice, 0), pv.MovingAverageCost) AS CostPrice,
+                pv.SellingPrice,
+                COALESCE(u.Symbol, '') AS UomSymbol
             FROM Master.ProductVariants pv
             INNER JOIN Master.Products p ON pv.ProductId = p.Id
+            LEFT JOIN Master.UnitOfMeasures u ON p.UnitOfMeasureId = u.Id
             WHERE pv.IsActive = 1
               AND (@ProductType IS NULL OR p.Type = @ProductType)
+              AND (@StockedOnly = 0 OR p.Type <> @ServiceProductType)
+              AND (
+                    @ExcludeWarehouseActivity = 0
+                    OR @WarehouseId IS NULL
+                    OR NOT EXISTS (
+                        SELECT 1
+                        FROM Inventory.StockTransactions st
+                        WHERE st.ProductVariantId = pv.Id
+                          AND st.WarehouseId = @WarehouseId
+                    )
+                  )
               AND (@Query IS NULL OR p.Name LIKE '%' + @Query + '%' OR pv.SKU LIKE '%' + @Query + '%')
             ORDER BY p.Name, pv.SKU";
 
             return await db.QueryAsync<VariantSearchResultDto>(sql, new
             {
                 Query = request.Query,
-                ProductType = request.ProductType
+                ProductType = request.ProductType,
+                request.StockedOnly,
+                request.WarehouseId,
+                request.ExcludeWarehouseActivity,
+                ServiceProductType = (int)NexusFlow.Domain.Enums.ProductType.Service
             });
         }
     }

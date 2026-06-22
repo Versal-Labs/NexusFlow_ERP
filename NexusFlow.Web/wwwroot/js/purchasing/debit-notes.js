@@ -10,7 +10,8 @@
         this._initFilters();
         this._initGrid();
 
-        $('#btnModalPrint').click(() => NexusPrint.openPreview('DebitNote', this._currentDocId));
+        $('#btnModalPrint').click(() => NexusPrint.printDocument('DebitNote', this._currentDocId));
+        $('#btnModalPdf').click(() => NexusPrint.downloadDocument('DebitNote', this._currentDocId));
     },
 
     _initFilters: async function() {
@@ -53,7 +54,8 @@
                     data: null, className: 'text-center pe-3', orderable: false,
                     render: function(data, type, row) {
                         return `<button class="btn btn-sm btn-outline-dark shadow-sm me-1" onclick="dnApp.viewDocument(${row.id})" title="View Details"><i class="fa-solid fa-eye"></i></button>
-                                <button class="btn btn-sm btn-outline-secondary shadow-sm" onclick="NexusPrint.openPreview('DebitNote', ${row.id})" title="Print Document"><i class="fa-solid fa-print"></i></button>`;
+                                <button class="btn btn-sm btn-outline-secondary shadow-sm me-1" onclick="NexusPrint.printDocument('DebitNote', ${row.id})" title="Print"><i class="fa-solid fa-print"></i></button>
+                                <button class="btn btn-sm btn-outline-danger shadow-sm" onclick="NexusPrint.downloadDocument('DebitNote', ${row.id})" title="Download PDF"><i class="fa-solid fa-file-pdf"></i></button>`;
                     }
                 }
             ],

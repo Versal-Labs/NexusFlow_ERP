@@ -11,7 +11,10 @@ using System.Text;
 
 namespace NexusFlow.AppCore.Features.Sales.Commands
 {
-    public record VoidInvoiceCommand(int InvoiceId) : IRequest<Result<int>>;
+    public record VoidInvoiceCommand(int InvoiceId, DateTime VoidDate) : IRequest<Result<int>>, IFinancialPeriodControlledRequest
+    {
+        public DateTime FinancialDate => VoidDate;
+    }
 
     public class VoidInvoiceHandler : IRequestHandler<VoidInvoiceCommand, Result<int>>
     {
@@ -66,7 +69,7 @@ namespace NexusFlow.AppCore.Features.Sales.Commands
 
                     var journalReq = new JournalEntryRequest
                     {
-                        Date = DateTime.UtcNow,
+                        Date = request.VoidDate,
                         Description = $"Void Reversal for Invoice {invoice.InvoiceNumber}",
                         Module = "Sales",
                         ReferenceNo = invoice.InvoiceNumber + "-VOID",

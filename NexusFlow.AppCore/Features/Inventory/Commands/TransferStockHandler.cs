@@ -13,13 +13,14 @@ namespace NexusFlow.AppCore.Features.Inventory.Commands
         public decimal Quantity { get; set; }
     }
 
-    public class TransferStockCommand : IRequest<Result<string>>
+    public class TransferStockCommand : IRequest<Result<string>>, IFinancialPeriodControlledRequest
     {
         public int SourceWarehouseId { get; set; }
         public int TargetWarehouseId { get; set; }
         public DateTime TransferDate { get; set; }
         public string Notes { get; set; } = string.Empty;
         public List<TransferItemRequest> Items { get; set; } = new();
+        public DateTime FinancialDate => TransferDate;
     }
 
     public class TransferStockHandler : IRequestHandler<TransferStockCommand, Result<string>>

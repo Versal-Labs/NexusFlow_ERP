@@ -19,9 +19,10 @@ namespace NexusFlow.AppCore.Features.Sales.CreditNotes.Commands
         public Dictionary<int, decimal> ReturnedItems { get; set; } // Key: VariantId, Value: Qty Returned
     }
 
-    public class CreateCreditNoteCommand : IRequest<Result<int>>
+    public class CreateCreditNoteCommand : IRequest<Result<int>>, IFinancialPeriodControlledRequest
     {
         public CreateCreditNoteRequest Payload { get; set; }
+        public DateTime FinancialDate => DateTime.UtcNow;
     }
 
     public class CreateCreditNoteHandler : IRequestHandler<CreateCreditNoteCommand, Result<int>>

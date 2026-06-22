@@ -5,6 +5,34 @@
     _roleModal: null,
     _permissionsModal: null,
 
+    _getResultMessage: function (res, fallback) {
+        return res?.messages?.[0] || res?.message || fallback;
+    },
+
+    _hideModal: function (modalId, modalProperty) {
+        const modalEl = document.getElementById(modalId);
+        const modal = this[modalProperty] || (modalEl ? bootstrap.Modal.getOrCreateInstance(modalEl) : null);
+
+        if (!modal) throw new Error(`Modal not found: ${modalId}`);
+
+        this[modalProperty] = modal;
+        modal.hide();
+    },
+
+    _reloadTable: function (selector, tableProperty) {
+        const table = this[tableProperty] || ($.fn.DataTable.isDataTable(selector) ? $(selector).DataTable() : null);
+
+        if (!table?.ajax?.reload) throw new Error(`DataTable not initialized: ${selector}`);
+
+        this[tableProperty] = table;
+        table.ajax.reload(null, false);
+    },
+
+    _warnRefreshFailed: function (message, err) {
+        console.error(message, err);
+        toastr.warning(message);
+    },
+
     init: function () {
         var uModalEl = document.getElementById('userModal');
         if (uModalEl) this._userModal = new bootstrap.Modal(uModalEl, { backdrop: 'static' });
@@ -37,10 +65,12 @@
             columns: [
                 { 
                     data: 'fullName', className: 'fw-bold text-dark ps-3',
-                    render: function(data) {
+                    render: function(data, type, row) {
+                        const displayName = data || row.email || 'Unnamed User';
+                        const initial = displayName.charAt(0).toUpperCase();
                         return `<div class="d-flex align-items-center">
-                                    <div class="bg-primary text-white rounded-circle d-flex justify-content-center align-items-center me-2" style="width: 30px; height: 30px; font-size: 12px;">${data.charAt(0)}</div>
-                                    ${data}
+                                    <div class="bg-primary text-white rounded-circle d-flex justify-content-center align-items-center me-2" style="width: 30px; height: 30px; font-size: 12px;">${initial}</div>
+                                    ${displayName}
                                 </div>`;
                     }
                 },
@@ -182,10 +212,19 @@
             const res = await req;
             if (res && res.succeeded) {
                 toastr.success(res.message || "User saved successfully.");
-                this._userModal.hide();
-                this._usersTable.ajax.reload(null, false);
-            } else if (res && res.messages) { toastr.error(res.messages[0]); }
-        } catch (err) { toastr.error(err.responseJSON?.messages?.[0] || "Operation failed."); } 
+                try {
+                    this._hideModal('userModal', '_userModal');
+                    this._reloadTable('#usersGrid', '_usersTable');
+                } catch (uiErr) {
+                    this._warnRefreshFailed("User saved, but the table did not refresh. Please refresh the page.", uiErr);
+                }
+            } else {
+                toastr.error(this._getResultMessage(res, "Operation failed."));
+            }
+        } catch (err) {
+            console.error("saveUser request failed:", err);
+            toastr.error(err.responseJSON?.messages?.[0] || err.message || "Operation failed.");
+        }
         finally { $btn.prop('disabled', false).html(ogText); }
     },
 
@@ -201,9 +240,18 @@
             const res = await api.post(`/api/iam/users/${id}/toggle-status`, {});
             if (res && res.succeeded) {
                 toastr.success(res.message);
-                this._usersTable.ajax.reload(null, false);
-            } else { toastr.error(res.messages[0]); }
-        } catch (e) { toastr.error(e.responseJSON?.messages?.[0] || "Action failed."); }
+                try {
+                    this._reloadTable('#usersGrid', '_usersTable');
+                } catch (uiErr) {
+                    this._warnRefreshFailed("User status changed, but the table did not refresh. Please refresh the page.", uiErr);
+                }
+            } else {
+                toastr.error(this._getResultMessage(res, "Action failed."));
+            }
+        } catch (e) {
+            console.error("toggleStatus request failed:", e);
+            toastr.error(e.responseJSON?.messages?.[0] || e.message || "Action failed.");
+        }
     },
 
     // ==========================================
@@ -245,11 +293,20 @@
             const res = await req;
             if (res && res.succeeded) {
                 toastr.success(res.message || "Role saved successfully.");
-                this._roleModal.hide();
-                this._rolesTable.ajax.reload(null, false);
-                this._loadRoles(); // Refresh User dropdown!
-            } else if (res && res.messages) { toastr.error(res.messages[0]); }
-        } catch (err) { toastr.error(err.responseJSON?.messages?.[0] || "Operation failed."); } 
+                try {
+                    this._hideModal('roleModal', '_roleModal');
+                    this._reloadTable('#rolesGrid', '_rolesTable');
+                    this._loadRoles(); // Refresh User dropdown!
+                } catch (uiErr) {
+                    this._warnRefreshFailed("Role saved, but the table did not refresh. Please refresh the page.", uiErr);
+                }
+            } else {
+                toastr.error(this._getResultMessage(res, "Operation failed."));
+            }
+        } catch (err) {
+            console.error("saveRole request failed:", err);
+            toastr.error(err.responseJSON?.messages?.[0] || err.message || "Operation failed.");
+        }
         finally { $btn.prop('disabled', false).html(ogText); }
     },
 

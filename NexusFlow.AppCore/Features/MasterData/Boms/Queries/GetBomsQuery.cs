@@ -32,7 +32,11 @@ namespace NexusFlow.AppCore.Features.MasterData.Boms.Queries
             var sql = @"
             SELECT 
                 b.Id,
+                b.ProductVariantId,
                 b.Name,
+                b.RevisionNumber,
+                b.BasisQuantity,
+                b.IsApproved,
                 p.Name + ' - ' + pv.SKU AS ProductVariantName,
                 b.IsActive,
                 (SELECT COUNT(*) FROM Master.BomComponents WHERE BillOfMaterialId = b.Id) AS ComponentCount
@@ -50,7 +54,9 @@ namespace NexusFlow.AppCore.Features.MasterData.Boms.Queries
 
             // QueryMultiple for high-performance Master-Detail hydration in a single round-trip
             var sql = @"
-            SELECT b.Id, b.Name, b.ProductVariantId, b.IsActive, p.Name + ' - ' + pv.SKU AS ProductVariantName
+            SELECT b.Id, b.Name, b.ProductVariantId, b.IsActive, b.RevisionNumber, b.BasisQuantity,
+                   b.EffectiveFrom, b.IsApproved, b.RowVersion,
+                   p.Name + ' - ' + pv.SKU AS ProductVariantName
             FROM Master.BillOfMaterials b
             INNER JOIN Master.ProductVariants pv ON b.ProductVariantId = pv.Id
             INNER JOIN Master.Products p ON pv.ProductId = p.Id
@@ -68,6 +74,7 @@ namespace NexusFlow.AppCore.Features.MasterData.Boms.Queries
             if (bom == null) return Result<BomDto>.Failure("BOM not found.");
 
             bom.Components = (await multi.ReadAsync<BomComponentDto>()).ToList();
+            if (bom.RowVersion == null) bom.RowVersion = Array.Empty<byte>();
 
             return Result<BomDto>.Success(bom);
         }

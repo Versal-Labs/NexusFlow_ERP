@@ -97,6 +97,11 @@
                             <select class="form-select form-select-sm select2" id="LinkedGrnIds" multiple="multiple" style="width:100%"></select>
                             <div class="form-text small text-muted">Select GRNs to auto-populate the bill. Only unbilled GRNs are shown.</div>
                         </div>
+                        <div class="col-md-7">
+                            <label class="form-label fw-bold mb-1 text-primary"><i class="fa-solid fa-industry me-1"></i>Link Sewing Accruals</label>
+                            <select class="form-select form-select-sm" id="ProductionReceiptIds" multiple="multiple" style="width:100%"></select>
+                            <div class="form-text small text-muted">Select unbilled production receipts for this contractor. Do not combine them with GRNs.</div>
+                        </div>
                         <div class="col-md-3 mt-3">
                             <label class="form-label fw-bold mb-1">Vendor Invoice # <span class="text-danger">*</span></label>
                             <input type="text" class="form-control form-control-sm font-monospace fw-bold" id="SupplierInvoiceNo" required>
@@ -176,7 +181,8 @@
             <div class="modal-header bg-dark text-white py-2 d-flex justify-content-between align-items-center">
                 <h5 class="modal-title fw-bold mb-0 fs-6"><i class="fa-solid fa-magnifying-glass-chart me-2"></i>Bill Details</h5>
                 <div>
-                    <button class="btn btn-sm btn-light text-dark me-1 fw-bold" onclick="window.print()" title="Export PDF"><i class="fa-solid fa-print me-1"></i> Print</button>
+                    <button class="btn btn-sm btn-light text-dark me-1 fw-bold" onclick="NexusPrint.printDocument('SupplierBill', billApp._currentDocId)" title="Print"><i class="fa-solid fa-print me-1"></i> Print</button>
+                    <button class="btn btn-sm btn-danger me-1 fw-bold" onclick="NexusPrint.downloadDocument('SupplierBill', billApp._currentDocId)" title="Download PDF"><i class="fa-solid fa-file-pdf me-1"></i> PDF</button>
                     <button class="btn btn-sm btn-success me-1 fw-bold text-dark" id="btnModalPay" title="Record Payment"><i class="fa-solid fa-money-bill-transfer me-1"></i> Pay Bill</button>
                     <button type="button" class="btn-close btn-close-white ms-2" data-bs-dismiss="modal"></button>
                 </div>

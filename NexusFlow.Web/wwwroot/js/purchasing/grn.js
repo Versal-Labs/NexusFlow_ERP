@@ -2,6 +2,7 @@
     _table: null,
     _modal: null,
     _viewModal: null,
+    _currentDocId: null,
 
     init: async function () {
         var modalEl = document.getElementById('grnModal');
@@ -103,7 +104,9 @@
                 {
                     data: null, className: 'text-end pe-3', orderable: false,
                     render: function (data, type, row) {
-                        return `<button class="btn btn-sm btn-outline-dark shadow-sm me-1" onclick="grnApp.viewDocument(${row.id})" title="View Document"><i class="fa-solid fa-eye"></i></button>`;
+                        return `<button class="btn btn-sm btn-outline-dark shadow-sm me-1" onclick="grnApp.viewDocument(${row.id})" title="View Document"><i class="fa-solid fa-eye"></i></button>
+                            <button class="btn btn-sm btn-outline-secondary shadow-sm me-1" onclick="NexusPrint.printDocument('GRN', ${row.id})" title="Print"><i class="fa-solid fa-print"></i></button>
+                            <button class="btn btn-sm btn-outline-danger shadow-sm" onclick="NexusPrint.downloadDocument('GRN', ${row.id})" title="Download PDF"><i class="fa-solid fa-file-pdf"></i></button>`;
                     }
                 }
             ],
@@ -294,6 +297,7 @@
     // --- VIEWER MODAL LOGIC ---
     viewDocument: async function (id) {
         try {
+            this._currentDocId = id;
             const res = await api.get(`/api/purchasing/grns/${id}`);
             const doc = res.data || res;
 

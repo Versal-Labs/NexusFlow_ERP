@@ -1,0 +1,98 @@
+@{
+    ViewData["Title"] = "Opening Stock";
+}
+
+<div class="container-fluid py-3 mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h4 class="mb-0 text-dark fw-bold"><i class="fa-solid fa-box-open text-success me-2"></i>Opening Stock</h4>
+            <p class="text-muted mb-0 fs-14">Initialize go-live stock through FIFO layers and a balanced opening equity journal.</p>
+        </div>
+        <button class="btn btn-success shadow-sm btn-sm px-3 fw-bold" onclick="openingStockApp.openCreateModal()">
+            <i class="fa-solid fa-plus me-1"></i> New Opening Stock
+        </button>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-3">
+            <table id="openingStockGrid" class="table table-hover table-sm w-100 fs-13 align-middle mb-0">
+                <thead class="table-light text-secondary">
+                    <tr>
+                        <th class="ps-3">Reference</th>
+                        <th>Date</th>
+                        <th>Warehouse</th>
+                        <th>Memo</th>
+                        <th class="text-center">Items</th>
+                        <th class="text-end pe-3">Total Value</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="openingStockModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-dark text-white py-2">
+                <h5 class="modal-title fw-bold fs-6"><i class="fa-solid fa-box-open me-2"></i>Post Opening Stock</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body p-4 fs-13 bg-light">
+                <form id="openingStockForm">
+                    <div class="row g-3 mb-4 pb-3 border-bottom border-secondary">
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold mb-1">Opening Date <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control form-control-sm" id="openingDate" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold mb-1">Warehouse <span class="text-danger">*</span></label>
+                            <select class="form-select form-select-sm" id="openingWarehouseId" required></select>
+                        </div>
+                        <div class="col-md-5">
+                            <label class="form-label fw-bold mb-1">Notes / Memo</label>
+                            <input type="text" class="form-control form-control-sm" id="openingNotes" placeholder="e.g., Initial stock count">
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="fw-bold text-dark mb-0"><i class="fa-solid fa-list-check me-2"></i>Opening Stock Lines</h6>
+                        <button type="button" class="btn btn-sm btn-outline-dark bg-white shadow-sm fw-bold" onclick="openingStockApp.addLine()">
+                            <i class="fa-solid fa-plus me-1"></i> Add Item
+                        </button>
+                    </div>
+
+                    <div class="table-responsive border rounded bg-white shadow-sm mb-3">
+                        <table class="table table-sm table-hover align-middle mb-0" id="openingLinesTable">
+                            <thead class="table-light text-secondary">
+                                <tr>
+                                    <th style="width: 34%" class="ps-3">Product / Variant <span class="text-danger">*</span></th>
+                                    <th style="width: 12%" class="text-center">Quantity <span class="text-danger">*</span></th>
+                                    <th style="width: 15%" class="text-end">Unit Cost <span class="text-danger">*</span></th>
+                                    <th style="width: 15%" class="text-end">Selling Price</th>
+                                    <th style="width: 18%">Batch No</th>
+                                    <th style="width: 6%" class="text-center pe-2"><i class="fa-solid fa-trash-can"></i></th>
+                                </tr>
+                            </thead>
+                            <tbody id="openingLinesBody"></tbody>
+                        </table>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer bg-white border-top py-2 d-flex justify-content-between">
+                <span class="text-muted fs-12"><i class="fa-solid fa-lock text-success me-1"></i> Opening stock is allowed only before stock activity starts for the selected item and warehouse.</span>
+                <div>
+                    <button type="button" class="btn btn-secondary btn-sm px-3" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-success btn-sm px-4 fw-bold shadow-sm" onclick="openingStockApp.save(event)">
+                        <i class="fa-solid fa-check-double me-2"></i> Post Opening Stock
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/inventory/opening-stock.js" asp-append-version="true"></script>
+}

@@ -28,6 +28,7 @@ namespace NexusFlow.AppCore.Features.Purchasing.PurchaseOrders.Queries
                 .Include(p => p.Items)
                     .ThenInclude(i => i.ProductVariant)
                         .ThenInclude(pv => pv.Product)
+                            .ThenInclude(p => p.UnitOfMeasure)
                 .FirstOrDefaultAsync(p => p.Id == request.Id, cancellationToken);
 
             if (po == null) return Result<PurchaseOrderDto>.Failure("PO not found.");
@@ -54,6 +55,8 @@ namespace NexusFlow.AppCore.Features.Purchasing.PurchaseOrders.Queries
                         : "Unknown Product",
 
                     SKU = i.ProductVariant?.SKU ?? "N/A",
+                    UomSymbol = i.ProductVariant?.Product?.UnitOfMeasure?.Symbol ?? "-",
+                    ProductType = i.ProductVariant?.Product != null ? (int)i.ProductVariant.Product.Type : 0,
                     QuantityOrdered = i.QuantityOrdered,
                     QuantityReceived = i.QuantityReceived,
                     UnitCost = i.UnitCost

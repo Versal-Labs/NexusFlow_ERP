@@ -11,6 +11,8 @@ using NexusFlow.Domain.Enums;
 using NexusFlow.Infrastructure;
 using NexusFlow.Infrastructure.Services;
 using NexusFlow.Infrastructure.Installation;
+using NexusFlow.AppCore.Behaviors;
+using NexusFlow.AppCore.Services;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -46,6 +48,8 @@ namespace NexusFlow.IntegrationTests
             services.AddScoped<IJournalService, JournalService>();
             services.AddScoped<INumberSequenceService, NumberSequenceService>();
             services.AddScoped<IFinancialAccountResolver, FinancialAccountResolver>();
+            services.AddScoped<IFinancialPeriodService, FinancialPeriodService>();
+            services.AddScoped(typeof(IPipelineBehavior<,>), typeof(FinancialPeriodBehavior<,>));
 
             // 3. Register MediatR (Finds all your Handlers)
             services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(IErpDbContext).Assembly));
@@ -74,10 +78,14 @@ namespace NexusFlow.IntegrationTests
                 new SystemConfig { Key = "Account.Asset.UndepositedFunds", Value = "1010" },
                 new SystemConfig { Key = "Account.Asset.AccountsReceivable", Value = "1040" },
                 new SystemConfig { Key = "Account.Liability.AccountsPayable", Value = "2010" },
+                new SystemConfig { Key = "Account.Equity.OpeningBalance", Value = "3200" },
                 new SystemConfig { Key = "Account.Sales.Revenue", Value = "4010" },
                 new SystemConfig { Key = "Account.Sales.Receivable", Value = "1040" },
                 new SystemConfig { Key = "Account.Tax.VATPayable", Value = "2050" },
                 new SystemConfig { Key = "Account.Cost.COGS", Value = "5050" }
+                ,new SystemConfig { Key = "Account.Inventory.Shrinkage", Value = "5060" }
+                ,new SystemConfig { Key = "Account.Expense.PurchaseVariance", Value = "5061" }
+                ,new SystemConfig { Key = "Production.OverproductionTolerancePercent", Value = "5" }
             );
 
             // B. ACCOUNTS (The Chart of Accounts)
@@ -92,7 +100,10 @@ namespace NexusFlow.IntegrationTests
                 new Account { Id = 4010, Code = "4010", Name = "Sales Revenue", Type = AccountType.Revenue, IsTransactionAccount = true },
                 new Account { Id = 1040, Code = "1040", Name = "Receivables", Type = AccountType.Asset, IsTransactionAccount = true },
                 new Account { Id = 2050, Code = "2050", Name = "VAT Payable", Type = AccountType.Liability, IsTransactionAccount = true },
+                new Account { Id = 3200, Code = "3200", Name = "Opening Balance Equity", Type = AccountType.Equity, IsTransactionAccount = true },
                 new Account { Id = 5050, Code = "5050", Name = "COGS", Type = AccountType.Expense, IsTransactionAccount = true }
+                ,new Account { Id = 5060, Code = "5060", Name = "Production Loss", Type = AccountType.Expense, IsTransactionAccount = true }
+                ,new Account { Id = 5061, Code = "5061", Name = "Purchase Variance", Type = AccountType.Expense, IsTransactionAccount = true }
             );
 
             // C. TAX
@@ -124,10 +135,17 @@ namespace NexusFlow.IntegrationTests
 
             context.NumberSequences.AddRange(
                 new NumberSequence { Module = "GRN", Prefix = "GRN", NextNumber = 1 },
+                new NumberSequence { Module = "Purchasing", Prefix = "PO", NextNumber = 1 },
                 new NumberSequence { Module = "SalesInvoice", Prefix = "INV", NextNumber = 1 },
                 new NumberSequence { Module = "Payment", Prefix = "PAY", NextNumber = 1 },
                 new NumberSequence { Module = "Receipt", Prefix = "REC", NextNumber = 1 },
-                new NumberSequence { Module = "JOURNAL", Prefix = "JE", NextNumber = 1 }
+                new NumberSequence { Module = "JOURNAL", Prefix = "JE", NextNumber = 1 },
+                new NumberSequence { Module = "OpeningStock", Prefix = "OBSTK", NextNumber = 1 }
+                ,new NumberSequence { Module = "ProductionOrder", Prefix = "PWO", NextNumber = 1 }
+                ,new NumberSequence { Module = "MaterialIssue", Prefix = "MI", NextNumber = 1 }
+                ,new NumberSequence { Module = "MaterialReturn", Prefix = "MR", NextNumber = 1 }
+                ,new NumberSequence { Module = "ProductionReceipt", Prefix = "PRD", NextNumber = 1 }
+                ,new NumberSequence { Module = "DebitNote", Prefix = "DN", NextNumber = 1 }
             );
 
             context.Suppliers.Add(new Domain.Entities.Purchasing.Supplier { Id = 1, Name = "Fabric Supplier Ltd", DefaultPayableAccountId = 2010 });

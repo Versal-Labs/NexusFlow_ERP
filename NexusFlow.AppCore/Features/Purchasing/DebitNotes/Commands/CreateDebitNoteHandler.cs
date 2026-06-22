@@ -18,9 +18,10 @@ namespace NexusFlow.AppCore.Features.Purchasing.DebitNotes.Commands
         public Dictionary<int, decimal> ReturnedItems { get; set; } = new(); // VariantId -> Qty
     }
 
-    public class CreateDebitNoteCommand : IRequest<Result<int>>
+    public class CreateDebitNoteCommand : IRequest<Result<int>>, IFinancialPeriodControlledRequest
     {
         public CreateDebitNoteRequest Payload { get; set; } = null!;
+        public DateTime FinancialDate => DateTime.UtcNow;
     }
 
     public class CreateDebitNoteHandler : IRequestHandler<CreateDebitNoteCommand, Result<int>>

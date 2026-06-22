@@ -21,6 +21,8 @@ namespace NexusFlow.AppCore.Features.Dashboard.Queries
         public decimal OverdueReceivables { get; set; }
         public decimal CommittedSpend { get; set; }
         public int BouncedCheques { get; set; }
+        public FinancialPeriodStatusDto? FinancialPeriodStatus { get; set; }
+        public List<string> MissingNumberSequences { get; set; } = new();
 
         public List<string> ChartLabels { get; set; } = new();
         public List<decimal> SalesData { get; set; } = new();
@@ -32,10 +34,12 @@ namespace NexusFlow.AppCore.Features.Dashboard.Queries
     public class GetDashboardDataHandler : IRequestHandler<GetDashboardDataQuery, Result<DashboardMetricsDto>>
     {
         private readonly IErpDbContext _context;
+        private readonly IFinancialPeriodService _periodService;
 
-        public GetDashboardDataHandler(IErpDbContext context)
+        public GetDashboardDataHandler(IErpDbContext context, IFinancialPeriodService periodService)
         {
             _context = context;
+            _periodService = periodService;
         }
 
         public async Task<Result<DashboardMetricsDto>> Handle(GetDashboardDataQuery request, CancellationToken cancellationToken)
@@ -45,6 +49,10 @@ namespace NexusFlow.AppCore.Features.Dashboard.Queries
             var sixMonthsAgo = startOfMonth.AddMonths(-5);
 
             var metrics = new DashboardMetricsDto();
+            metrics.FinancialPeriodStatus = await _periodService.GetStatusAsync(DateTime.Today, cancellationToken);
+            var sequenceNames = await _context.NumberSequences.AsNoTracking().Select(x => x.Module).ToListAsync(cancellationToken);
+            metrics.MissingNumberSequences = Constants.NumberSequenceKeys.Required
+                .Where(x => !sequenceNames.Contains(x, StringComparer.OrdinalIgnoreCase)).ToList();
 
             // 1. INVENTORY METRICS
             metrics.TotalInventoryValue = await _context.StockLayers

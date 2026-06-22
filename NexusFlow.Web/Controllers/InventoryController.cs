@@ -20,7 +20,7 @@ namespace NexusFlow.Web.Controllers
         [Authorize(Policy = Permissions.Inventory.RunProduction)]
         public IActionResult MaterialIssue()
         {
-            return View();
+            return RedirectToAction(nameof(ProductionOrders));
         }
 
         // GET: /Inventory/ProductionReceipt 
@@ -28,8 +28,11 @@ namespace NexusFlow.Web.Controllers
         [Authorize(Policy = Permissions.Inventory.RunProduction)]
         public IActionResult ProductionReceipt()
         {
-            return View();
+            return RedirectToAction(nameof(ProductionOrders));
         }
+
+        [Authorize(Policy = Permissions.Inventory.RunProduction)]
+        public IActionResult ProductionOrders() => View();
 
         [Authorize(Policy = Permissions.Inventory.ViewStock)]
         public IActionResult StockValuation()
@@ -45,6 +48,12 @@ namespace NexusFlow.Web.Controllers
 
         [Authorize(Policy = Permissions.Inventory.AdjustStock)]
         public IActionResult Adjustments()
+        {
+            return View();
+        }
+
+        [Authorize(Policy = Permissions.Inventory.AdjustStock)]
+        public IActionResult OpeningStock()
         {
             return View();
         }

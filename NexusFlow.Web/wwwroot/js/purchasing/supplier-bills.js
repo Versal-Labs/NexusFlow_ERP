@@ -5,6 +5,7 @@
     _products: [],
     _accounts: [],
     _unbilledGrns: [],
+    _unbilledProductionReceipts: [],
     _currentDocId: null,
 
     init: function () {
@@ -26,18 +27,35 @@
 
             $('#SupplierId').on('change', function () {
                 const suppId = $(this).val();
-                if (suppId) self._loadUnbilledGrns(suppId);
-                else $('#LinkedGrnIds').empty().trigger('change');
+                if (suppId) {
+                    self._loadUnbilledGrns(suppId);
+                    self._loadUnbilledProductionReceipts(suppId);
+                } else {
+                    $('#LinkedGrnIds, #ProductionReceiptIds').empty().trigger('change');
+                }
             });
 
             $('#LinkedGrnIds').on('change', function () {
+                if (($(this).val() || []).length) {
+                    $('#ProductionReceiptIds').val(null).trigger('change.select2');
+                    $('#linesBody tr.production-accrual-line').remove();
+                }
                 self._populateLinesFromGrns();
+            });
+            $('#ProductionReceiptIds').on('change', function () {
+                if (($(this).val() || []).length) {
+                    $('#LinkedGrnIds').val(null).trigger('change.select2');
+                    $('#linesBody tr').each(function () {
+                        if ($(this).find('.line-type').val() === 'Product') $(this).remove();
+                    });
+                }
+                self._populateLinesFromProduction();
             });
 
             // Action Buttons
             $('#btnModalPay').click(() => {
                 // Route to the Treasury Payment screen, auto-filling the Bill ID
-                window.location.href = `/Finance/Treasury/Payments?billId=${this._currentDocId}`;
+                window.location.href = `/Treasury/Payments?billId=${this._currentDocId}`;
             });
 
             // Deep link handler (If redirected from GRN screen)
@@ -131,6 +149,7 @@
                     render: function (data, type, row) {
                         if (!row.isPosted) return '<span class="badge bg-secondary">Draft</span>';
                         if (row.paymentStatus === 'Paid') return '<span class="badge bg-success">Paid</span>';
+                        if (row.paymentStatus === 'PendingClearance') return '<span class="badge bg-warning text-dark">Pending Clearance</span>';
                         if (row.paymentStatus === 'Partial') return '<span class="badge bg-info text-dark">Partial</span>';
                         return '<span class="badge bg-warning text-dark">Unpaid</span>';
                     }
@@ -139,6 +158,8 @@
                     data: null, className: 'text-end pe-3', orderable: false,
                     render: function (data, type, row) {
                         let btns = `<button class="btn btn-sm btn-outline-dark shadow-sm me-1" onclick="billApp.viewDocument(${row.id})" title="View Document"><i class="fa-solid fa-eye"></i></button>`;
+                        btns += `<button class="btn btn-sm btn-outline-secondary shadow-sm me-1" onclick="NexusPrint.printDocument('SupplierBill', ${row.id})" title="Print"><i class="fa-solid fa-print"></i></button>`;
+                        btns += `<button class="btn btn-sm btn-outline-danger shadow-sm me-1" onclick="NexusPrint.downloadDocument('SupplierBill', ${row.id})" title="Download PDF"><i class="fa-solid fa-file-pdf"></i></button>`;
 
                         // TIER-1: Edit Drafts
                         if (!row.isPosted) {
@@ -146,8 +167,8 @@
                         }
 
                         // TIER-1: Pay Bill Routing
-                        if (row.isPosted && row.paymentStatus !== 'Paid') {
-                            btns += `<a href="/Finance/Treasury/Payments?billId=${row.id}" class="btn btn-sm btn-success shadow-sm" title="Record Payment"><i class="fa-solid fa-money-bill-transfer"></i></a>`;
+                        if (row.isPosted && row.paymentStatus !== 'Paid' && (row.grandTotal - row.amountPaid) > 0) {
+                            btns += `<a href="/Treasury/Payments?billId=${row.id}" class="btn btn-sm btn-success shadow-sm" title="Record Payment"><i class="fa-solid fa-money-bill-transfer"></i></a>`;
                         }
                         return btns;
                     }
@@ -200,6 +221,39 @@
             grnEl.select2({ dropdownParent: $('#billModal'), placeholder: "Select GRNs..." });
 
         } catch (e) { console.error("Error loading GRNs", e); }
+    },
+
+    _loadUnbilledProductionReceipts: async function (supplierId) {
+        try {
+            const res = await api.get(`/api/inventory/production-orders/unbilled-sewing-receipts?supplierId=${supplierId}`);
+            this._unbilledProductionReceipts = res.data || res || [];
+            const $select = $('#ProductionReceiptIds').empty();
+            this._unbilledProductionReceipts.forEach(r => {
+                $select.append(`<option value="${r.id}">[${r.receiptNumber}] ${r.orderNumber} - Rs. ${parseFloat(r.sewingCharge).toFixed(2)}</option>`);
+            });
+            if ($select.hasClass('select2-hidden-accessible')) $select.select2('destroy');
+            $select.select2({ dropdownParent: $('#billModal'), placeholder: 'Select production receipts...' });
+        } catch (e) { console.error('Error loading production accruals', e); }
+    },
+
+    _populateLinesFromProduction: function () {
+        $('#linesBody tr.production-accrual-line').remove();
+        const selected = ($('#ProductionReceiptIds').val() || []).map(Number);
+        selected.forEach(id => {
+            const receipt = this._unbilledProductionReceipts.find(x => x.id === id);
+            if (!receipt) return;
+            $('#linesBody').prepend(`
+                <tr class="bg-light production-accrual-line" data-receipt-id="${receipt.id}">
+                    <td><span class="badge bg-primary">Sewing Accrual</span></td>
+                    <td class="fw-bold">${receipt.receiptNumber}</td>
+                    <td><input type="text" class="form-control form-control-sm line-desc bg-light" value="Sewing charge - ${receipt.orderNumber}" readonly></td>
+                    <td><input type="number" class="form-control form-control-sm line-qty bg-light" value="1" readonly></td>
+                    <td><input type="number" class="form-control form-control-sm line-price text-end bg-light" value="${receipt.sewingCharge}" readonly></td>
+                    <td class="text-end fw-bold line-total">${parseFloat(receipt.sewingCharge).toFixed(2)}</td>
+                    <td><i class="fa-solid fa-lock text-muted"></i></td>
+                </tr>`);
+        });
+        this.calculateTotals();
     },
 
     _populateLinesFromGrns: function () {
@@ -260,6 +314,7 @@
         document.getElementById('DueDate').valueAsDate = dueDate;
 
         $('#SupplierId').val('').trigger('change');
+        $('#ProductionReceiptIds').val(null).trigger('change');
         this.calculateTotals();
         if (this._modal) this._modal.show();
     },
@@ -412,11 +467,23 @@
                 ApplyVat: $('#ApplyVat').is(':checked'),
                 IsDraft: isDraft,
                 LinkedGrnIds: $('#LinkedGrnIds').val() ? $('#LinkedGrnIds').val().map(id => parseInt(id)) : [],
+                ProductionReceiptIds: $('#ProductionReceiptIds').val() ? $('#ProductionReceiptIds').val().map(id => parseInt(id)) : [],
                 Items: []
             }
         };
 
         $('#linesBody tr').each(function () {
+            const productionReceiptId = parseInt($(this).data('receipt-id'));
+            if (productionReceiptId) {
+                payload.Bill.Items.push({
+                    ProductVariantId: null,
+                    ExpenseAccountId: null,
+                    Description: $(this).find('.line-desc').val(),
+                    Quantity: 1,
+                    UnitPrice: parseFloat($(this).find('.line-price').val()) || 0
+                });
+                return;
+            }
             const type = $(this).find('.line-type').val();
             let prodId = null, accId = null;
 
@@ -495,7 +562,7 @@
             $('#docBalanceDueLarge').text(`$${balString}`);
 
             // Payment Logic
-            if (doc.isPosted && doc.paymentStatus !== 'Paid') {
+            if (doc.isPosted && doc.paymentStatus !== 'Paid' && doc.paymentStatus !== 'PendingClearance' && balance > 0) {
                 $('#btnModalPay').show();
             } else {
                 $('#btnModalPay').hide();

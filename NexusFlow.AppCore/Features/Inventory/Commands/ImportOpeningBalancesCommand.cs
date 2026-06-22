@@ -103,7 +103,7 @@ namespace NexusFlow.AppCore.Features.Inventory.Commands
                         Date = DateTime.UtcNow,
                         ProductVariantId = variant.Id,
                         WarehouseId = request.DestinationWarehouseId,
-                        Type = StockTransactionType.Receipt,
+                        Type = StockTransactionType.OpeningBalance,
                         Qty = row.TotalQuantity,
                         UnitCost = row.AverageCost,
                         TotalValue = totalValue,

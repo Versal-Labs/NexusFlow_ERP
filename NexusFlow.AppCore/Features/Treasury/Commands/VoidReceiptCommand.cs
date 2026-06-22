@@ -10,7 +10,10 @@ using System.Text;
 
 namespace NexusFlow.AppCore.Features.Treasury.Commands
 {
-    public record VoidReceiptCommand(int ReceiptId) : IRequest<Result<int>>;
+    public record VoidReceiptCommand(int ReceiptId, DateTime VoidDate) : IRequest<Result<int>>, IFinancialPeriodControlledRequest
+    {
+        public DateTime FinancialDate => VoidDate;
+    }
 
     public class VoidReceiptHandler : IRequestHandler<VoidReceiptCommand, Result<int>>
     {
@@ -104,7 +107,7 @@ namespace NexusFlow.AppCore.Features.Treasury.Commands
 
                     var journalReq = new JournalEntryRequest
                     {
-                        Date = DateTime.UtcNow,
+                        Date = request.VoidDate,
                         Description = $"Void Reversal for Receipt {receipt.ReferenceNo}",
                         Module = "Treasury",
                         ReferenceNo = receipt.ReferenceNo + "-VOID",

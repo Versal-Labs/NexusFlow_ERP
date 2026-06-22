@@ -26,6 +26,8 @@ namespace NexusFlow.AppCore.Features.Treasury.Commands
         public async Task<Result<int>> Handle(RecordSupplierPaymentCommand command, CancellationToken cancellationToken)
         {
             if (command.PaymentAmount <= 0) return Result<int>.Failure("Payment amount must be greater than zero.");
+            if (command.Method == PaymentMethod.EndorsedCustomerCheque)
+                return Result<int>.Failure("Endorsed customer cheques must be posted through the controlled cheque endorsement workflow.");
 
             // EDGE CASE: Overpayment Guard
             decimal totalAllocated = command.Allocations.Sum(a => a.Amount);
@@ -38,26 +40,6 @@ namespace NexusFlow.AppCore.Features.Treasury.Commands
                 string payRef = await _sequenceService.GenerateNextNumberAsync("Payment", cancellationToken);
 
                 int targetGlAccountId = command.AccountId ?? 0;
-                ChequeRegister? chequeToEndorse = null;
-
-                // ==========================================
-                // 1. CHEQUE SWAPPING LOGIC (Endorsement)
-                // ==========================================
-                // Assuming '5' is the enum value for EndorsedCheque
-                if ((int)command.Method == 5)
-                {
-                    if (!command.EndorsedChequeId.HasValue)
-                        return Result<int>.Failure("You must select a valid cheque from the safe to endorse.");
-
-                    // The asset being reduced is the Vault (Undeposited Funds)
-                    targetGlAccountId = await _accountResolver.ResolveAccountIdAsync("Account.Asset.UndepositedFunds", cancellationToken);
-
-                    chequeToEndorse = await _context.ChequeRegisters.FindAsync(new object[] { command.EndorsedChequeId.Value }, cancellationToken);
-
-                    if (chequeToEndorse == null || chequeToEndorse.Status != ChequeStatus.InSafe)
-                        return Result<int>.Failure("The selected cheque is invalid or is no longer in the safe.");
-                }
-
                 if (targetGlAccountId == 0) return Result<int>.Failure("A valid Pay-From account or Cheque must be selected.");
 
                 // ==========================================
@@ -95,16 +77,6 @@ namespace NexusFlow.AppCore.Features.Treasury.Commands
                 }
 
                 await _context.SaveChangesAsync(cancellationToken); // Save to get Payment ID
-
-                // ==========================================
-                // 4. MARK CHEQUE AS ENDORSED
-                // ==========================================
-                if (chequeToEndorse != null)
-                {
-                    chequeToEndorse.Status = ChequeStatus.Endorsed;
-                    chequeToEndorse.EndorsedPaymentId = payment.Id;
-                    await _context.SaveChangesAsync(cancellationToken);
-                }
 
                 // ==========================================
                 // 5. DOUBLE-ENTRY GL POSTING (Handles AP Advances Perfectly)

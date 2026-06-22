@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using NexusFlow.AppCore.DTOs.Purchasing;
+using NexusFlow.AppCore.Interfaces;
 using NexusFlow.Shared.Wrapper;
 using System;
 using System.Collections.Generic;
@@ -7,7 +8,7 @@ using System.Text;
 
 namespace NexusFlow.AppCore.Features.Purchasing.Commands
 {
-    public class CreateGrnCommand : IRequest<Result<int>>
+    public class CreateGrnCommand : IRequest<Result<int>>, IFinancialPeriodControlledRequest
     {
         public int PurchaseOrderId { get; set; }
         public int WarehouseId { get; set; }
@@ -16,5 +17,6 @@ namespace NexusFlow.AppCore.Features.Purchasing.Commands
 
         // We allow partial receiving (e.g., Ordered 1000, Received 400)
         public List<GrnItemDto> Items { get; set; } = new();
+        public DateTime FinancialDate => DateReceived;
     }
 }

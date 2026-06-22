@@ -110,6 +110,13 @@ namespace NexusFlow.Web.Controllers.Api
             return Ok(result);
         }
 
+        [HttpGet("period-status")]
+        public async Task<IActionResult> GetFinancialPeriodStatus([FromQuery] DateTime? date)
+        {
+            var result = await _mediator.Send(new GetFinancialPeriodStatusQuery((date ?? DateTime.Today).Date));
+            return Ok(result);
+        }
+
         [HttpPost("periods")]
         [Authorize(Policy = Permissions.Finance.ManagePeriods)]
         public async Task<IActionResult> CreateFinancialPeriod([FromBody] CreateFinancialPeriodCommand command)

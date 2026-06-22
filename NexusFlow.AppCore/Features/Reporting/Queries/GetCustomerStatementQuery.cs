@@ -51,8 +51,11 @@ namespace NexusFlow.AppCore.Features.Reporting.Queries
             decimal openingCreditNotes = await _context.CreditNotes
                 .Where(c => c.CustomerId == request.CustomerId && c.IsPosted && c.Date < startOfDay)
                 .SumAsync(c => c.GrandTotal, cancellationToken);
+            decimal openingDebitMemos = await _context.CustomerDebitMemos
+                .Where(x => x.CustomerId == request.CustomerId && x.Date < startOfDay)
+                .SumAsync(x => x.Amount, cancellationToken);
 
-            decimal runningBalance = openingInvoices - openingPayments - openingCreditNotes;
+            decimal runningBalance = openingInvoices + openingDebitMemos - openingPayments - openingCreditNotes;
 
             var statement = new List<CustomerStatementRowDto>
             {
@@ -82,8 +85,13 @@ namespace NexusFlow.AppCore.Features.Reporting.Queries
                 .Select(c => new { Date = c.Date, Type = "Credit Note", Ref = c.CreditNoteNumber, Desc = c.Reason, Debit = 0M, Credit = c.GrandTotal })
                 .ToListAsync(cancellationToken);
 
+            var debitMemos = await _context.CustomerDebitMemos
+                .Where(x => x.CustomerId == request.CustomerId && x.Date >= startOfDay && x.Date <= endOfDay)
+                .Select(x => new { Date = x.Date, Type = "Debit Memo", Ref = x.DebitMemoNumber, Desc = x.Reason, Debit = x.Amount, Credit = 0M })
+                .ToListAsync(cancellationToken);
+
             // 3. COMBINE, SORT, AND COMPUTE RUNNING BALANCE
-            var allTransactions = invoices.Concat(payments).Concat(creditNotes).OrderBy(t => t.Date).ToList();
+            var allTransactions = invoices.Concat(payments).Concat(creditNotes).Concat(debitMemos).OrderBy(t => t.Date).ToList();
 
             foreach (var t in allTransactions)
             {

@@ -666,6 +666,9 @@ namespace NexusFlow.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime?>("ClearedDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -678,6 +681,12 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.Property<int?>("DepositedBankAccountId")
                         .HasColumnType("int");
 
+                    b.Property<DateTime?>("DishonoredDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("EndorsedDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<int?>("EndorsedPaymentId")
                         .HasColumnType("int");
 
@@ -689,6 +698,9 @@ namespace NexusFlow.Infrastructure.Migrations
 
                     b.Property<int>("OriginalReceiptId")
                         .HasColumnType("int");
+
+                    b.Property<string>("ReversalReferenceNo")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
@@ -1040,6 +1052,9 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.Property<string>("Remarks")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("ReversalReferenceNo")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int?>("SupplierId")
                         .HasColumnType("int");
 
@@ -1055,6 +1070,12 @@ namespace NexusFlow.Infrastructure.Migrations
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("datetime2")
                         .HasColumnName("ValidTo");
+
+                    b.Property<string>("VoidReason")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("VoidedAt")
+                        .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
@@ -1638,6 +1659,687 @@ namespace NexusFlow.Infrastructure.Migrations
                             }));
                 });
 
+            modelBuilder.Entity("NexusFlow.Domain.Entities.Inventory.ProductionMaterialMovement", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("LastModifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Notes")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("ProductionOrderId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ReferenceNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("TotalCost")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("ValidFrom")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidFrom");
+
+                    b.Property<DateTime>("ValidTo")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidTo");
+
+                    b.Property<int>("WarehouseId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductionOrderId");
+
+                    b.HasIndex("WarehouseId");
+
+                    b.ToTable("ProductionMaterialMovements", "Inventory");
+
+                    b.ToTable(tb => tb.IsTemporal(ttb =>
+                            {
+                                ttb.UseHistoryTable("ProductionMaterialMovements_History", "Inventory");
+                                ttb
+                                    .HasPeriodStart("ValidFrom")
+                                    .HasColumnName("ValidFrom");
+                                ttb
+                                    .HasPeriodEnd("ValidTo")
+                                    .HasColumnName("ValidTo");
+                            }));
+                });
+
+            modelBuilder.Entity("NexusFlow.Domain.Entities.Inventory.ProductionMaterialMovementLine", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("LastModifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("ProductionMaterialMovementId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ProductionOrderComponentId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Quantity")
+                        .HasColumnType("decimal(18,4)");
+
+                    b.Property<decimal>("TotalCost")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("UnitCost")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("ValidFrom")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidFrom");
+
+                    b.Property<DateTime>("ValidTo")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidTo");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductionMaterialMovementId");
+
+                    b.HasIndex("ProductionOrderComponentId");
+
+                    b.ToTable("ProductionMaterialMovementLines", "Inventory");
+
+                    b.ToTable(tb => tb.IsTemporal(ttb =>
+                            {
+                                ttb.UseHistoryTable("ProductionMaterialMovementLines_History", "Inventory");
+                                ttb
+                                    .HasPeriodStart("ValidFrom")
+                                    .HasColumnName("ValidFrom");
+                                ttb
+                                    .HasPeriodEnd("ValidTo")
+                                    .HasColumnName("ValidTo");
+                            }));
+                });
+
+            modelBuilder.Entity("NexusFlow.Domain.Entities.Inventory.ProductionOrder", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("BillOfMaterialId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("BomRevisionNumber")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("ClosedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("ContractorId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("DestinationWarehouseId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("DueDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("FinishedGoodVariantId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("LastModifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Notes")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("OrderDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("OrderNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("OverproductionTolerancePercent")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime?>("PlannedStartDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("ReleasedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<int>("SourceWarehouseId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("TargetQuantity")
+                        .HasColumnType("decimal(18,4)");
+
+                    b.Property<DateTime>("ValidFrom")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidFrom");
+
+                    b.Property<DateTime>("ValidTo")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidTo");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BillOfMaterialId");
+
+                    b.HasIndex("ContractorId");
+
+                    b.HasIndex("DestinationWarehouseId");
+
+                    b.HasIndex("FinishedGoodVariantId");
+
+                    b.HasIndex("SourceWarehouseId");
+
+                    b.ToTable("ProductionOrders", "Inventory");
+
+                    b.ToTable(tb => tb.IsTemporal(ttb =>
+                            {
+                                ttb.UseHistoryTable("ProductionOrders_History", "Inventory");
+                                ttb
+                                    .HasPeriodStart("ValidFrom")
+                                    .HasColumnName("ValidFrom");
+                                ttb
+                                    .HasPeriodEnd("ValidTo")
+                                    .HasColumnName("ValidTo");
+                            }));
+                });
+
+            modelBuilder.Entity("NexusFlow.Domain.Entities.Inventory.ProductionOrderComponent", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("AbnormalLossCost")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("AbnormalLossQuantity")
+                        .HasColumnType("decimal(18,4)");
+
+                    b.Property<decimal>("ConsumedCost")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("ConsumedQuantity")
+                        .HasColumnType("decimal(18,4)");
+
+                    b.Property<decimal>("ContractorRecoverableCost")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("ContractorRecoverableQuantity")
+                        .HasColumnType("decimal(18,4)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("IssuedCost")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("IssuedQuantity")
+                        .HasColumnType("decimal(18,4)");
+
+                    b.Property<DateTime?>("LastModifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("MaterialVariantId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("NormalWasteCost")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("NormalWasteQuantity")
+                        .HasColumnType("decimal(18,4)");
+
+                    b.Property<decimal>("PlannedQuantity")
+                        .HasColumnType("decimal(18,4)");
+
+                    b.Property<int>("ProductionOrderId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("QuantityPerUnit")
+                        .HasColumnType("decimal(18,4)");
+
+                    b.Property<decimal>("ReturnedCost")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("ReturnedQuantity")
+                        .HasColumnType("decimal(18,4)");
+
+                    b.Property<DateTime>("ValidFrom")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidFrom");
+
+                    b.Property<DateTime>("ValidTo")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidTo");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MaterialVariantId");
+
+                    b.HasIndex("ProductionOrderId");
+
+                    b.ToTable("ProductionOrderComponents", "Inventory");
+
+                    b.ToTable(tb => tb.IsTemporal(ttb =>
+                            {
+                                ttb.UseHistoryTable("ProductionOrderComponents_History", "Inventory");
+                                ttb
+                                    .HasPeriodStart("ValidFrom")
+                                    .HasColumnName("ValidFrom");
+                                ttb
+                                    .HasPeriodEnd("ValidTo")
+                                    .HasColumnName("ValidTo");
+                            }));
+                });
+
+            modelBuilder.Entity("NexusFlow.Domain.Entities.Inventory.ProductionOrderRevision", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("LastModifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("NewTargetQuantity")
+                        .HasColumnType("decimal(18,4)");
+
+                    b.Property<decimal>("NewTolerancePercent")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("PreviousTargetQuantity")
+                        .HasColumnType("decimal(18,4)");
+
+                    b.Property<decimal>("PreviousTolerancePercent")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("ProductionOrderId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("RevisionDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("RevisionNumber")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("ValidFrom")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidFrom");
+
+                    b.Property<DateTime>("ValidTo")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidTo");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductionOrderId");
+
+                    b.ToTable("ProductionOrderRevisions", "Inventory");
+
+                    b.ToTable(tb => tb.IsTemporal(ttb =>
+                            {
+                                ttb.UseHistoryTable("ProductionOrderRevisions_History", "Inventory");
+                                ttb
+                                    .HasPeriodStart("ValidFrom")
+                                    .HasColumnName("ValidFrom");
+                                ttb
+                                    .HasPeriodEnd("ValidTo")
+                                    .HasColumnName("ValidTo");
+                            }));
+                });
+
+            modelBuilder.Entity("NexusFlow.Domain.Entities.Inventory.ProductionReceipt", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("AbnormalLossCost")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("AcceptedQuantity")
+                        .HasColumnType("decimal(18,4)");
+
+                    b.Property<string>("BatchNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("ContractorRecoverableCost")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("FinishedGoodsCost")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime?>("LastModifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("MaterialCostCapitalized")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("NormalWasteCost")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Notes")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("ProductionOrderId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("ReceiptDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ReceiptNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("RejectedQuantity")
+                        .HasColumnType("decimal(18,4)");
+
+                    b.Property<decimal>("SewingCharge")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("SupplierBillId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("ValidFrom")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidFrom");
+
+                    b.Property<DateTime>("ValidTo")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidTo");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductionOrderId");
+
+                    b.HasIndex("SupplierBillId");
+
+                    b.ToTable("ProductionReceipts", "Inventory");
+
+                    b.ToTable(tb => tb.IsTemporal(ttb =>
+                            {
+                                ttb.UseHistoryTable("ProductionReceipts_History", "Inventory");
+                                ttb
+                                    .HasPeriodStart("ValidFrom")
+                                    .HasColumnName("ValidFrom");
+                                ttb
+                                    .HasPeriodEnd("ValidTo")
+                                    .HasColumnName("ValidTo");
+                            }));
+                });
+
+            modelBuilder.Entity("NexusFlow.Domain.Entities.Inventory.ProductionReceiptConsumption", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("AbnormalLossCost")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("AbnormalLossQuantity")
+                        .HasColumnType("decimal(18,4)");
+
+                    b.Property<decimal>("ConsumedCost")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("ConsumedQuantity")
+                        .HasColumnType("decimal(18,4)");
+
+                    b.Property<decimal>("ContractorRecoverableCost")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("ContractorRecoverableQuantity")
+                        .HasColumnType("decimal(18,4)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("LastModifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("NormalWasteCost")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("NormalWasteQuantity")
+                        .HasColumnType("decimal(18,4)");
+
+                    b.Property<int>("ProductionOrderComponentId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ProductionReceiptId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("ValidFrom")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidFrom");
+
+                    b.Property<DateTime>("ValidTo")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidTo");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductionOrderComponentId");
+
+                    b.HasIndex("ProductionReceiptId");
+
+                    b.ToTable("ProductionReceiptConsumptions", "Inventory");
+
+                    b.ToTable(tb => tb.IsTemporal(ttb =>
+                            {
+                                ttb.UseHistoryTable("ProductionReceiptConsumptions_History", "Inventory");
+                                ttb
+                                    .HasPeriodStart("ValidFrom")
+                                    .HasColumnName("ValidFrom");
+                                ttb
+                                    .HasPeriodEnd("ValidTo")
+                                    .HasColumnName("ValidTo");
+                            }));
+                });
+
+            modelBuilder.Entity("NexusFlow.Domain.Entities.Inventory.ProductionSupplierClaim", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("ClaimDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ClaimNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("LastModifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("ProductionOrderId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ProductionReceiptId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("SettledDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("SettlementReference")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SupplierId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("ValidFrom")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidFrom");
+
+                    b.Property<DateTime>("ValidTo")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidTo");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductionOrderId");
+
+                    b.HasIndex("ProductionReceiptId");
+
+                    b.HasIndex("SupplierId");
+
+                    b.ToTable("ProductionSupplierClaims", "Inventory");
+
+                    b.ToTable(tb => tb.IsTemporal(ttb =>
+                            {
+                                ttb.UseHistoryTable("ProductionSupplierClaims_History", "Inventory");
+                                ttb
+                                    .HasPeriodStart("ValidFrom")
+                                    .HasColumnName("ValidFrom");
+                                ttb
+                                    .HasPeriodEnd("ValidTo")
+                                    .HasColumnName("ValidTo");
+                            }));
+                });
+
             modelBuilder.Entity("NexusFlow.Domain.Entities.Inventory.StockLayer", b =>
                 {
                     b.Property<int>("Id")
@@ -2018,13 +2720,28 @@ namespace NexusFlow.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<DateTime?>("ApprovedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("BasisQuantity")
+                        .HasColumnType("decimal(18,4)");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("CreatedBy")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime>("EffectiveFrom")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("EffectiveTo")
+                        .HasColumnType("datetime2");
+
                     b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsApproved")
                         .HasColumnType("bit");
 
                     b.Property<DateTime?>("LastModifiedAt")
@@ -2039,6 +2756,15 @@ namespace NexusFlow.Infrastructure.Migrations
 
                     b.Property<int>("ProductVariantId")
                         .HasColumnType("int");
+
+                    b.Property<int>("RevisionNumber")
+                        .HasColumnType("int");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
 
                     b.Property<DateTime>("ValidFrom")
                         .ValueGeneratedOnAddOrUpdate()
@@ -4271,6 +4997,82 @@ namespace NexusFlow.Infrastructure.Migrations
                             }));
                 });
 
+            modelBuilder.Entity("NexusFlow.Domain.Entities.Sales.CustomerDebitMemo", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("AmountPaid")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("ChequeRegisterId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("CustomerId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DebitMemoNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("LastModifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("PaymentStatus")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("ValidFrom")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidFrom");
+
+                    b.Property<DateTime>("ValidTo")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidTo");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ChequeRegisterId");
+
+                    b.HasIndex("CustomerId");
+
+                    b.ToTable("CustomerDebitMemos", "Sales");
+
+                    b.ToTable(tb => tb.IsTemporal(ttb =>
+                            {
+                                ttb.UseHistoryTable("CustomerDebitMemos_History", "Sales");
+                                ttb
+                                    .HasPeriodStart("ValidFrom")
+                                    .HasColumnName("ValidFrom");
+                                ttb
+                                    .HasPeriodEnd("ValidTo")
+                                    .HasColumnName("ValidTo");
+                            }));
+                });
+
             modelBuilder.Entity("NexusFlow.Domain.Entities.Sales.SalesInvoice", b =>
                 {
                     b.Property<int>("Id")
@@ -4910,6 +5712,87 @@ namespace NexusFlow.Infrastructure.Migrations
                             }));
                 });
 
+            modelBuilder.Entity("NexusFlow.Domain.Entities.System.GeneratedDocument", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("BlobUrl")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("DocumentId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("DocumentNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("DocumentType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("GeneratedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("GeneratedByUserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("LastModifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("OutputAction")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("OverrideDifferencesJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Sha256Hash")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("ValidFrom")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidFrom");
+
+                    b.Property<DateTime>("ValidTo")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidTo");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("GeneratedDocuments", "System");
+
+                    b.ToTable(tb => tb.IsTemporal(ttb =>
+                            {
+                                ttb.UseHistoryTable("GeneratedDocuments_History", "System");
+                                ttb
+                                    .HasPeriodStart("ValidFrom")
+                                    .HasColumnName("ValidFrom");
+                                ttb
+                                    .HasPeriodEnd("ValidTo")
+                                    .HasColumnName("ValidTo");
+                            }));
+                });
+
             modelBuilder.Entity("NexusFlow.Domain.Entities.System.InstallationRecord", b =>
                 {
                     b.Property<int>("Id")
@@ -5303,6 +6186,181 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.Navigation("Employee");
 
                     b.Navigation("LeaveType");
+                });
+
+            modelBuilder.Entity("NexusFlow.Domain.Entities.Inventory.ProductionMaterialMovement", b =>
+                {
+                    b.HasOne("NexusFlow.Domain.Entities.Inventory.ProductionOrder", "ProductionOrder")
+                        .WithMany("MaterialMovements")
+                        .HasForeignKey("ProductionOrderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("NexusFlow.Domain.Entities.Master.Warehouse", "Warehouse")
+                        .WithMany()
+                        .HasForeignKey("WarehouseId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("ProductionOrder");
+
+                    b.Navigation("Warehouse");
+                });
+
+            modelBuilder.Entity("NexusFlow.Domain.Entities.Inventory.ProductionMaterialMovementLine", b =>
+                {
+                    b.HasOne("NexusFlow.Domain.Entities.Inventory.ProductionMaterialMovement", "ProductionMaterialMovement")
+                        .WithMany("Lines")
+                        .HasForeignKey("ProductionMaterialMovementId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("NexusFlow.Domain.Entities.Inventory.ProductionOrderComponent", "ProductionOrderComponent")
+                        .WithMany()
+                        .HasForeignKey("ProductionOrderComponentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("ProductionMaterialMovement");
+
+                    b.Navigation("ProductionOrderComponent");
+                });
+
+            modelBuilder.Entity("NexusFlow.Domain.Entities.Inventory.ProductionOrder", b =>
+                {
+                    b.HasOne("NexusFlow.Domain.Entities.Master.BillOfMaterial", "BillOfMaterial")
+                        .WithMany()
+                        .HasForeignKey("BillOfMaterialId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("NexusFlow.Domain.Entities.Purchasing.Supplier", "Contractor")
+                        .WithMany()
+                        .HasForeignKey("ContractorId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("NexusFlow.Domain.Entities.Master.Warehouse", "DestinationWarehouse")
+                        .WithMany()
+                        .HasForeignKey("DestinationWarehouseId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("NexusFlow.Domain.Entities.Master.ProductVariant", "FinishedGoodVariant")
+                        .WithMany()
+                        .HasForeignKey("FinishedGoodVariantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("NexusFlow.Domain.Entities.Master.Warehouse", "SourceWarehouse")
+                        .WithMany()
+                        .HasForeignKey("SourceWarehouseId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("BillOfMaterial");
+
+                    b.Navigation("Contractor");
+
+                    b.Navigation("DestinationWarehouse");
+
+                    b.Navigation("FinishedGoodVariant");
+
+                    b.Navigation("SourceWarehouse");
+                });
+
+            modelBuilder.Entity("NexusFlow.Domain.Entities.Inventory.ProductionOrderComponent", b =>
+                {
+                    b.HasOne("NexusFlow.Domain.Entities.Master.ProductVariant", "MaterialVariant")
+                        .WithMany()
+                        .HasForeignKey("MaterialVariantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("NexusFlow.Domain.Entities.Inventory.ProductionOrder", "ProductionOrder")
+                        .WithMany("Components")
+                        .HasForeignKey("ProductionOrderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("MaterialVariant");
+
+                    b.Navigation("ProductionOrder");
+                });
+
+            modelBuilder.Entity("NexusFlow.Domain.Entities.Inventory.ProductionOrderRevision", b =>
+                {
+                    b.HasOne("NexusFlow.Domain.Entities.Inventory.ProductionOrder", "ProductionOrder")
+                        .WithMany("Revisions")
+                        .HasForeignKey("ProductionOrderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("ProductionOrder");
+                });
+
+            modelBuilder.Entity("NexusFlow.Domain.Entities.Inventory.ProductionReceipt", b =>
+                {
+                    b.HasOne("NexusFlow.Domain.Entities.Inventory.ProductionOrder", "ProductionOrder")
+                        .WithMany("Receipts")
+                        .HasForeignKey("ProductionOrderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("NexusFlow.Domain.Entities.Purchasing.SupplierBill", "SupplierBill")
+                        .WithMany()
+                        .HasForeignKey("SupplierBillId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("ProductionOrder");
+
+                    b.Navigation("SupplierBill");
+                });
+
+            modelBuilder.Entity("NexusFlow.Domain.Entities.Inventory.ProductionReceiptConsumption", b =>
+                {
+                    b.HasOne("NexusFlow.Domain.Entities.Inventory.ProductionOrderComponent", "ProductionOrderComponent")
+                        .WithMany()
+                        .HasForeignKey("ProductionOrderComponentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("NexusFlow.Domain.Entities.Inventory.ProductionReceipt", "ProductionReceipt")
+                        .WithMany("Consumptions")
+                        .HasForeignKey("ProductionReceiptId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("ProductionOrderComponent");
+
+                    b.Navigation("ProductionReceipt");
+                });
+
+            modelBuilder.Entity("NexusFlow.Domain.Entities.Inventory.ProductionSupplierClaim", b =>
+                {
+                    b.HasOne("NexusFlow.Domain.Entities.Inventory.ProductionOrder", "ProductionOrder")
+                        .WithMany()
+                        .HasForeignKey("ProductionOrderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("NexusFlow.Domain.Entities.Inventory.ProductionReceipt", "ProductionReceipt")
+                        .WithMany()
+                        .HasForeignKey("ProductionReceiptId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("NexusFlow.Domain.Entities.Purchasing.Supplier", "Supplier")
+                        .WithMany()
+                        .HasForeignKey("SupplierId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("ProductionOrder");
+
+                    b.Navigation("ProductionReceipt");
+
+                    b.Navigation("Supplier");
                 });
 
             modelBuilder.Entity("NexusFlow.Domain.Entities.Inventory.StockLayer", b =>
@@ -5813,6 +6871,23 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.Navigation("BankBranch");
                 });
 
+            modelBuilder.Entity("NexusFlow.Domain.Entities.Sales.CustomerDebitMemo", b =>
+                {
+                    b.HasOne("NexusFlow.Domain.Entities.Finance.ChequeRegister", "ChequeRegister")
+                        .WithMany()
+                        .HasForeignKey("ChequeRegisterId");
+
+                    b.HasOne("NexusFlow.Domain.Entities.Sales.Customer", "Customer")
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ChequeRegister");
+
+                    b.Navigation("Customer");
+                });
+
             modelBuilder.Entity("NexusFlow.Domain.Entities.Sales.SalesInvoice", b =>
                 {
                     b.HasOne("NexusFlow.Domain.Entities.Sales.Customer", "Customer")
@@ -5920,6 +6995,27 @@ namespace NexusFlow.Infrastructure.Migrations
             modelBuilder.Entity("NexusFlow.Domain.Entities.HR.ShiftProfile", b =>
                 {
                     b.Navigation("Employees");
+                });
+
+            modelBuilder.Entity("NexusFlow.Domain.Entities.Inventory.ProductionMaterialMovement", b =>
+                {
+                    b.Navigation("Lines");
+                });
+
+            modelBuilder.Entity("NexusFlow.Domain.Entities.Inventory.ProductionOrder", b =>
+                {
+                    b.Navigation("Components");
+
+                    b.Navigation("MaterialMovements");
+
+                    b.Navigation("Receipts");
+
+                    b.Navigation("Revisions");
+                });
+
+            modelBuilder.Entity("NexusFlow.Domain.Entities.Inventory.ProductionReceipt", b =>
+                {
+                    b.Navigation("Consumptions");
                 });
 
             modelBuilder.Entity("NexusFlow.Domain.Entities.Inventory.StockTake", b =>

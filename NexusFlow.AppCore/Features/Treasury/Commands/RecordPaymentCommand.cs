@@ -7,7 +7,7 @@ using System.Text;
 
 namespace NexusFlow.AppCore.Features.Treasury.Commands
 {
-    public class RecordPaymentCommand : IRequest<Result<int>>
+    public class RecordPaymentCommand : IRequest<Result<int>>, NexusFlow.AppCore.Interfaces.IFinancialPeriodControlledRequest
     {
         public DateTime Date { get; set; }
         public PaymentType Type { get; set; }
@@ -24,6 +24,7 @@ namespace NexusFlow.AppCore.Features.Treasury.Commands
         public DateTime? ChequeDate { get; set; }
 
         public List<PaymentAllocationRequest> Allocations { get; set; } = new();
+        public DateTime FinancialDate => Date;
     }
 
     public class PaymentAllocationRequest

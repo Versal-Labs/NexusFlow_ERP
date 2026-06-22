@@ -48,6 +48,14 @@ namespace NexusFlow.Infrastructure
         public DbSet<Warehouse> Warehouses { get; set; }
         public DbSet<StockLayer> StockLayers { get; set; }
         public DbSet<StockTransaction> StockTransactions { get; set; }
+        public DbSet<ProductionOrder> ProductionOrders { get; set; }
+        public DbSet<ProductionOrderComponent> ProductionOrderComponents { get; set; }
+        public DbSet<ProductionOrderRevision> ProductionOrderRevisions { get; set; }
+        public DbSet<ProductionMaterialMovement> ProductionMaterialMovements { get; set; }
+        public DbSet<ProductionMaterialMovementLine> ProductionMaterialMovementLines { get; set; }
+        public DbSet<ProductionReceipt> ProductionReceipts { get; set; }
+        public DbSet<ProductionReceiptConsumption> ProductionReceiptConsumptions { get; set; }
+        public DbSet<ProductionSupplierClaim> ProductionSupplierClaims { get; set; }
         public DbSet<JournalEntry> JournalEntries { get; set; }
         public DbSet<JournalLine> JournalLines { get; set; }
         public DbSet<FinancialPeriod> FinancialPeriods { get; set; }
@@ -73,6 +81,7 @@ namespace NexusFlow.Infrastructure
         public DbSet<CommissionLedger> CommissionLedgers { get; set; }
         public DbSet<CreditNote> CreditNotes { get; set; }
         public DbSet<CreditNoteItem> CreditNoteItems { get; set; }
+        public DbSet<CustomerDebitMemo> CustomerDebitMemos { get; set; }
         public DbSet<StockTake> StockTakes { get; set; }
         public DbSet<StockTakeItem> StockTakeItems { get; set; }
         public DbSet<ChequeRegister> ChequeRegisters { get; set; }
@@ -100,6 +109,7 @@ namespace NexusFlow.Infrastructure
         public DbSet<AppliedInstallationStep> AppliedInstallationSteps { get; set; }
         public DbSet<CompanyProfile> CompanyProfiles { get; set; }
         public DbSet<DocumentTemplate> DocumentTemplates { get; set; }
+        public DbSet<GeneratedDocument> GeneratedDocuments { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -108,6 +118,13 @@ namespace NexusFlow.Infrastructure
 
             // This applies configurations from separate files (Clean Architecture best practice)
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(ErpDbContext).Assembly);
+
+            // Production is retained as an audit chain; restrictive deletes prevent an order deletion from erasing costing evidence.
+            foreach (var entityType in modelBuilder.Model.GetEntityTypes()
+                .Where(x => x.ClrType.Namespace == "NexusFlow.Domain.Entities.Inventory" && x.ClrType.Name.StartsWith("Production", StringComparison.Ordinal)))
+            {
+                foreach (var foreignKey in entityType.GetForeignKeys()) foreignKey.DeleteBehavior = DeleteBehavior.Restrict;
+            }
 
             foreach (var entityType in modelBuilder.Model.GetEntityTypes())
             {

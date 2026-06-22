@@ -75,7 +75,7 @@
                     headers: { 'Authorization': `Bearer ${localStorage.getItem('nexus_token')}` },
                     dataType: 'json',
                     delay: 250,
-                    data: params => ({ query: params.term, productType: 1 }), // 1 = Finished Good
+                    data: params => ({ query: params.term, productType: 2 }), // FinishedGood enum value
                     processResults: data => ({
                         results: $.map(data, item => ({ id: item.id, text: `${item.sku} - ${item.name}` }))
                     })

@@ -83,8 +83,10 @@ namespace NexusFlow.AppCore.Features.Treasury.Commands
 
                         if (invoice.AmountPaid >= invoice.GrandTotal)
                         {
-                            invoice.PaymentStatus = InvoicePaymentStatus.Paid;
                             bool isUnclearedCheque = command.Method == PaymentMethod.Cheque;
+                            invoice.PaymentStatus = isUnclearedCheque
+                                ? InvoicePaymentStatus.PendingClearance
+                                : InvoicePaymentStatus.Paid;
                             foreach (var comm in unearnedCommissions.Where(c => c.SalesInvoiceId == invoice.Id))
                             {
                                 comm.Status = isUnclearedCheque ? CommissionStatus.PendingClearance : CommissionStatus.ReadyToPay;

@@ -156,9 +156,9 @@ namespace NexusFlow.Web.Controllers.Api
 
         [HttpPost("invoices/{id}/void")]
         [Authorize(Policy = Permissions.Sales.VoidInvoice)]
-        public async Task<IActionResult> VoidInvoice(int id)
+        public async Task<IActionResult> VoidInvoice(int id, [FromQuery] DateTime? date)
         {
-            var result = await _mediator.Send(new VoidInvoiceCommand(id));
+            var result = await _mediator.Send(new VoidInvoiceCommand(id, date ?? DateTime.UtcNow.Date));
             if (result.Succeeded) return Ok(result);
             return BadRequest(result.Message);
         }

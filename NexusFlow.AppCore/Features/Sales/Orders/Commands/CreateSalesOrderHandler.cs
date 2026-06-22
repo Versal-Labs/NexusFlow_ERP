@@ -11,10 +11,11 @@ using System.Text;
 namespace NexusFlow.AppCore.Features.Sales.Orders.Commands
 {
     // Make sure to define a SalesOrderDto matching these properties in your DTOs folder
-    public class CreateSalesOrderCommand : IRequest<Result<int>>
+    public class CreateSalesOrderCommand : IRequest<Result<int>>, IFinancialPeriodControlledRequest
     {
         public SalesOrderDto Order { get; set; }
         public CreateSalesOrderCommand(SalesOrderDto order) => Order = order;
+        public DateTime FinancialDate => Order.OrderDate;
     }
 
     public class CreateSalesOrderHandler : IRequestHandler<CreateSalesOrderCommand, Result<int>>

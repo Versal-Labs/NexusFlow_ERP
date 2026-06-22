@@ -2,13 +2,13 @@
     _modal: null,
     _table: null,
 
-    init: function () {
+    init: async function () {
         var modalEl = document.getElementById('paymentModal');
         if (modalEl) this._modal = new bootstrap.Modal(modalEl, { backdrop: 'static' });
         document.getElementById('paymentDate').valueAsDate = new Date();
         
         this._initGrid();
-        this._loadLookups();
+        await this._loadLookups();
 
         $('#btnSavePayment').on('click', (e) => this.save(e));
 
@@ -26,6 +26,8 @@
         $('#amount').on('input', () => self._calculateTotals());
         
         $('#filterPaySupplierId').on('change', () => this.reloadGrid());
+
+        await this._initializeBillDeepLink();
     },
 
     _initGrid: function () {
@@ -167,7 +169,48 @@
             }
             $('#allocationBody').html(html);
             this._calculateTotals();
-        } catch (e) { $('#allocationBody').html('<tr><td colspan="6" class="text-center text-danger py-3">Error loading bills.</td></tr>'); }
+            return bills;
+        } catch (e) {
+            $('#allocationBody').html('<tr><td colspan="6" class="text-center text-danger py-3">Error loading bills.</td></tr>');
+            return [];
+        }
+    },
+
+    _initializeBillDeepLink: async function () {
+        const params = new URLSearchParams(window.location.search);
+        const billId = parseInt(params.get('billId'));
+        if (!billId) return;
+
+        try {
+            const response = await api.get(`/api/purchasing/supplier-bills/${billId}`);
+            const bill = response.data || response;
+            const outstanding = (parseFloat(bill.grandTotal) || 0) - (parseFloat(bill.amountPaid) || 0);
+
+            if (!bill.isPosted) throw new Error('Draft bills cannot be paid. Post the bill first.');
+            if (bill.paymentStatus === 'Paid' || outstanding <= 0) throw new Error('This supplier bill has no outstanding balance.');
+            if (bill.isVoided || bill.status === 'Void' || bill.status === 'Voided') throw new Error('Voided supplier bills cannot be paid.');
+
+            $('#paymentForm')[0].reset();
+            document.getElementById('paymentDate').valueAsDate = new Date();
+            $('#supplierId').val(String(bill.supplierId)).trigger('change.select2');
+            const bills = await this._loadUnpaidBills(bill.supplierId);
+            const target = bills.find(x => x.id === billId);
+            if (!target) throw new Error('This bill is not available for payment. It may already be settled or pending cheque clearance.');
+
+            $('#amount').val(outstanding.toFixed(2));
+            const $allocation = $(`#allocationBody tr[data-id="${billId}"] .alloc-input`);
+            $allocation.val(outstanding.toFixed(2));
+            this.onMethodChange();
+            this._calculateTotals();
+            this._modal.show();
+
+            // Remove the one-time deep link so refreshing does not reopen a stale payment.
+            params.delete('billId');
+            const query = params.toString();
+            history.replaceState({}, document.title, `${window.location.pathname}${query ? `?${query}` : ''}`);
+        } catch (error) {
+            toastr.error(error.message || 'Unable to initialize supplier bill payment.');
+        }
     },
 
     autoAllocate: function () {
@@ -307,9 +350,7 @@
             Allocations: allocations
         };
 
-        if (method === 5) {
-            payload.EndorsedChequeId = parseInt($('#endorseChequeId').val());
-        } else {
+        if (method !== 5) {
             payload.AccountId = parseInt($('#accountId').val());
         }
 
@@ -318,7 +359,14 @@
         $btn.prop('disabled', true).html('<i class="spinner-border spinner-border-sm me-2"></i>Posting...');
 
         try {
-            const res = await api.post('/api/treasury/payments', payload); 
+            const res = method === 5
+                ? await api.post('/api/treasury/payments/endorse', {
+                    ChequeId: parseInt($('#endorseChequeId').val()),
+                    SupplierId: payload.SupplierId,
+                    EndorsementDate: payload.Date,
+                    Allocations: allocations
+                })
+                : await api.post('/api/treasury/payments', payload);
             if (res && res.succeeded) {
                 toastr.success(res.message || "Payment posted successfully");
                 this._modal.hide();

@@ -28,6 +28,7 @@ namespace NexusFlow.AppCore.DTOs.Purchasing
         public string ProductName { get; set; } = string.Empty; // "Shirt (Red/L)"
         public string SKU { get; set; } = string.Empty;
         public string UomSymbol { get; set; } = string.Empty;
+        public int ProductType { get; set; }
 
         public decimal QuantityOrdered { get; set; }
         public decimal QuantityReceived { get; set; } // Track progress

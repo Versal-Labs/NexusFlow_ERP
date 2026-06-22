@@ -13,6 +13,11 @@ namespace NexusFlow.Domain.Enums
         CustomerReceipt,
         SupplierPaymentRemittance,
         StockTransferDeliveryNote,
-        Payslip
+        Payslip,
+        ProductionOrder,
+        MaterialRequirementIssueSheet,
+        MaterialReturn,
+        ProductionReceipt,
+        ProductionClosureReconciliation
     }
 }

@@ -131,6 +131,7 @@
 
                 @if (CurrentUser.HasPermission(Permissions.Inventory.ViewStock) ||
                              CurrentUser.HasPermission(Permissions.Inventory.ViewStockTakes) ||
+                             CurrentUser.HasPermission(Permissions.Inventory.AdjustStock) ||
                              CurrentUser.HasPermission(Permissions.MasterData.ManageBOMs) ||
                              CurrentUser.HasPermission(Permissions.Inventory.PrintBarcodes))
                 {
@@ -155,6 +156,7 @@
                             }
                             @if (CurrentUser.HasPermission(Permissions.Inventory.AdjustStock))
                             {
+                                <a href="/Inventory/OpeningStock" class="nav-link py-1 small">Opening Stock</a>
                                 <a href="/Inventory/Adjustments" class="nav-link py-1 small">Stock Adjustments</a>
                             }
                             @if (CurrentUser.HasPermission(Permissions.Inventory.PrintBarcodes))
@@ -177,8 +179,7 @@
                             }
                             @if (CurrentUser.HasPermission(Permissions.Inventory.RunProduction))
                             {
-                                <a href="/Inventory/MaterialIssue" class="nav-link py-1 small">Material Issues (WIP)</a>
-                                <a href="/Inventory/ProductionReceipt" class="nav-link py-1 small">Production Receipts</a>
+                                <a href="/Inventory/ProductionOrders" class="nav-link py-1 small">Production Orders</a>
                             }
 
                             <span class="nav-link py-1 small fw-bold opacity-75 text-uppercase mt-2" style="font-size:10px;">Analytics</span>

@@ -75,9 +75,14 @@ namespace NexusFlow.Web.Controllers.Api
 
         [HttpGet("variants/search")]
         [Authorize(Policy = Permissions.MasterData.ViewProducts)]
-        public async Task<IActionResult> SearchVariants([FromQuery] string? query, [FromQuery] int? productType)
+        public async Task<IActionResult> SearchVariants(
+            [FromQuery] string? query,
+            [FromQuery] int? productType,
+            [FromQuery] bool stockedOnly = false,
+            [FromQuery] int? warehouseId = null,
+            [FromQuery] bool excludeWarehouseActivity = false)
         {
-            var data = await _mediator.Send(new SearchVariantsQuery(query, productType));
+            var data = await _mediator.Send(new SearchVariantsQuery(query, productType, stockedOnly, warehouseId, excludeWarehouseActivity));
             return Ok(data);
         }
     }

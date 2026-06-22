@@ -12,7 +12,7 @@ using System.Text;
 
 namespace NexusFlow.AppCore.Features.Inventory.Commands
 {
-    public record ReceiveProductionCommand : IRequest<Result<string>>
+    public record ReceiveProductionCommand : IRequest<Result<string>>, IFinancialPeriodControlledRequest
     {
         public DateTime ReceiptDate { get; init; } = DateTime.UtcNow;
         public string IssueReferenceNo { get; init; } = string.Empty; // The Material Issue Note (MIN-0001)
@@ -21,6 +21,7 @@ namespace NexusFlow.AppCore.Features.Inventory.Commands
         public decimal QuantityReceived { get; init; }
         public decimal SubcontractorCharge { get; init; } // The total labor bill for this batch
         public string BatchNo { get; init; } = string.Empty;
+        public DateTime FinancialDate => ReceiptDate;
     }
 
     public class ReceiveProductionHandler : IRequestHandler<ReceiveProductionCommand, Result<string>>

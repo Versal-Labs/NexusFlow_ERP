@@ -75,6 +75,19 @@ namespace NexusFlow.Web.Controllers.Api
             var result = await _mediator.Send(command);
             return result.Succeeded ? Ok(result) : BadRequest(result);
         }
+
+        [HttpGet("health")]
+        [Authorize(Policy = Permissions.System.ManageConfigs)]
+        public async Task<IActionResult> GetConfigurationHealth() =>
+            Ok(await _mediator.Send(new GetConfigurationHealthQuery()));
+
+        [HttpPost("repair-number-sequences")]
+        [Authorize(Policy = Permissions.System.ManageConfigs)]
+        public async Task<IActionResult> RepairNumberSequences()
+        {
+            var result = await _mediator.Send(new RepairNumberSequencesCommand());
+            return result.Succeeded ? Ok(result) : BadRequest(result);
+        }
         #endregion
 
         #region Lookups (Dropdown)

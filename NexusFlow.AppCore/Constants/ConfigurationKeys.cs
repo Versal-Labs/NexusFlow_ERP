@@ -9,6 +9,7 @@ namespace NexusFlow.AppCore.Constants
         public const string FinanceBaseCurrency = "Finance.BaseCurrency";
         public const string InventoryAllowNegativeStock = "Inventory.AllowNegativeStock";
         public const string StorageLocalPath = "Storage.LocalPath";
+        public const string ProductionOverproductionTolerancePercent = "Production.OverproductionTolerancePercent";
 
         public static readonly IReadOnlyList<string> Required =
         [
@@ -18,7 +19,8 @@ namespace NexusFlow.AppCore.Constants
             CompanyTimeZone,
             FinanceBaseCurrency,
             InventoryAllowNegativeStock,
-            StorageLocalPath
+            StorageLocalPath,
+            ProductionOverproductionTolerancePercent
         ];
     }
 
@@ -72,6 +74,7 @@ namespace NexusFlow.AppCore.Constants
         public const string GoodsReceipt = "GRN";
         public const string Journal = "JOURNAL";
         public const string MaterialIssue = "MaterialIssue";
+        public const string OpeningStock = "OpeningStock";
         public const string SalesOrder = "ORD";
         public const string Payment = "Payment";
         public const string ProductionReceipt = "ProductionReceipt";
@@ -82,12 +85,20 @@ namespace NexusFlow.AppCore.Constants
         public const string StockTake = "StockTake";
         public const string StockTransfer = "StockTransfer";
         public const string SupplierBill = "SupplierBill";
+        public const string CustomerDebitMemo = "CustomerDebitMemo";
+        public const string ProductionOrder = "ProductionOrder";
+        public const string MaterialReturn = "MaterialReturn";
 
-        public static readonly IReadOnlyList<string> Required =
-        [
-            CreditNote, DebitNote, Employee, GoodsReceipt, Journal, MaterialIssue, SalesOrder, Payment,
-            ProductionReceipt, Purchasing, Receipt, SalesInvoice, StockAdjustment, StockTake,
-            StockTransfer, SupplierBill
-        ];
+        public static readonly IReadOnlyDictionary<string, string> Defaults = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            [CreditNote] = "CN", [DebitNote] = "DN", [Employee] = "EMP", [GoodsReceipt] = "GRN",
+            [Journal] = "JE", [MaterialIssue] = "MI", [OpeningStock] = "OBSTK", [SalesOrder] = "SO",
+            [Payment] = "PAY", [ProductionReceipt] = "PRD", [Purchasing] = "PO", [Receipt] = "REC",
+            [SalesInvoice] = "INV", [StockAdjustment] = "ADJ", [StockTake] = "ST", [StockTransfer] = "TRF",
+            [SupplierBill] = "BILL", [CustomerDebitMemo] = "CDM", [ProductionOrder] = "PWO",
+            [MaterialReturn] = "MR"
+        };
+
+        public static IReadOnlyList<string> Required => Defaults.Keys.ToArray();
     }
 }

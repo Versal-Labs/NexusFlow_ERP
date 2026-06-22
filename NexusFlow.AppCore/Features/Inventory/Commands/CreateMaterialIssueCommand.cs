@@ -12,7 +12,7 @@ using System.Text;
 
 namespace NexusFlow.AppCore.Features.Inventory.Commands
 {
-    public record CreateMaterialIssueCommand : IRequest<Result<string>>
+    public record CreateMaterialIssueCommand : IRequest<Result<string>>, IFinancialPeriodControlledRequest
     {
         public DateTime IssueDate { get; init; } = DateTime.UtcNow;
         public int SubcontractorId { get; init; } // The Garment Factory (Supplier)
@@ -20,6 +20,7 @@ namespace NexusFlow.AppCore.Features.Inventory.Commands
         public int FinishedGoodVariantId { get; init; }
         public decimal TargetQuantity { get; init; }
         public string ReferenceNumber { get; init; } = string.Empty;
+        public DateTime FinancialDate => IssueDate;
     }
 
     public class CreateMaterialIssueHandler : IRequestHandler<CreateMaterialIssueCommand, Result<string>>

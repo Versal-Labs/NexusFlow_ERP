@@ -24,50 +24,66 @@ namespace NexusFlow.AppCore.Features.MasterData.Boms.Commands
         public async Task<Result<int>> Handle(SaveBomCommand request, CancellationToken cancellationToken)
         {
             var dto = request.Payload;
+            if (dto.BasisQuantity <= 0) return Result<int>.Failure("BOM basis quantity must be greater than zero.");
+            if (dto.Components.Count == 0 || dto.Components.Any(x => x.Quantity <= 0))
+                return Result<int>.Failure("BOM components must contain positive quantities.");
+            if (dto.Components.Any(x => x.MaterialVariantId == dto.ProductVariantId))
+                return Result<int>.Failure("A finished good cannot be used as its own material.");
+            if (dto.Components.Select(x => x.MaterialVariantId).Distinct().Count() != dto.Components.Count)
+                return Result<int>.Failure("Duplicate material variants are not allowed in one BOM revision.");
+
             BillOfMaterial bom;
 
             if (dto.Id == 0)
             {
-                // ENTERPRISE GUARD: One active BOM per product variant to prevent manufacturing conflicts.
+                // Only one approved revision may drive newly released production at a time.
                 bool exists = await _context.BillOfMaterials
-                    .AnyAsync(b => b.ProductVariantId == dto.ProductVariantId, cancellationToken);
+                    .AnyAsync(b => b.ProductVariantId == dto.ProductVariantId && b.IsActive && b.IsApproved, cancellationToken);
 
-                if (exists) return Result<int>.Failure("A Bill of Materials already exists for this Product Variant.");
+                if (exists) return Result<int>.Failure("An active approved BOM already exists. Edit it to create the next revision.");
 
-                bom = new BillOfMaterial();
+                bom = NewRevision(dto, 1);
                 await _context.BillOfMaterials.AddAsync(bom, cancellationToken);
             }
             else
             {
-                bom = await _context.BillOfMaterials
+                var previous = await _context.BillOfMaterials
                     .Include(b => b.Components)
                     .FirstOrDefaultAsync(b => b.Id == dto.Id, cancellationToken);
 
-                if (bom == null) return Result<int>.Failure("BOM not found.");
-            }
+                if (previous == null) return Result<int>.Failure("BOM not found.");
+                if (dto.RowVersion.Length > 0 && !previous.RowVersion.SequenceEqual(dto.RowVersion))
+                    return Result<int>.Failure("This BOM was changed by another user. Reload it before creating a revision.");
 
-            bom.Name = dto.Name;
-            bom.ProductVariantId = dto.ProductVariantId;
-            bom.IsActive = dto.IsActive;
-
-            // Master-Detail Update Strategy: Wipe and Replace for exact consistency
-            bom.Components.Clear();
-
-            foreach (var comp in dto.Components)
-            {
-                // ENTERPRISE GUARD: Prevent infinite manufacturing loops
-                if (comp.MaterialVariantId == dto.ProductVariantId)
-                    return Result<int>.Failure("A finished good cannot be used as a raw material for itself!");
-
-                bom.Components.Add(new BomComponent
-                {
-                    MaterialVariantId = comp.MaterialVariantId,
-                    Quantity = comp.Quantity
-                });
+                // Approved recipes are immutable: editing creates a new revision while released orders keep their snapshot.
+                previous.IsActive = false;
+                previous.EffectiveTo = DateTime.UtcNow.Date.AddDays(-1);
+                bom = NewRevision(dto, previous.RevisionNumber + 1);
+                await _context.BillOfMaterials.AddAsync(bom, cancellationToken);
             }
 
             await _context.SaveChangesAsync(cancellationToken);
-            return Result<int>.Success(bom.Id, "Bill of Materials saved successfully.");
+            return Result<int>.Success(bom.Id, $"BOM revision {bom.RevisionNumber} approved successfully.");
+
+            BillOfMaterial NewRevision(BomDto source, int revision)
+            {
+                var entity = new BillOfMaterial
+                {
+                    Name = source.Name,
+                    ProductVariantId = source.ProductVariantId,
+                    IsActive = source.IsActive,
+                    RevisionNumber = revision,
+                    BasisQuantity = source.BasisQuantity,
+                    EffectiveFrom = source.EffectiveFrom.Date,
+                    IsApproved = true,
+                    ApprovedAtUtc = DateTime.UtcNow
+                };
+                foreach (var component in source.Components)
+                {
+                    entity.Components.Add(new BomComponent { MaterialVariantId = component.MaterialVariantId, Quantity = component.Quantity });
+                }
+                return entity;
+            }
         }
     }
 }

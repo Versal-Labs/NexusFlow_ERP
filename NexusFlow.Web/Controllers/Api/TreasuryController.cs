@@ -53,9 +53,9 @@ namespace NexusFlow.Web.Controllers.Api
 
         [HttpPost("receipts/{id}/void")]
         [Authorize(Policy = Permissions.Treasury.VoidReceipt)]
-        public async Task<IActionResult> VoidReceipt(int id)
+        public async Task<IActionResult> VoidReceipt(int id, [FromQuery] DateTime? date)
         {
-            var result = await _mediator.Send(new VoidReceiptCommand(id));
+            var result = await _mediator.Send(new VoidReceiptCommand(id, date ?? DateTime.UtcNow.Date));
             if (result.Succeeded) return Ok(result);
             return BadRequest(result);
         }
@@ -125,5 +125,26 @@ namespace NexusFlow.Web.Controllers.Api
             var result = await _mediator.Send(command);
             return result.Succeeded ? Ok(result) : BadRequest(result);
         }
+
+        [HttpPost("payments/endorse")]
+        [Authorize(Policy = Permissions.Treasury.CreatePayment)]
+        public async Task<IActionResult> EndorseChequePayment([FromBody] EndorseChequeCommand command)
+        {
+            var result = await _mediator.Send(command);
+            return result.Succeeded ? Ok(result) : BadRequest(result);
+        }
+
+        [HttpPost("cheques/{id:int}/clear")]
+        [Authorize(Policy = Permissions.Treasury.ManageCheques)]
+        public async Task<IActionResult> ClearEndorsedCheque(int id, [FromBody] ClearEndorsedChequeRequest request)
+        {
+            var result = await _mediator.Send(new ClearEndorsedChequeCommand(id, request.ClearedDate));
+            return result.Succeeded ? Ok(result) : BadRequest(result);
+        }
+    }
+
+    public sealed class ClearEndorsedChequeRequest
+    {
+        public DateTime ClearedDate { get; set; }
     }
 }

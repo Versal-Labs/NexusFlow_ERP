@@ -58,6 +58,15 @@
     </div>
 
     <div class="tab-pane fade" id="sequences-pane" role="tabpanel">
+        <div id="sequenceHealthAlert" class="alert alert-warning d-none d-flex align-items-center justify-content-between gap-3">
+            <div>
+                <strong>Missing required sequences:</strong>
+                <span id="sequenceHealthMissing"></span>
+            </div>
+            <button type="button" class="btn btn-sm btn-warning" onclick="configApp.repairSequences()">
+                <i class="fa-solid fa-screwdriver-wrench me-1"></i> Repair Missing
+            </button>
+        </div>
         <div class="card border-0 shadow-sm">
             <div class="card-header bg-white py-3">
                 <div class="d-flex justify-content-between align-items-center">

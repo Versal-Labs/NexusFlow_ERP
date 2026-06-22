@@ -19,12 +19,13 @@ namespace NexusFlow.AppCore.Features.Inventory.Commands
         public decimal UnitCost { get; set; } // Required only for Surplus (to create the new FIFO layer)
     }
 
-    public class AdjustStockCommand : IRequest<Result<string>>
+    public class AdjustStockCommand : IRequest<Result<string>>, IFinancialPeriodControlledRequest
     {
         public int WarehouseId { get; set; }
         public DateTime AdjustmentDate { get; set; }
         public string Reason { get; set; } = string.Empty;
         public List<AdjustmentItemRequest> Items { get; set; } = new();
+        public DateTime FinancialDate => AdjustmentDate;
     }
 
     public class AdjustStockHandler : IRequestHandler<AdjustStockCommand, Result<string>>

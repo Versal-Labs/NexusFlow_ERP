@@ -5,6 +5,7 @@ using NexusFlow.AppCore.Interfaces;
 using NexusFlow.Domain.Entities.Master;
 using NexusFlow.Domain.Entities.Purchasing;
 using NexusFlow.Domain.Entities.Sales;
+using NexusFlow.Domain.Entities.Inventory;
 using NexusFlow.Domain.Enums;
 using NexusFlow.Shared.Wrapper;
 
@@ -39,6 +40,11 @@ namespace NexusFlow.AppCore.Features.Print
                 DocumentType.SupplierPaymentRemittance => await BuildPaymentAsync(request.DocumentId, DocumentType.SupplierPaymentRemittance, cancellationToken),
                 DocumentType.StockTransferDeliveryNote => await BuildStockTransferAsync(request.DocumentId, cancellationToken),
                 DocumentType.Payslip => await BuildPayslipAsync(request.DocumentId, cancellationToken),
+                DocumentType.ProductionOrder => await BuildProductionOrderAsync(request.DocumentId, DocumentType.ProductionOrder, cancellationToken),
+                DocumentType.MaterialRequirementIssueSheet => await BuildProductionOrderAsync(request.DocumentId, DocumentType.MaterialRequirementIssueSheet, cancellationToken),
+                DocumentType.MaterialReturn => await BuildProductionMovementAsync(request.DocumentId, cancellationToken),
+                DocumentType.ProductionReceipt => await BuildProductionReceiptAsync(request.DocumentId, cancellationToken),
+                DocumentType.ProductionClosureReconciliation => await BuildProductionOrderAsync(request.DocumentId, DocumentType.ProductionClosureReconciliation, cancellationToken),
                 _ => Result<PrintDocumentDto>.Failure("Unsupported document type.")
             };
         }
@@ -470,6 +476,85 @@ namespace NexusFlow.AppCore.Features.Print
             return Result<PrintDocumentDto>.Success(dto);
         }
 
+        private async Task<Result<PrintDocumentDto>> BuildProductionOrderAsync(string documentId, DocumentType type, CancellationToken cancellationToken)
+        {
+            if (!TryParseId(documentId, out var id)) return InvalidId();
+            var order = await _context.ProductionOrders
+                .Include(x => x.Contractor)
+                .Include(x => x.FinishedGoodVariant).ThenInclude(x => x.Product)
+                .Include(x => x.SourceWarehouse).Include(x => x.DestinationWarehouse)
+                .Include(x => x.Components).ThenInclude(x => x.MaterialVariant).ThenInclude(x => x.Product)
+                .Include(x => x.Receipts)
+                .AsNoTracking().FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+            if (order == null) return Result<PrintDocumentDto>.Failure("Production order not found.");
+
+            var lines = order.Components.Select(x => new PrintLineItemDto
+            {
+                ItemCode = x.MaterialVariant.SKU,
+                Description = x.MaterialVariant.Product.Name,
+                Quantity = type == DocumentType.ProductionClosureReconciliation ? x.ConsumedQuantity + x.NormalWasteQuantity + x.AbnormalLossQuantity + x.ContractorRecoverableQuantity : x.PlannedQuantity,
+                Unit = x.MaterialVariant.Product.UnitOfMeasure?.Symbol ?? "Unit",
+                UnitPrice = x.IssuedQuantity == 0 ? 0 : x.IssuedCost / x.IssuedQuantity,
+                LineTotal = type == DocumentType.ProductionClosureReconciliation ? x.ConsumedCost + x.NormalWasteCost + x.AbnormalLossCost + x.ContractorRecoverableCost : 0
+            }).ToList();
+            return Success(new PrintDocumentDto
+            {
+                DocumentId = order.Id.ToString(), DocumentType = type.ToString(), DocumentNumber = order.OrderNumber,
+                DocumentDate = order.OrderDate, CustomerOrSupplierName = order.Contractor.Name,
+                BillingAddress = SupplierAddress(order.Contractor),
+                ShippingAddress = $"Materials: {order.SourceWarehouse.Name}\nFinished goods: {order.DestinationWarehouse.Name}",
+                Notes = $"Finished good: {order.FinishedGoodVariant.Product.Name} - {order.FinishedGoodVariant.SKU}\nTarget: {order.TargetQuantity:N0}\nBOM revision: {order.BomRevisionNumber}\n{order.Notes}",
+                CurrencyCode = "LKR", SubTotal = lines.Sum(x => x.LineTotal), GrandTotal = lines.Sum(x => x.LineTotal), LineItems = lines,
+                Fields = new Dictionary<string, string>
+                {
+                    ["Status"] = order.Status.ToString(), ["TargetQuantity"] = order.TargetQuantity.ToString("N0"),
+                    ["AcceptedQuantity"] = order.Receipts.Sum(x => x.AcceptedQuantity).ToString("N0"), ["BomRevision"] = order.BomRevisionNumber.ToString()
+                }
+            });
+        }
+
+        private async Task<Result<PrintDocumentDto>> BuildProductionMovementAsync(string documentId, CancellationToken cancellationToken)
+        {
+            if (!TryParseId(documentId, out var id)) return InvalidId();
+            var movement = await _context.ProductionMaterialMovements
+                .Include(x => x.ProductionOrder).ThenInclude(x => x.Contractor)
+                .Include(x => x.Lines).ThenInclude(x => x.ProductionOrderComponent).ThenInclude(x => x.MaterialVariant).ThenInclude(x => x.Product)
+                .AsNoTracking().FirstOrDefaultAsync(x => x.Id == id && x.Type == ProductionMaterialMovementType.Return, cancellationToken);
+            if (movement == null) return Result<PrintDocumentDto>.Failure("Production material return not found.");
+            return Success(new PrintDocumentDto
+            {
+                DocumentId = movement.Id.ToString(), DocumentType = DocumentType.MaterialReturn.ToString(),
+                DocumentNumber = movement.ReferenceNumber, DocumentDate = movement.Date,
+                CustomerOrSupplierName = movement.ProductionOrder.Contractor.Name,
+                BillingAddress = SupplierAddress(movement.ProductionOrder.Contractor), Notes = movement.Notes,
+                CurrencyCode = "LKR", SubTotal = movement.TotalCost, GrandTotal = movement.TotalCost,
+                LineItems = movement.Lines.Select(x => Line(x.ProductionOrderComponent.MaterialVariant, x.Quantity, x.UnitCost, 0, 0, x.TotalCost)).ToList()
+            });
+        }
+
+        private async Task<Result<PrintDocumentDto>> BuildProductionReceiptAsync(string documentId, CancellationToken cancellationToken)
+        {
+            if (!TryParseId(documentId, out var id)) return InvalidId();
+            var receipt = await _context.ProductionReceipts
+                .Include(x => x.ProductionOrder).ThenInclude(x => x.Contractor)
+                .Include(x => x.Consumptions).ThenInclude(x => x.ProductionOrderComponent).ThenInclude(x => x.MaterialVariant).ThenInclude(x => x.Product)
+                .AsNoTracking().FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+            if (receipt == null) return Result<PrintDocumentDto>.Failure("Production receipt not found.");
+            return Success(new PrintDocumentDto
+            {
+                DocumentId = receipt.Id.ToString(), DocumentType = DocumentType.ProductionReceipt.ToString(),
+                DocumentNumber = receipt.ReceiptNumber, DocumentDate = receipt.ReceiptDate,
+                CustomerOrSupplierName = receipt.ProductionOrder.Contractor.Name,
+                BillingAddress = SupplierAddress(receipt.ProductionOrder.Contractor),
+                Notes = $"Order: {receipt.ProductionOrder.OrderNumber}\nAccepted: {receipt.AcceptedQuantity:N0}; Rejected: {receipt.RejectedQuantity:N0}\nSewing charge: {receipt.SewingCharge:N2}\n{receipt.Notes}",
+                CurrencyCode = "LKR", SubTotal = receipt.FinishedGoodsCost, GrandTotal = receipt.FinishedGoodsCost,
+                LineItems = receipt.Consumptions.Select(x => Line(
+                    x.ProductionOrderComponent.MaterialVariant,
+                    x.ConsumedQuantity + x.NormalWasteQuantity + x.AbnormalLossQuantity + x.ContractorRecoverableQuantity,
+                    0, 0, 0, x.ConsumedCost + x.NormalWasteCost + x.AbnormalLossCost + x.ContractorRecoverableCost)).ToList()
+            });
+        }
+
         private static void AddDefaultMergeTables(PrintDocumentDto dto)
         {
             if (dto.LineItems.Count == 0)
@@ -500,6 +585,10 @@ namespace NexusFlow.AppCore.Features.Print
                 DocumentType.DebitNote => "DebitNoteLines",
                 DocumentType.CustomerReceipt or DocumentType.SupplierPaymentRemittance => "PaymentAllocations",
                 DocumentType.StockTransferDeliveryNote => "TransferLines",
+                DocumentType.ProductionOrder or DocumentType.MaterialRequirementIssueSheet => "ProductionMaterials",
+                DocumentType.MaterialReturn => "MaterialReturnLines",
+                DocumentType.ProductionReceipt => "ProductionConsumptionLines",
+                DocumentType.ProductionClosureReconciliation => "ProductionReconciliationLines",
                 _ => null
             };
         }

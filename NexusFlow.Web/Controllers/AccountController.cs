@@ -28,7 +28,7 @@ namespace NexusFlow.Web.Controllers
 
         [HttpGet]
         [AllowAnonymous]
-        public IActionResult Login(string returnUrl = null)
+        public IActionResult Login(string? returnUrl = null)
         {
             ViewData["ReturnUrl"] = returnUrl;
             return View();
@@ -37,25 +37,33 @@ namespace NexusFlow.Web.Controllers
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Login(string email, string password)
+        public async Task<IActionResult> Login(string email, string password, bool rememberMe = false, string? returnUrl = null)
         {
             // 1. Verify User
             var user = await _userManager.FindByEmailAsync(email);
             if (user == null)
             {
                 ViewBag.Error = "Invalid Login";
+                ViewData["ReturnUrl"] = returnUrl;
                 return View();
             }
 
             // 2. Use SignInManager to create the Secure Cookie
-            var result = await _signInManager.PasswordSignInAsync(user, password, isPersistent: true, lockoutOnFailure: false);
+            var result = await _signInManager.PasswordSignInAsync(user, password, isPersistent: rememberMe, lockoutOnFailure: false);
 
             if (result.Succeeded)
             {
+                // Only local return URLs are accepted so authentication cannot become an open redirect.
+                if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl))
+                {
+                    return LocalRedirect(returnUrl);
+                }
+
                 return RedirectToAction("Index", "Home");
             }
 
             ViewBag.Error = "Invalid Login";
+            ViewData["ReturnUrl"] = returnUrl;
             return View();
         }
 
