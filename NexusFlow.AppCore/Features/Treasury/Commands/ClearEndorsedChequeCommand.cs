@@ -20,6 +20,7 @@ namespace NexusFlow.AppCore.Features.Treasury.Commands
 
         public async Task<Result<int>> Handle(ClearEndorsedChequeCommand request, CancellationToken cancellationToken)
         {
+            await using var transaction = await _context.BeginTransactionAsync(global::System.Data.IsolationLevel.Serializable, cancellationToken);
             var cheque = await _context.ChequeRegisters
                 .Include(x => x.OriginalReceipt).ThenInclude(x => x.Allocations).ThenInclude(x => x.SalesInvoice)
                 .Include(x => x.EndorsedPayment).ThenInclude(x => x.Allocations).ThenInclude(x => x.SupplierBill)
@@ -29,10 +30,11 @@ namespace NexusFlow.AppCore.Features.Treasury.Commands
             if (cheque.Status != ChequeStatus.Endorsed)
                 return Result<int>.Failure("Only an endorsed cheque can be manually marked as cleared.");
 
+            if (request.ClearedDate.Date < cheque.EndorsedDate?.Date) return Result<int>.Failure("Clearance date precedes endorsement.");
             cheque.Status = ChequeStatus.Cleared;
             cheque.ClearedDate = request.ClearedDate;
 
-            foreach (var allocation in cheque.OriginalReceipt.Allocations.Where(x => x.SalesInvoice != null))
+            foreach (var allocation in (cheque.OriginalReceipt?.Allocations ?? []).Where(x => x.SalesInvoice != null))
             {
                 var invoice = allocation.SalesInvoice!;
                 invoice.PaymentStatus = invoice.AmountPaid >= invoice.GrandTotal
@@ -51,7 +53,7 @@ namespace NexusFlow.AppCore.Features.Treasury.Commands
                 }
             }
 
-            var invoiceIds = cheque.OriginalReceipt.Allocations.Where(x => x.SalesInvoiceId.HasValue)
+            var invoiceIds = (cheque.OriginalReceipt?.Allocations ?? []).Where(x => x.SalesInvoiceId.HasValue)
                 .Select(x => x.SalesInvoiceId!.Value).Distinct().ToList();
             var commissions = await _context.CommissionLedgers
                 .Where(x => invoiceIds.Contains(x.SalesInvoiceId) && x.Status == CommissionStatus.PendingClearance)
@@ -59,6 +61,9 @@ namespace NexusFlow.AppCore.Features.Treasury.Commands
             commissions.ForEach(x => x.Status = CommissionStatus.ReadyToPay);
 
             await _context.SaveChangesAsync(cancellationToken);
+            await new NexusFlow.AppCore.Services.CustomerSettlementService(_context, new(_context)).RefreshAsync(cheque.CustomerId, cancellationToken);
+            await _context.SaveChangesAsync(cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
             return Result<int>.Success(cheque.Id, "Endorsed cheque marked as cleared and linked documents finalized.");
         }
     }

@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Antiforgery;
+using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 
@@ -23,8 +23,7 @@ namespace NexusFlow.Web.Filters
 
             // 2. Check how they authenticated
             // If they are using a Bearer Token (Mobile), skip CSRF check
-            if (context.HttpContext.User.Identity.AuthenticationType == "AuthenticationTypes.Federation" ||
-                context.HttpContext.Request.Headers.ContainsKey("Authorization"))
+            if (context.HttpContext.User.Identity.AuthenticationType == "AuthenticationTypes.Federation")
             {
                 return;
             }

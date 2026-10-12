@@ -54,6 +54,13 @@ namespace NexusFlow.AppCore.Features.Finance.Commands
             {
                 var accountsByCode = await _context.Accounts.ToDictionaryAsync(a => a.Code, a => a, cancellationToken);
                 var journalLines = new List<JournalLineRequest>();
+                var protectedAccounts = await _context.CustomerOpeningItems.Where(x => x.MigrationBatch.Status == "Posted").Select(x => x.ReceivableAccountId).Distinct().ToListAsync(cancellationToken);
+                var safeCode = await _context.SystemConfigs.Where(x => x.Key == "Account.Asset.UndepositedFunds").Select(x => x.Value).FirstOrDefaultAsync(cancellationToken);
+                if (await _context.CustomerMigrationBatches.AnyAsync(x => x.Status == "Posted", cancellationToken))
+                    {
+                    protectedAccounts.AddRange(accountsByCode.Values.Where(x => x.Code == safeCode).Select(x => x.Id));
+                    protectedAccounts.AddRange(await _context.ChequeRegisters.Where(x => x.MigrationBatchId != null && x.MigrationBatch!.Status == "Posted" && x.OpeningUndepositedAccountId != null).Select(x => x.OpeningUndepositedAccountId!.Value).Distinct().ToListAsync(cancellationToken));
+                }
 
                 foreach (var line in request.Lines)
                 {
@@ -64,7 +71,7 @@ namespace NexusFlow.AppCore.Features.Finance.Commands
 
                     // IMPORTANT: Skip Accounts Receivable, Accounts Payable, and Inventory accounts
                     // because we already migrated those through the Sub-Ledger wizards!
-                    if (account.Name.Contains("Receivable") || account.Name.Contains("Payable") || account.Name.Contains("Inventory"))
+                    if (protectedAccounts.Contains(account.Id) || account.Name.Contains("Receivable") || account.Name.Contains("Payable") || account.Name.Contains("Inventory"))
                         throw new Exception($"Do not import '{account.Name}' ({account.Code}) in the Trial Balance upload. These must be migrated via their respective Sub-Ledger wizards to prevent corruption.");
 
                     journalLines.Add(new JournalLineRequest

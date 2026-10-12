@@ -1,4 +1,4 @@
-﻿window.customerApp = {
+window.customerApp = {
     _table: null,
     _modal: null,
     _locationData: [], // Stores the JSON/DB structure
@@ -118,18 +118,19 @@
                 return { abort: function () { /* Do nothing */ } };
             },
             columns: [
-                { data: 'name', className: 'fw-bold text-dark' },
-                { data: 'taxRegNo', className: 'font-monospace text-muted' },
-                { data: 'contactPerson' },
-                { data: 'phone' },
-                { data: 'district' },
-                { data: 'city' },
+                { data: 'name', render: (d, type, row) => type === 'display' ? $.fn.dataTable.render.text().display(d) + (row.detailsIncomplete ? '<div><span class="badge bg-warning text-dark">Details incomplete</span></div>' : '') : d, className: 'fw-bold text-dark' },
+                { data: 'legacyCustomerCode', defaultContent: '', render: $.fn.dataTable.render.text() },
+                { data: 'taxRegNo', render: $.fn.dataTable.render.text(), className: 'font-monospace text-muted' },
+                { data: 'contactPerson', render: $.fn.dataTable.render.text() },
+                { data: 'phone', render: $.fn.dataTable.render.text() },
+                { data: 'district', render: $.fn.dataTable.render.text() },
+                { data: 'city', render: $.fn.dataTable.render.text() },
                 { data: 'creditLimit', className: 'text-end fw-bold', render: d => parseFloat(d || 0).toLocaleString(undefined, { minimumFractionDigits: 2 }) },
                 { data: 'isActive', className: 'text-center', render: d => d ? '<span class="badge bg-success bg-opacity-10 text-success border">Active</span>' : '<span class="badge bg-danger bg-opacity-10 text-danger border">Inactive</span>' },
                 {
                     data: null, className: 'text-end pe-3', orderable: false,
                     render: function (data, type, row) {
-                        const safeRow = JSON.stringify(row).replace(/"/g, '&quot;');
+                        const safeRow = JSON.stringify(row).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
                         return `<button type="button" class="btn btn-sm btn-light border shadow-sm px-2" onclick="customerApp.editCustomer(${safeRow})"><i class="fa-solid fa-pen-to-square text-primary"></i> Edit</button>`;
                     }
                 }
@@ -246,6 +247,7 @@
 
         // Bind Base Fields
         $('input[name="Name"]').val(data.name);
+        $('input[name="LegacyCustomerCode"]').val(data.legacyCustomerCode);
         $('input[name="TaxRegNo"]').val(data.taxRegNo);
         $('input[name="ContactPerson"]').val(data.contactPerson);
         $('input[name="Email"]').val(data.email);

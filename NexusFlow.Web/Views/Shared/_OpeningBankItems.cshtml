@@ -1,0 +1,14 @@
+@using NexusFlow.AppCore.Constants
+@inject NexusFlow.AppCore.Interfaces.ICurrentUserService CurrentUser
+@if (CurrentUser.HasPermission(Permissions.Treasury.ManageCheques))
+{
+    <section id="openingBankItems" class="card card-body my-3">
+        @Html.AntiForgeryToken()
+        <h5>Opening uncleared bank items</h5>
+        <p>These cheques and adjustments are already included in the opening bank book. Marking them cleared posts no second payment. Cancelling an issued cheque restores the bank and supplier payable with an auditable journal.</p>
+        <button id="obiRefresh" class="btn btn-sm btn-outline-primary align-self-start" type="button">Refresh Opening Items</button>
+        <div id="obiMessage" class="mt-2" role="status"></div>
+        <div class="table-responsive mt-2"><table class="table table-sm"><thead><tr><th>Reference</th><th>Kind</th><th>Original date</th><th>Book adjustment (LKR)</th><th>Resolution</th></tr></thead><tbody id="obiRows"></tbody></table></div>
+    </section>
+    <script src="~/js/treasury/opening-bank-items.js" asp-append-version="true"></script>
+}

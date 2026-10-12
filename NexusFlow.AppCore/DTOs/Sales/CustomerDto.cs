@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -8,6 +8,8 @@ namespace NexusFlow.AppCore.DTOs.Sales
     {
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
+        public string? LegacyCustomerCode { get; set; }
+        public bool DetailsIncomplete { get; set; }
         public string TradeName { get; set; } = string.Empty;
         public string TaxRegNo { get; set; } = string.Empty;
 

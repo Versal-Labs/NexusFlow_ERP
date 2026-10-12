@@ -29,7 +29,10 @@ namespace NexusFlow.AppCore.Features.Treasury.Commands
 
     public class PaymentAllocationRequest
     {
+        public int? SupplierOpeningItemId { get; set; }
         public int InvoiceId { get; set; }
+        public int? OpeningItemId { get; set; }
+        public int? DebitMemoId { get; set; }
         public decimal Amount { get; set; }
     }
 }

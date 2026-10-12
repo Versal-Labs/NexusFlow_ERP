@@ -129,13 +129,13 @@
                 return { abort: function () { } }; // TIER-1 FIX: Prevents abort() crash
             },
             columns: [
-                { data: 'name', className: 'fw-bold text-dark' },
-                { data: 'taxRegNo', className: 'font-monospace text-muted' },
+                { data: 'name', className: 'fw-bold text-dark', render: (d, type, row) => type === 'display' ? $.fn.dataTable.render.text().display(d) + (row.legacySupplierCode ? `<div class="small text-muted">${$.fn.dataTable.render.text().display(row.legacySupplierCode)}</div>` : '') + (row.detailsIncomplete ? '<div><span class="badge bg-warning text-dark">Details incomplete</span></div>' : '') : d },
+                { data: 'taxRegNo', render: $.fn.dataTable.render.text(), className: 'font-monospace text-muted' },
                 {
                     data: null,
                     render: function (d) {
-                        return `<div><i class="fa-solid fa-user text-muted me-1"></i>${d.contactPerson || '-'}</div>
-                                <div class="small text-muted">${d.email || ''}</div>`;
+                        return `<div><i class="fa-solid fa-user text-muted me-1"></i>${$.fn.dataTable.render.text().display(d.contactPerson || '-')}</div>
+                                <div class="small text-muted">${$.fn.dataTable.render.text().display(d.email || '')}</div>`;
                     }
                 },
                 { data: 'district', defaultContent: '-' },

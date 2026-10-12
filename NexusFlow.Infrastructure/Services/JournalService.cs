@@ -23,6 +23,15 @@ namespace NexusFlow.Infrastructure.Services
 
         public async Task<Result<int>> PostJournalAsync(JournalEntryRequest request)
         {
+            // Costs retain six decimals; monetary ledger movements are rounded explicitly to LKR cents.
+            // Double-entry validation below rejects any rounding imbalance instead of hiding a plug.
+            foreach (var line in request.Lines)
+            {
+                line.Debit = decimal.Round(line.Debit, 2, MidpointRounding.AwayFromZero);
+                line.Credit = decimal.Round(line.Credit, 2, MidpointRounding.AwayFromZero);
+                if (line.Debit < 0 || line.Credit < 0 || line.Debit != 0 && line.Credit != 0)
+                    return Result<int>.Failure("Journal lines require nonnegative debit/credit with only one side nonzero.");
+            }
             // Use standard cancellation token pattern
             var ct = CancellationToken.None;
 

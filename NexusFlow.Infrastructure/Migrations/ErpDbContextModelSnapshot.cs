@@ -678,8 +678,14 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.Property<int>("CustomerId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("DepositJournalEntryId")
+                        .HasColumnType("int");
+
                     b.Property<int?>("DepositedBankAccountId")
                         .HasColumnType("int");
+
+                    b.Property<DateTime?>("DepositedDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<DateTime?>("DishonoredDate")
                         .HasColumnType("datetime2");
@@ -696,8 +702,33 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.Property<string>("LastModifiedBy")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("OriginalReceiptId")
+                    b.Property<string>("LegacyDocumentReferences")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("LegacyReceiptReference")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int?>("MigrationBatchId")
                         .HasColumnType("int");
+
+                    b.Property<int?>("OpeningEndorsedSupplierId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("OpeningReceivableAccountId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("OpeningSourceRow")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("OpeningUndepositedAccountId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("OriginalReceiptId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("ReceivedDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("ReversalReferenceNo")
                         .HasColumnType("nvarchar(max)");
@@ -725,13 +756,224 @@ namespace NexusFlow.Infrastructure.Migrations
 
                     b.HasIndex("EndorsedPaymentId");
 
+                    b.HasIndex("OpeningEndorsedSupplierId");
+
                     b.HasIndex("OriginalReceiptId");
 
-                    b.ToTable("ChequeRegister", "Finance");
+                    b.HasIndex("MigrationBatchId", "LegacyReceiptReference")
+                        .HasFilter("[MigrationBatchId] IS NOT NULL");
+
+                    b.ToTable("ChequeRegister", "Finance", t =>
+                        {
+                            t.HasCheckConstraint("CK_Cheque_Origin", "([MigrationBatchId] IS NULL AND [OriginalReceiptId] IS NOT NULL) OR ([MigrationBatchId] IS NOT NULL AND [OriginalReceiptId] IS NULL AND [OpeningReceivableAccountId] IS NOT NULL AND [OpeningUndepositedAccountId] IS NOT NULL)");
+                        });
 
                     b.ToTable(tb => tb.IsTemporal(ttb =>
                             {
                                 ttb.UseHistoryTable("ChequeRegister_History", "Finance");
+                                ttb
+                                    .HasPeriodStart("ValidFrom")
+                                    .HasColumnName("ValidFrom");
+                                ttb
+                                    .HasPeriodEnd("ValidTo")
+                                    .HasColumnName("ValidTo");
+                            }));
+                });
+
+            modelBuilder.Entity("NexusFlow.Domain.Entities.Finance.CustomerCreditApplication", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("CreditOpeningItemId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("CustomerDebitMemoId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("CustomerOpeningItemId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("LastModifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ReversalReason")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("ReversedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("SalesInvoiceId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("ValidFrom")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidFrom");
+
+                    b.Property<DateTime>("ValidTo")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidTo");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreditOpeningItemId");
+
+                    b.HasIndex("CustomerDebitMemoId");
+
+                    b.HasIndex("CustomerOpeningItemId");
+
+                    b.HasIndex("SalesInvoiceId");
+
+                    b.ToTable("CustomerCreditApplications", "Finance", t =>
+                        {
+                            t.HasCheckConstraint("CK_CustomerCreditApplication_Target", "(CASE WHEN SalesInvoiceId IS NULL THEN 0 ELSE 1 END + CASE WHEN CustomerOpeningItemId IS NULL THEN 0 ELSE 1 END + CASE WHEN CustomerDebitMemoId IS NULL THEN 0 ELSE 1 END) = 1 AND Amount > 0");
+                        });
+
+                    b.ToTable(tb => tb.IsTemporal(ttb =>
+                            {
+                                ttb.UseHistoryTable("CustomerCreditApplications_History", "Finance");
+                                ttb
+                                    .HasPeriodStart("ValidFrom")
+                                    .HasColumnName("ValidFrom");
+                                ttb
+                                    .HasPeriodEnd("ValidTo")
+                                    .HasColumnName("ValidTo");
+                            }));
+                });
+
+            modelBuilder.Entity("NexusFlow.Domain.Entities.Finance.CustomerMigrationBatch", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<byte[]>("ChequeFile")
+                        .IsRequired()
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<string>("ChequeFileName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CutoverDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsSignedOff")
+                        .HasColumnType("bit");
+
+                    b.Property<int?>("JournalEntryId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("LastModifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<byte[]>("OutstandingFile")
+                        .IsRequired()
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<string>("OutstandingFileName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<DateTime?>("PostedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("ReversalJournalEntryId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ReversalReason")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("ReversedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ReviewHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<string>("ReviewJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("SignedOffAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("SignedOffBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("SourceAsOfDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("SourceHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<string>("SourceJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Status")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("nvarchar(16)");
+
+                    b.Property<DateTime>("ValidFrom")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidFrom");
+
+                    b.Property<DateTime>("ValidTo")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidTo");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SourceHash")
+                        .IsUnique()
+                        .HasFilter("[Status] <> 'Reversed'");
+
+                    b.ToTable("CustomerMigrationBatches", "Finance");
+
+                    b.ToTable(tb => tb.IsTemporal(ttb =>
+                            {
+                                ttb.UseHistoryTable("CustomerMigrationBatches_History", "Finance");
                                 ttb
                                     .HasPeriodStart("ValidFrom")
                                     .HasColumnName("ValidFrom");
@@ -943,6 +1185,710 @@ namespace NexusFlow.Infrastructure.Migrations
                             }));
                 });
 
+            modelBuilder.Entity("NexusFlow.Domain.Entities.Finance.MigrationAudit", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Detail")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("LastModifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("ProjectId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("ValidFrom")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidFrom");
+
+                    b.Property<DateTime>("ValidTo")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidTo");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProjectId");
+
+                    b.ToTable("MigrationAudit", "Migration");
+
+                    b.ToTable(tb => tb.IsTemporal(ttb =>
+                            {
+                                ttb.UseHistoryTable("MigrationAudit_History", "Migration");
+                                ttb
+                                    .HasPeriodStart("ValidFrom")
+                                    .HasColumnName("ValidFrom");
+                                ttb
+                                    .HasPeriodEnd("ValidTo")
+                                    .HasColumnName("ValidTo");
+                            }));
+                });
+
+            modelBuilder.Entity("NexusFlow.Domain.Entities.Finance.MigrationDataset", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("ClosingDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ErrorsJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FileHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<bool>("IsCurrent")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("LastModifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Module")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)");
+
+                    b.Property<int>("ProjectId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Revision")
+                        .HasColumnType("int");
+
+                    b.Property<string>("RowsJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("StorageReference")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("ValidFrom")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidFrom");
+
+                    b.Property<DateTime>("ValidTo")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidTo");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProjectId", "Module")
+                        .IsUnique()
+                        .HasFilter("[IsCurrent] = 1");
+
+                    b.HasIndex("ProjectId", "Module", "Revision")
+                        .IsUnique();
+
+                    b.ToTable("MigrationDatasets", "Migration");
+
+                    b.ToTable(tb => tb.IsTemporal(ttb =>
+                            {
+                                ttb.UseHistoryTable("MigrationDatasets_History", "Migration");
+                                ttb
+                                    .HasPeriodStart("ValidFrom")
+                                    .HasColumnName("ValidFrom");
+                                ttb
+                                    .HasPeriodEnd("ValidTo")
+                                    .HasColumnName("ValidTo");
+                            }));
+                });
+
+            modelBuilder.Entity("NexusFlow.Domain.Entities.Finance.MigrationOrigin", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ContentHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("EntityId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("EntityKind")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("nvarchar(60)");
+
+                    b.Property<string>("IdentityHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<bool>("IsCurrent")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("LastModifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("LegacyRecordId")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<int>("ProjectId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("RecordKind")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)");
+
+                    b.Property<string>("SourceSystem")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("nvarchar(80)");
+
+                    b.Property<int>("UnitId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("ValidFrom")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidFrom");
+
+                    b.Property<DateTime>("ValidTo")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidTo");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UnitId");
+
+                    b.HasIndex("SourceSystem", "RecordKind", "IdentityHash")
+                        .IsUnique()
+                        .HasFilter("[IsCurrent] = 1");
+
+                    b.ToTable("MigrationOrigins", "Migration");
+
+                    b.ToTable(tb => tb.IsTemporal(ttb =>
+                            {
+                                ttb.UseHistoryTable("MigrationOrigins_History", "Migration");
+                                ttb
+                                    .HasPeriodStart("ValidFrom")
+                                    .HasColumnName("ValidFrom");
+                                ttb
+                                    .HasPeriodEnd("ValidTo")
+                                    .HasColumnName("ValidTo");
+                            }));
+                });
+
+            modelBuilder.Entity("NexusFlow.Domain.Entities.Finance.MigrationProject", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime?>("ApprovedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ApprovedBy")
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("ApprovedHash")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<DateTime>("ClosingDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("nvarchar(3)");
+
+                    b.Property<string>("FinalEvidence")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("FinalizedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("LastModifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<DateTime>("OpeningDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("SettingsJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SourceSystem")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("nvarchar(80)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(24)
+                        .HasColumnType("nvarchar(24)");
+
+                    b.Property<DateTime>("ValidFrom")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidFrom");
+
+                    b.Property<DateTime>("ValidTo")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidTo");
+
+                    b.Property<int>("Version")
+                        .IsConcurrencyToken()
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Status")
+                        .IsUnique()
+                        .HasFilter("[Status] <> 'Finalized'");
+
+                    b.ToTable("MigrationProjects", "Migration", t =>
+                        {
+                            t.HasCheckConstraint("CK_Migration_Dates", "[OpeningDate] = DATEADD(day, 1, [ClosingDate]) AND [Currency] = 'LKR'");
+                        });
+
+                    b.ToTable(tb => tb.IsTemporal(ttb =>
+                            {
+                                ttb.UseHistoryTable("MigrationProjects_History", "Migration");
+                                ttb
+                                    .HasPeriodStart("ValidFrom")
+                                    .HasColumnName("ValidFrom");
+                                ttb
+                                    .HasPeriodEnd("ValidTo")
+                                    .HasColumnName("ValidTo");
+                            }));
+                });
+
+            modelBuilder.Entity("NexusFlow.Domain.Entities.Finance.MigrationRun", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ApprovedHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<int>("CommittedUnits")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Error")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("JobId")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime?>("LastModifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("ProjectId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("SelectionJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Status")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .HasMaxLength(24)
+                        .HasColumnType("nvarchar(24)");
+
+                    b.Property<DateTime>("ValidFrom")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidFrom");
+
+                    b.Property<DateTime>("ValidTo")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidTo");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProjectId")
+                        .IsUnique()
+                        .HasFilter("[Status] IN ('Queued','Running')");
+
+                    b.ToTable("MigrationRuns", "Migration");
+
+                    b.ToTable(tb => tb.IsTemporal(ttb =>
+                            {
+                                ttb.UseHistoryTable("MigrationRuns_History", "Migration");
+                                ttb
+                                    .HasPeriodStart("ValidFrom")
+                                    .HasColumnName("ValidFrom");
+                                ttb
+                                    .HasPeriodEnd("ValidTo")
+                                    .HasColumnName("ValidTo");
+                            }));
+                });
+
+            modelBuilder.Entity("NexusFlow.Domain.Entities.Finance.MigrationScope", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("EntityId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Evidence")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(24)
+                        .HasColumnType("nvarchar(24)");
+
+                    b.Property<DateTime?>("LastModifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("ProjectId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("ReleasedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("RequiredModulesJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(24)
+                        .HasColumnType("nvarchar(24)");
+
+                    b.Property<DateTime>("ValidFrom")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidFrom");
+
+                    b.Property<DateTime>("ValidTo")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidTo");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProjectId", "Kind", "Code")
+                        .IsUnique();
+
+                    b.ToTable("MigrationScopes", "Migration");
+
+                    b.ToTable(tb => tb.IsTemporal(ttb =>
+                            {
+                                ttb.UseHistoryTable("MigrationScopes_History", "Migration");
+                                ttb
+                                    .HasPeriodStart("ValidFrom")
+                                    .HasColumnName("ValidFrom");
+                                ttb
+                                    .HasPeriodEnd("ValidTo")
+                                    .HasColumnName("ValidTo");
+                            }));
+                });
+
+            modelBuilder.Entity("NexusFlow.Domain.Entities.Finance.MigrationUnit", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Hash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<int?>("JournalEntryId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("LastModifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Module")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)");
+
+                    b.Property<int>("ProjectId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ReversalJournalEntryId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("ReversedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("RowsJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ScopeKey")
+                        .IsRequired()
+                        .HasMaxLength(160)
+                        .HasColumnType("nvarchar(160)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(24)
+                        .HasColumnType("nvarchar(24)");
+
+                    b.Property<DateTime>("ValidFrom")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidFrom");
+
+                    b.Property<DateTime>("ValidTo")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidTo");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("JournalEntryId");
+
+                    b.HasIndex("ReversalJournalEntryId");
+
+                    b.HasIndex("ProjectId", "Module", "ScopeKey")
+                        .IsUnique()
+                        .HasFilter("[Status] = 'Posted'");
+
+                    b.ToTable("MigrationUnits", "Migration");
+
+                    b.ToTable(tb => tb.IsTemporal(ttb =>
+                            {
+                                ttb.UseHistoryTable("MigrationUnits_History", "Migration");
+                                ttb
+                                    .HasPeriodStart("ValidFrom")
+                                    .HasColumnName("ValidFrom");
+                                ttb
+                                    .HasPeriodEnd("ValidTo")
+                                    .HasColumnName("ValidTo");
+                            }));
+                });
+
+            modelBuilder.Entity("NexusFlow.Domain.Entities.Finance.OpeningBankItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("BankAccountId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("CancelledDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("ChequeDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ChequeNumber")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime?>("ClearedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)");
+
+                    b.Property<DateTime?>("LastModifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("LedgerAlreadyReflected")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("MigrationUnitId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ReceivedChequeId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Reference")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int?>("ResolutionJournalId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("SupplierId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("ValidFrom")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidFrom");
+
+                    b.Property<DateTime>("ValidTo")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidTo");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BankAccountId");
+
+                    b.HasIndex("MigrationUnitId");
+
+                    b.HasIndex("ReceivedChequeId");
+
+                    b.HasIndex("SupplierId");
+
+                    b.ToTable("OpeningBankItems", "Finance");
+
+                    b.ToTable(tb => tb.IsTemporal(ttb =>
+                            {
+                                ttb.UseHistoryTable("OpeningBankItems_History", "Finance");
+                                ttb
+                                    .HasPeriodStart("ValidFrom")
+                                    .HasColumnName("ValidFrom");
+                                ttb
+                                    .HasPeriodEnd("ValidTo")
+                                    .HasColumnName("ValidTo");
+                            }));
+                });
+
             modelBuilder.Entity("NexusFlow.Domain.Entities.Finance.PaymentAllocation", b =>
                 {
                     b.Property<int>("Id")
@@ -960,6 +1906,12 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.Property<string>("CreatedBy")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int?>("CustomerDebitMemoId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("CustomerOpeningItemId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime?>("LastModifiedAt")
                         .HasColumnType("datetime2");
 
@@ -975,6 +1927,9 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.Property<int?>("SupplierBillId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("SupplierOpeningItemId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("ValidFrom")
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("datetime2")
@@ -987,13 +1942,22 @@ namespace NexusFlow.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CustomerDebitMemoId");
+
+                    b.HasIndex("CustomerOpeningItemId");
+
                     b.HasIndex("PaymentTransactionId");
 
                     b.HasIndex("SalesInvoiceId");
 
                     b.HasIndex("SupplierBillId");
 
-                    b.ToTable("PaymentAllocations", "Finance");
+                    b.HasIndex("SupplierOpeningItemId");
+
+                    b.ToTable("PaymentAllocations", "Finance", t =>
+                        {
+                            t.HasCheckConstraint("CK_PaymentAllocation_Target", "(CASE WHEN SalesInvoiceId IS NULL THEN 0 ELSE 1 END + CASE WHEN SupplierBillId IS NULL THEN 0 ELSE 1 END + CASE WHEN CustomerOpeningItemId IS NULL THEN 0 ELSE 1 END + CASE WHEN CustomerDebitMemoId IS NULL THEN 0 ELSE 1 END + CASE WHEN SupplierOpeningItemId IS NULL THEN 0 ELSE 1 END) = 1 AND AmountAllocated > 0");
+                        });
 
                     b.ToTable(tb => tb.IsTemporal(ttb =>
                             {
@@ -1071,6 +2035,9 @@ namespace NexusFlow.Infrastructure.Migrations
                         .HasColumnType("datetime2")
                         .HasColumnName("ValidTo");
 
+                    b.Property<DateTime?>("VoidDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("VoidReason")
                         .HasColumnType("nvarchar(max)");
 
@@ -1088,6 +2055,159 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.ToTable(tb => tb.IsTemporal(ttb =>
                             {
                                 ttb.UseHistoryTable("PaymentTransactions_History", "Finance");
+                                ttb
+                                    .HasPeriodStart("ValidFrom")
+                                    .HasColumnName("ValidFrom");
+                                ttb
+                                    .HasPeriodEnd("ValidTo")
+                                    .HasColumnName("ValidTo");
+                            }));
+                });
+
+            modelBuilder.Entity("NexusFlow.Domain.Entities.Finance.SupplierCreditApplication", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("CreditOpeningItemId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("LastModifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("SupplierBillId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("SupplierOpeningItemId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("ValidFrom")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidFrom");
+
+                    b.Property<DateTime>("ValidTo")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidTo");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreditOpeningItemId");
+
+                    b.HasIndex("SupplierBillId");
+
+                    b.HasIndex("SupplierOpeningItemId");
+
+                    b.ToTable("SupplierCreditApplications", "Finance", t =>
+                        {
+                            t.HasCheckConstraint("CK_SupplierCredit_Target", "[Amount] > 0 AND (([SupplierOpeningItemId] IS NULL AND [SupplierBillId] IS NOT NULL) OR ([SupplierOpeningItemId] IS NOT NULL AND [SupplierBillId] IS NULL))");
+                        });
+
+                    b.ToTable(tb => tb.IsTemporal(ttb =>
+                            {
+                                ttb.UseHistoryTable("SupplierCreditApplications_History", "Finance");
+                                ttb
+                                    .HasPeriodStart("ValidFrom")
+                                    .HasColumnName("ValidFrom");
+                                ttb
+                                    .HasPeriodEnd("ValidTo")
+                                    .HasColumnName("ValidTo");
+                            }));
+                });
+
+            modelBuilder.Entity("NexusFlow.Domain.Entities.Finance.SupplierOpeningItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("DocumentDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DueDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)");
+
+                    b.Property<DateTime?>("LastModifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("MigrationUnitId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PayableAccountId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("PostingDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ReferenceNo")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("SupplierId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("ValidFrom")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidFrom");
+
+                    b.Property<DateTime>("ValidTo")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidTo");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MigrationUnitId");
+
+                    b.HasIndex("PayableAccountId");
+
+                    b.HasIndex("SupplierId");
+
+                    b.ToTable("SupplierOpeningItems", "Purchasing");
+
+                    b.ToTable(tb => tb.IsTemporal(ttb =>
+                            {
+                                ttb.UseHistoryTable("SupplierOpeningItems_History", "Purchasing");
                                 ttb
                                     .HasPeriodStart("ValidFrom")
                                     .HasColumnName("ValidFrom");
@@ -1765,7 +2885,7 @@ namespace NexusFlow.Infrastructure.Migrations
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("UnitCost")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(22,6)");
 
                     b.Property<DateTime>("ValidFrom")
                         .ValueGeneratedOnAddOrUpdate()
@@ -2380,7 +3500,7 @@ namespace NexusFlow.Infrastructure.Migrations
                         .HasColumnType("decimal(18,4)");
 
                     b.Property<decimal>("UnitCost")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(22,6)");
 
                     b.Property<DateTime>("ValidFrom")
                         .ValueGeneratedOnAddOrUpdate()
@@ -2510,7 +3630,7 @@ namespace NexusFlow.Infrastructure.Migrations
                         .HasColumnType("decimal(18,4)");
 
                     b.Property<decimal>("UnitCost")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(22,6)");
 
                     b.Property<decimal>("VarianceQty")
                         .HasColumnType("decimal(18,4)");
@@ -2571,7 +3691,7 @@ namespace NexusFlow.Infrastructure.Migrations
                         .HasColumnType("int");
 
                     b.Property<decimal>("UnitCost")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(22,6)");
 
                     b.Property<DateTime>("ValidFrom")
                         .ValueGeneratedOnAddOrUpdate()
@@ -3158,7 +4278,7 @@ namespace NexusFlow.Infrastructure.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal>("CostPrice")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(22,6)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -3179,7 +4299,7 @@ namespace NexusFlow.Infrastructure.Migrations
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("MovingAverageCost")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(22,6)");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -4058,7 +5178,7 @@ namespace NexusFlow.Infrastructure.Migrations
                         .HasColumnType("decimal(18,4)");
 
                     b.Property<decimal>("UnitCost")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(22,6)");
 
                     b.Property<DateTime>("ValidFrom")
                         .ValueGeneratedOnAddOrUpdate()
@@ -4194,7 +5314,7 @@ namespace NexusFlow.Infrastructure.Migrations
                         .HasColumnType("decimal(18,4)");
 
                     b.Property<decimal>("UnitCost")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(22,6)");
 
                     b.Property<DateTime>("ValidFrom")
                         .ValueGeneratedOnAddOrUpdate()
@@ -4308,6 +5428,9 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.Property<int?>("DefaultPayableAccountId")
                         .HasColumnType("int");
 
+                    b.Property<bool>("DetailsIncomplete")
+                        .HasColumnType("bit");
+
                     b.Property<string>("District")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -4331,6 +5454,10 @@ namespace NexusFlow.Infrastructure.Migrations
 
                     b.Property<string>("LastModifiedBy")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("LegacySupplierCode")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("Mobile")
                         .IsRequired()
@@ -4403,10 +5530,15 @@ namespace NexusFlow.Infrastructure.Migrations
 
                     b.HasIndex("IsActive");
 
+                    b.HasIndex("LegacySupplierCode")
+                        .IsUnique()
+                        .HasFilter("[LegacySupplierCode] IS NOT NULL");
+
                     b.HasIndex("Name");
 
                     b.HasIndex("TaxRegNo")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("[TaxRegNo] <> N''");
 
                     b.ToTable("Suppliers", "Purchasing");
 
@@ -4904,6 +6036,9 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.Property<int>("DefaultRevenueAccountId")
                         .HasColumnType("int");
 
+                    b.Property<bool>("DetailsIncomplete")
+                        .HasColumnType("bit");
+
                     b.Property<string>("District")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -4927,6 +6062,11 @@ namespace NexusFlow.Infrastructure.Migrations
 
                     b.Property<string>("LastModifiedBy")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("LegacyCustomerCode")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
+                        .UseCollation("Latin1_General_100_CI_AS");
 
                     b.Property<string>("Mobile")
                         .IsRequired()
@@ -4983,6 +6123,10 @@ namespace NexusFlow.Infrastructure.Migrations
 
                     b.HasIndex("BankId");
 
+                    b.HasIndex("LegacyCustomerCode")
+                        .IsUnique()
+                        .HasFilter("[LegacyCustomerCode] IS NOT NULL");
+
                     b.ToTable("Customers", "Sales");
 
                     b.ToTable(tb => tb.IsTemporal(ttb =>
@@ -5030,6 +6174,9 @@ namespace NexusFlow.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime?>("DueDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<DateTime?>("LastModifiedAt")
                         .HasColumnType("datetime2");
 
@@ -5042,6 +6189,9 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.Property<string>("Reason")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("ReceivableAccountId")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("ValidFrom")
                         .ValueGeneratedOnAddOrUpdate()
@@ -5064,6 +6214,108 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.ToTable(tb => tb.IsTemporal(ttb =>
                             {
                                 ttb.UseHistoryTable("CustomerDebitMemos_History", "Sales");
+                                ttb
+                                    .HasPeriodStart("ValidFrom")
+                                    .HasColumnName("ValidFrom");
+                                ttb
+                                    .HasPeriodEnd("ValidTo")
+                                    .HasColumnName("ValidTo");
+                            }));
+                });
+
+            modelBuilder.Entity("NexusFlow.Domain.Entities.Sales.CustomerOpeningItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("AmountSettled")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("CustomerId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("DocumentDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DueDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)");
+
+                    b.Property<DateTime?>("LastModifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("LegacyCustomerCode")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("MigrationBatchId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Notes")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("PostingDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("ReceivableAccountId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ReferenceNo")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<decimal>("SourceDebitAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("SourceRow")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("ValidFrom")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidFrom");
+
+                    b.Property<DateTime>("ValidTo")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ValidTo");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CustomerId");
+
+                    b.HasIndex("LegacyCustomerCode", "ReferenceNo");
+
+                    b.HasIndex("MigrationBatchId", "SourceRow")
+                        .IsUnique();
+
+                    b.ToTable("CustomerOpeningItems", "Sales");
+
+                    b.ToTable(tb => tb.IsTemporal(ttb =>
+                            {
+                                ttb.UseHistoryTable("CustomerOpeningItems_History", "Sales");
                                 ttb
                                     .HasPeriodStart("ValidFrom")
                                     .HasColumnName("ValidFrom");
@@ -6023,11 +7275,20 @@ namespace NexusFlow.Infrastructure.Migrations
                         .WithMany()
                         .HasForeignKey("EndorsedPaymentId");
 
+                    b.HasOne("NexusFlow.Domain.Entities.Finance.CustomerMigrationBatch", "MigrationBatch")
+                        .WithMany()
+                        .HasForeignKey("MigrationBatchId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("NexusFlow.Domain.Entities.Purchasing.Supplier", null)
+                        .WithMany()
+                        .HasForeignKey("OpeningEndorsedSupplierId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("NexusFlow.Domain.Entities.Finance.PaymentTransaction", "OriginalReceipt")
                         .WithMany()
                         .HasForeignKey("OriginalReceiptId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("BankBranch");
 
@@ -6037,7 +7298,41 @@ namespace NexusFlow.Infrastructure.Migrations
 
                     b.Navigation("EndorsedPayment");
 
+                    b.Navigation("MigrationBatch");
+
                     b.Navigation("OriginalReceipt");
+                });
+
+            modelBuilder.Entity("NexusFlow.Domain.Entities.Finance.CustomerCreditApplication", b =>
+                {
+                    b.HasOne("NexusFlow.Domain.Entities.Sales.CustomerOpeningItem", "CreditOpeningItem")
+                        .WithMany()
+                        .HasForeignKey("CreditOpeningItemId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("NexusFlow.Domain.Entities.Sales.CustomerDebitMemo", "CustomerDebitMemo")
+                        .WithMany()
+                        .HasForeignKey("CustomerDebitMemoId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("NexusFlow.Domain.Entities.Sales.CustomerOpeningItem", "CustomerOpeningItem")
+                        .WithMany()
+                        .HasForeignKey("CustomerOpeningItemId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("NexusFlow.Domain.Entities.Sales.SalesInvoice", "SalesInvoice")
+                        .WithMany()
+                        .HasForeignKey("SalesInvoiceId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("CreditOpeningItem");
+
+                    b.Navigation("CustomerDebitMemo");
+
+                    b.Navigation("CustomerOpeningItem");
+
+                    b.Navigation("SalesInvoice");
                 });
 
             modelBuilder.Entity("NexusFlow.Domain.Entities.Finance.JournalLine", b =>
@@ -6065,8 +7360,109 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.Navigation("JournalEntry");
                 });
 
+            modelBuilder.Entity("NexusFlow.Domain.Entities.Finance.MigrationAudit", b =>
+                {
+                    b.HasOne("NexusFlow.Domain.Entities.Finance.MigrationProject", null)
+                        .WithMany()
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("NexusFlow.Domain.Entities.Finance.MigrationDataset", b =>
+                {
+                    b.HasOne("NexusFlow.Domain.Entities.Finance.MigrationProject", null)
+                        .WithMany()
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("NexusFlow.Domain.Entities.Finance.MigrationOrigin", b =>
+                {
+                    b.HasOne("NexusFlow.Domain.Entities.Finance.MigrationUnit", null)
+                        .WithMany()
+                        .HasForeignKey("UnitId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("NexusFlow.Domain.Entities.Finance.MigrationRun", b =>
+                {
+                    b.HasOne("NexusFlow.Domain.Entities.Finance.MigrationProject", null)
+                        .WithMany()
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("NexusFlow.Domain.Entities.Finance.MigrationScope", b =>
+                {
+                    b.HasOne("NexusFlow.Domain.Entities.Finance.MigrationProject", null)
+                        .WithMany()
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("NexusFlow.Domain.Entities.Finance.MigrationUnit", b =>
+                {
+                    b.HasOne("NexusFlow.Domain.Entities.Finance.JournalEntry", null)
+                        .WithMany()
+                        .HasForeignKey("JournalEntryId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("NexusFlow.Domain.Entities.Finance.MigrationProject", null)
+                        .WithMany()
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("NexusFlow.Domain.Entities.Finance.JournalEntry", null)
+                        .WithMany()
+                        .HasForeignKey("ReversalJournalEntryId")
+                        .OnDelete(DeleteBehavior.Restrict);
+                });
+
+            modelBuilder.Entity("NexusFlow.Domain.Entities.Finance.OpeningBankItem", b =>
+                {
+                    b.HasOne("NexusFlow.Domain.Entities.Finance.Account", null)
+                        .WithMany()
+                        .HasForeignKey("BankAccountId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("NexusFlow.Domain.Entities.Finance.MigrationUnit", null)
+                        .WithMany()
+                        .HasForeignKey("MigrationUnitId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("NexusFlow.Domain.Entities.Finance.ChequeRegister", "ReceivedCheque")
+                        .WithMany()
+                        .HasForeignKey("ReceivedChequeId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("NexusFlow.Domain.Entities.Purchasing.Supplier", null)
+                        .WithMany()
+                        .HasForeignKey("SupplierId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("ReceivedCheque");
+                });
+
             modelBuilder.Entity("NexusFlow.Domain.Entities.Finance.PaymentAllocation", b =>
                 {
+                    b.HasOne("NexusFlow.Domain.Entities.Sales.CustomerDebitMemo", "CustomerDebitMemo")
+                        .WithMany()
+                        .HasForeignKey("CustomerDebitMemoId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("NexusFlow.Domain.Entities.Sales.CustomerOpeningItem", "CustomerOpeningItem")
+                        .WithMany()
+                        .HasForeignKey("CustomerOpeningItemId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("NexusFlow.Domain.Entities.Finance.PaymentTransaction", "PaymentTransaction")
                         .WithMany("Allocations")
                         .HasForeignKey("PaymentTransactionId")
@@ -6081,11 +7477,22 @@ namespace NexusFlow.Infrastructure.Migrations
                         .WithMany()
                         .HasForeignKey("SupplierBillId");
 
+                    b.HasOne("NexusFlow.Domain.Entities.Finance.SupplierOpeningItem", "SupplierOpeningItem")
+                        .WithMany()
+                        .HasForeignKey("SupplierOpeningItemId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("CustomerDebitMemo");
+
+                    b.Navigation("CustomerOpeningItem");
+
                     b.Navigation("PaymentTransaction");
 
                     b.Navigation("SalesInvoice");
 
                     b.Navigation("SupplierBill");
+
+                    b.Navigation("SupplierOpeningItem");
                 });
 
             modelBuilder.Entity("NexusFlow.Domain.Entities.Finance.PaymentTransaction", b =>
@@ -6101,6 +7508,46 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.Navigation("Customer");
 
                     b.Navigation("Supplier");
+                });
+
+            modelBuilder.Entity("NexusFlow.Domain.Entities.Finance.SupplierCreditApplication", b =>
+                {
+                    b.HasOne("NexusFlow.Domain.Entities.Finance.SupplierOpeningItem", null)
+                        .WithMany()
+                        .HasForeignKey("CreditOpeningItemId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("NexusFlow.Domain.Entities.Purchasing.SupplierBill", null)
+                        .WithMany()
+                        .HasForeignKey("SupplierBillId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("NexusFlow.Domain.Entities.Finance.SupplierOpeningItem", null)
+                        .WithMany()
+                        .HasForeignKey("SupplierOpeningItemId")
+                        .OnDelete(DeleteBehavior.Restrict);
+                });
+
+            modelBuilder.Entity("NexusFlow.Domain.Entities.Finance.SupplierOpeningItem", b =>
+                {
+                    b.HasOne("NexusFlow.Domain.Entities.Finance.MigrationUnit", null)
+                        .WithMany()
+                        .HasForeignKey("MigrationUnitId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("NexusFlow.Domain.Entities.Finance.Account", null)
+                        .WithMany()
+                        .HasForeignKey("PayableAccountId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("NexusFlow.Domain.Entities.Purchasing.Supplier", null)
+                        .WithMany()
+                        .HasForeignKey("SupplierId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("NexusFlow.Domain.Entities.Finance.TaxRate", b =>
@@ -6886,6 +8333,25 @@ namespace NexusFlow.Infrastructure.Migrations
                     b.Navigation("ChequeRegister");
 
                     b.Navigation("Customer");
+                });
+
+            modelBuilder.Entity("NexusFlow.Domain.Entities.Sales.CustomerOpeningItem", b =>
+                {
+                    b.HasOne("NexusFlow.Domain.Entities.Sales.Customer", "Customer")
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("NexusFlow.Domain.Entities.Finance.CustomerMigrationBatch", "MigrationBatch")
+                        .WithMany()
+                        .HasForeignKey("MigrationBatchId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Customer");
+
+                    b.Navigation("MigrationBatch");
                 });
 
             modelBuilder.Entity("NexusFlow.Domain.Entities.Sales.SalesInvoice", b =>

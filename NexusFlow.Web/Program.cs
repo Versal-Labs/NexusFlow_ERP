@@ -133,6 +133,7 @@ builder.Services.AddRateLimiter(options =>
 var shouldRunProductionServices = stateStore.Get().Mode == ApplicationMode.Installed;
 if (shouldRunProductionServices)
 {
+    Hangfire.Common.JobFilterProviders.Providers.Add(new MigrationJobFilterProvider());
     var hangfireConnection = secretStore.Get(InstallationConnectionStringProvider.HangfireConnectionSecret)
         ?? connectionProvider.GetRequiredConnectionString();
     builder.Services.AddHangfire(config => config
@@ -157,6 +158,11 @@ if (shouldRunProductionServices)
         options.ServerName = $"{paths.InstanceId}:{Environment.MachineName}:{Environment.ProcessId}";
     });
     builder.Services.AddScoped<IBackgroundJobService, BackgroundJobService>();
+}
+else
+{
+    // Keep application services resolvable while installation or upgrade disables Hangfire.
+    builder.Services.AddScoped<IBackgroundJobService, UnavailableBackgroundJobService>();
 }
 
 builder.Services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();

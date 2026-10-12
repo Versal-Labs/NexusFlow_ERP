@@ -14,6 +14,8 @@ namespace NexusFlow.Infrastructure.Persistence.Configurations
             builder.HasKey(x => x.Id);
             builder.Property(x => x.Name).HasMaxLength(200).IsRequired();
             builder.Property(x => x.CreditLimit).HasColumnType("decimal(18,2)");
+            builder.Property(x => x.LegacyCustomerCode).UseCollation("Latin1_General_100_CI_AS");
+            builder.HasIndex(x => x.LegacyCustomerCode).IsUnique().HasFilter("[LegacyCustomerCode] IS NOT NULL");
         }
     }
 

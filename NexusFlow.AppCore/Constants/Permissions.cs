@@ -98,6 +98,15 @@ namespace NexusFlow.AppCore.Constants
             public const string ViewAuditLogs = "Permissions.System.ViewAuditLogs";
         }
 
+        public static class Migration
+        {
+            public const string View = "Permissions.Migration.View";
+            public const string Prepare = "Permissions.Migration.Prepare";
+            public const string Approve = "Permissions.Migration.Approve";
+            public const string Execute = "Permissions.Migration.Execute";
+            public const string Finalize = "Permissions.Migration.Finalize";
+        }
+
         public static class Reporting
         {
             public const string ViewSalesRegister = "Permissions.Reporting.ViewSalesRegister";

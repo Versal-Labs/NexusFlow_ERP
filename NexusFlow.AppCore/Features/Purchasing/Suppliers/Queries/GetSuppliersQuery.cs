@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using NexusFlow.AppCore.DTOs.Purchasing;
 using NexusFlow.AppCore.Interfaces;
@@ -37,6 +37,8 @@ namespace NexusFlow.AppCore.Features.Purchasing.Suppliers.Queries
                 {
                     Id = s.Id,
                     Name = s.Name,
+                    LegacySupplierCode = s.LegacySupplierCode,
+                    DetailsIncomplete = s.DetailsIncomplete,
                     ContactPerson = s.ContactPerson,
                     Email = s.Email,
                     TaxRegNo = s.TaxRegNo,
@@ -63,6 +65,8 @@ namespace NexusFlow.AppCore.Features.Purchasing.Suppliers.Queries
             {
                 Id = s.Id,
                 Name = s.Name,
+                    LegacySupplierCode = s.LegacySupplierCode,
+                    DetailsIncomplete = s.DetailsIncomplete,
                 TradeName = s.TradeName,
                 TaxRegNo = s.TaxRegNo,
                 BusinessRegNo = s.BusinessRegNo,

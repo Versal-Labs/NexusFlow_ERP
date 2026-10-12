@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using NexusFlow.AppCore.DTOs.Sales;
 using NexusFlow.AppCore.Interfaces;
@@ -29,6 +29,8 @@ namespace NexusFlow.AppCore.Features.Sales.Customers.Queries
                 {
                     Id = c.Id,
                     Name = c.Name,
+                    LegacyCustomerCode = c.LegacyCustomerCode,
+                    DetailsIncomplete = c.DetailsIncomplete,
                     TradeName = c.TradeName,
                     TaxRegNo = c.TaxRegNo,
                     CustomerGroupId = c.CustomerGroupId,

@@ -277,6 +277,7 @@ namespace NexusFlow.Web.Controllers.Api
         // 2. EXECUTE IMPORT
         // ==========================================
         [HttpPost("execute-arap-import")]
+        [RetiredMigrationEndpoint]
         [Authorize(Policy = Permissions.Finance.ManageAccounts)]
         public async Task<IActionResult> ExecuteArApImport([FromBody] ImportOpenInvoicesCommand command)
         {
@@ -320,6 +321,7 @@ namespace NexusFlow.Web.Controllers.Api
         // 2. EXECUTE TRIAL BALANCE IMPORT
         // ==========================================
         [HttpPost("execute-tb-import")]
+        [RetiredMigrationEndpoint]
         [Authorize(Policy = Permissions.Finance.ManageAccounts)]
         public async Task<IActionResult> ExecuteTbImport([FromBody] ImportTrialBalanceCommand command)
         {

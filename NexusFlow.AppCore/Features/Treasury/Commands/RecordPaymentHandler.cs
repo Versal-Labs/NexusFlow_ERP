@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using NexusFlow.AppCore.DTOs.Finance;
 using NexusFlow.AppCore.Interfaces;
@@ -25,17 +25,22 @@ namespace NexusFlow.AppCore.Features.Treasury.Commands
 
         public async Task<Result<int>> Handle(RecordPaymentCommand command, CancellationToken cancellationToken)
         {
+            if (Math.Round(command.ReceiptAmount, 2) != command.ReceiptAmount || command.Type != PaymentType.CustomerReceipt || command.Method is not (PaymentMethod.Cash or PaymentMethod.BankTransfer or PaymentMethod.Cheque))
+                return Result<int>.Failure("Valid customer receipt method and two-decimal amount are required.");
             if (command.ReceiptAmount <= 0) return Result<int>.Failure("Receipt amount must be greater than zero.");
             if (command.CustomerId == null) return Result<int>.Failure("Customer is required for a receipt.");
 
             // EDGE CASE: Overpayment Guard
+            if (command.Allocations == null) return Result<int>.Failure("Allocations must be an array.");
             decimal totalAllocated = command.Allocations.Sum(a => a.Amount);
             if (totalAllocated > command.ReceiptAmount)
                 return Result<int>.Failure($"You cannot allocate more money ({totalAllocated}) than you received ({command.ReceiptAmount}).");
 
-            using var transaction = await _context.BeginTransactionAsync(cancellationToken);
+            using var transaction = await _context.BeginTransactionAsync(global::System.Data.IsolationLevel.Serializable, cancellationToken);
             try
             {
+                var settlement = new NexusFlow.AppCore.Services.CustomerSettlementService(_context, new(_context));
+                await settlement.ValidateAsync(command.CustomerId.Value, command.Date, command.Allocations, cancellationToken);
                 string payRef = await _sequenceService.GenerateNextNumberAsync("Receipt", cancellationToken);
 
                 // ==========================================
@@ -76,9 +81,8 @@ namespace NexusFlow.AppCore.Features.Treasury.Commands
 
                     foreach (var alloc in command.Allocations)
                     {
-                        if (alloc.Amount <= 0 || !invoices.TryGetValue(alloc.InvoiceId, out var invoice)) continue;
-
-                        payment.Allocations.Add(new PaymentAllocation { SalesInvoiceId = invoice.Id, AmountAllocated = alloc.Amount });
+                        payment.Allocations.Add(NexusFlow.AppCore.Services.CustomerSettlementService.Allocation(alloc));
+                        if (!invoices.TryGetValue(alloc.InvoiceId, out var invoice)) continue;
                         invoice.AmountPaid += alloc.Amount;
 
                         if (invoice.AmountPaid >= invoice.GrandTotal)
@@ -122,6 +126,9 @@ namespace NexusFlow.AppCore.Features.Treasury.Commands
                 // ==========================================
                 var customer = await _context.Customers.FindAsync(new object[] { command.CustomerId }, cancellationToken);
 
+                if (customer == null || !customer.IsActive || !await _context.Accounts.AnyAsync(x => x.Id == targetGlAccountId && x.IsActive && x.IsTransactionAccount && x.Type == AccountType.Asset, cancellationToken)
+                    || targetGlAccountId == customer.DefaultReceivableAccountId)
+                    throw new InvalidOperationException("Select a valid asset destination separate from customer AR, for an active customer.");
                 var journalLines = new List<JournalLineRequest>
                 {
                     // DEBIT: Target Account (Either Cash, Bank, or Undeposited Funds for Cheques)
@@ -141,6 +148,8 @@ namespace NexusFlow.AppCore.Features.Treasury.Commands
 
                 if (!jResult.Succeeded) throw new Exception($"GL Failed: {jResult.Message}");
 
+                await settlement.RefreshAsync(command.CustomerId.Value, cancellationToken);
+                await _context.SaveChangesAsync(cancellationToken);
                 await transaction.CommitAsync(cancellationToken);
                 return Result<int>.Success(payment.Id, "Receipt recorded successfully.");
             }

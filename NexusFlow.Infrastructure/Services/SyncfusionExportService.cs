@@ -15,8 +15,16 @@ namespace NexusFlow.Infrastructure.Services
 {
     public class SyncfusionExportService : IExportService
     {
+        private readonly IErpDbContext? migrationDb;
+        public SyncfusionExportService(IErpDbContext? db = null) => migrationDb = db;
+        private void MigrationNotice(ExportMetadata metadata)
+        {
+            if (migrationDb?.MigrationProjects.Any(x => x.Status != "Finalized") == true)
+                metadata.AppliedFilters["Migration status"] = "Migration incomplete — opening position provisional";
+        }
         public byte[] ExportToExcel<T>(IEnumerable<T> data, ExportMetadata metadata, string sheetName = "Report")
         {
+            MigrationNotice(metadata);
             using ExcelEngine excelEngine = new ExcelEngine();
             IApplication application = excelEngine.Excel;
             application.DefaultVersion = ExcelVersion.Xlsx;
@@ -104,6 +112,7 @@ namespace NexusFlow.Infrastructure.Services
 
         public byte[] ExportToPdf<T>(IEnumerable<T> data, ExportMetadata metadata)
         {
+            MigrationNotice(metadata);
             using PdfDocument document = new PdfDocument();
             document.PageSettings.Orientation = PdfPageOrientation.Landscape;
             document.PageSettings.Margins.All = 40;

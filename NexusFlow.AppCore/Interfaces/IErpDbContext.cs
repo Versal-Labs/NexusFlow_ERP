@@ -14,6 +14,18 @@ namespace NexusFlow.AppCore.Interfaces
 {
     public interface IErpDbContext
     {
+        DbSet<MigrationProject> MigrationProjects { get; set; }
+        DbSet<MigrationDataset> MigrationDatasets { get; set; }
+        DbSet<MigrationScope> MigrationScopes { get; set; }
+        DbSet<MigrationUnit> MigrationUnits { get; set; }
+        DbSet<MigrationOrigin> MigrationOrigins { get; set; }
+        DbSet<MigrationRun> MigrationRuns { get; set; }
+        DbSet<MigrationAudit> MigrationAudits { get; set; }
+        DbSet<SupplierOpeningItem> SupplierOpeningItems { get; set; }
+        DbSet<SupplierCreditApplication> SupplierCreditApplications { get; set; }
+        DbSet<OpeningBankItem> OpeningBankItems { get; set; }
+        IDisposable EnterMigrationPosting(int projectId) => throw new NotSupportedException("Migration posting requires a controlled database context.");
+        Task LockMigrationProjectAsync(int projectId, CancellationToken ct = default) => Task.CompletedTask;
         DbSet<Account> Accounts { get; set; }
         DbSet<NumberSequence> NumberSequences { get; set; }
         DbSet<SystemConfig> SystemConfigs { get; set; }
@@ -42,6 +54,9 @@ namespace NexusFlow.AppCore.Interfaces
         DbSet<JournalLine> JournalLines { get; set; }
         DbSet<FinancialPeriod> FinancialPeriods { get; set; }
         DbSet<Customer> Customers { get; set; }
+        DbSet<CustomerMigrationBatch> CustomerMigrationBatches { get; set; }
+        DbSet<CustomerOpeningItem> CustomerOpeningItems { get; set; }
+        DbSet<CustomerCreditApplication> CustomerCreditApplications { get; set; }
         DbSet<SalesInvoice> SalesInvoices { get; set; }
         DbSet<SalesInvoiceItem> SalesInvoiceItems { get; set; }
         DbSet<Supplier> Suppliers { get; set; }
@@ -97,5 +112,6 @@ namespace NexusFlow.AppCore.Interfaces
         Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 
         Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default);
+        Task<IDbContextTransaction> BeginTransactionAsync(System.Data.IsolationLevel isolationLevel, CancellationToken cancellationToken = default);
     }
 }

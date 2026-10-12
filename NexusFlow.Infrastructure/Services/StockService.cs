@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using NexusFlow.AppCore.Interfaces;
 using NexusFlow.Domain.Entities.Inventory;
 using NexusFlow.Domain.Enums;
@@ -44,7 +44,7 @@ namespace NexusFlow.Infrastructure.Services
                 Type = StockTransactionType.PurchaseIn,
                 Qty = qty,
                 UnitCost = unitCost,
-                TotalValue = qty * unitCost,
+                TotalValue = decimal.Round(qty * unitCost, 2, MidpointRounding.AwayFromZero),
                 ReferenceDocNo = referenceDoc,
                 Notes = string.IsNullOrWhiteSpace(notes) ? "Stock Receipt" : notes // ARCHITECTURAL UPGRADE: Audit trail
             };
@@ -95,7 +95,8 @@ namespace NexusFlow.Infrastructure.Services
                 }
 
                 // B. Calculate Cost for this chunk
-                decimal costForChunk = qtyToTake * layer.UnitCost;
+                decimal costForChunk = decimal.Round((layer.RemainingQty + qtyToTake) * layer.UnitCost, 2, MidpointRounding.AwayFromZero)
+                    - decimal.Round(layer.RemainingQty * layer.UnitCost, 2, MidpointRounding.AwayFromZero);
                 totalValueMoved += costForChunk;
 
                 // C. Move to Target: Create a new layer at the Factory inheriting ORIGINAL Cost and Date.
@@ -182,7 +183,8 @@ namespace NexusFlow.Infrastructure.Services
                 }
 
                 // B. Calculate Cost (FIFO)
-                decimal costForChunk = qtyToTake * layer.UnitCost;
+                decimal costForChunk = decimal.Round((layer.RemainingQty + qtyToTake) * layer.UnitCost, 2, MidpointRounding.AwayFromZero)
+                    - decimal.Round(layer.RemainingQty * layer.UnitCost, 2, MidpointRounding.AwayFromZero);
                 totalCostConsumed += costForChunk;
 
                 // C. Log Transaction (Production / Sales Out)
@@ -285,7 +287,8 @@ namespace NexusFlow.Infrastructure.Services
                 }
 
                 // B. Calculate Exact Cost (FIFO)
-                decimal costForChunk = qtyToTake * layer.UnitCost;
+                decimal costForChunk = decimal.Round((layer.RemainingQty + qtyToTake) * layer.UnitCost, 2, MidpointRounding.AwayFromZero)
+                    - decimal.Round(layer.RemainingQty * layer.UnitCost, 2, MidpointRounding.AwayFromZero);
                 totalCostConsumed += costForChunk;
 
                 // C. Log Transaction

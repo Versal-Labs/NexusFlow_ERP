@@ -1,4 +1,4 @@
-﻿@{
+@{
     ViewData["Title"] = "Customer Master";
 }
 
@@ -40,6 +40,7 @@
                 <thead class="table-light text-secondary">
                     <tr>
                         <th>Customer Name</th>
+                        <th>Legacy Code</th>
                         <th>Tax Reg No</th>
                         <th>Contact Person</th>
                         <th>Phone</th>
@@ -78,6 +79,7 @@
                                 <div class="col-md-4">
                                     <label class="form-label fw-bold mb-1">Tax Reg No <span class="text-danger">*</span></label>
                                     <input type="text" class="form-control form-control-sm font-monospace" name="TaxRegNo" required>
+                                    <label class="form-label mt-2">Legacy Customer Code</label><input type="text" class="form-control form-control-sm" name="LegacyCustomerCode" maxlength="50">
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label fw-bold mb-1">Customer Group <span class="text-danger">*</span></label>

@@ -1,7 +1,6 @@
 ﻿window.bomApp = {
     _table: null,
     _modal: null,
-    _headers: { 'Authorization': `Bearer ${localStorage.getItem('nexus_token')}` },
 
     init: function () {
         var modalEl = document.getElementById('bomModal');
@@ -23,7 +22,6 @@
         this._table = $('#bomTable').DataTable({
             ajax: { 
                 url: '/api/bom', 
-                headers: this._headers,
                 // Handles standard array OR wrapped { data: [...] } responses
                 dataSrc: function (json) { return json.data || json || []; } 
             },
@@ -51,20 +49,28 @@
     },
 
     initSelect2ForRow: function (element, productType) {
+        // Avoid duplicate Select2 instances when the BOM modal is reopened.
+        if (element.hasClass('select2-hidden-accessible')) element.select2('destroy');
         element.select2({
             theme: 'bootstrap-5',
             dropdownParent: $('#bomModal'),
-            placeholder: 'Search Variant...',
+            width: '100%',
+            placeholder: productType === 2 ? 'Type at least 2 characters to find a finished good' : 'Type at least 2 characters to find a raw material',
+            minimumInputLength: 2,
             ajax: {
                 url: '/api/masterdata/variants/search',
-                headers: this._headers,
                 dataType: 'json',
-                delay: 250,
+                delay: 300,
+                cache: true,
                 // ProductType is persisted as RawMaterial=1 and FinishedGood=2.
-                data: params => ({ query: params.term, productType: productType }),
-                processResults: data => ({
-                    results: $.map(data, item => ({ id: item.id, text: `${item.sku} - ${item.name}` }))
-                })
+                data: params => ({ query: (params.term || '').trim(), productType: productType, requireQuery: true }),
+                processResults: response => {
+                    const data = Array.isArray(response) ? response : (response.data || []);
+                    return { results: $.map(data, item => ({ id: item.id, text: `${item.sku} - ${item.name}` })) };
+                },
+                error: xhr => {
+                    if (xhr.status !== 0) toastr.error('Unable to search items. Check your product-view permission and try again.');
+                }
             }
         });
     },
@@ -97,9 +103,10 @@
         $('#basisQuantity').val(1);
         document.getElementById('effectiveFrom').valueAsDate = new Date();
         $('#rmList').empty();
-        $('#productVariantId').empty().trigger('change');
-        
-        this.initSelect2ForRow($('#productVariantId'), 2);
+        const $finishedGood = $('#productVariantId');
+        if ($finishedGood.hasClass('select2-hidden-accessible')) $finishedGood.select2('destroy');
+        $finishedGood.empty();
+        this.initSelect2ForRow($finishedGood, 2);
         this._modal.show();
     },
 
@@ -116,8 +123,10 @@
             $('#effectiveFrom').val((bom.effectiveFrom || new Date().toISOString()).split('T')[0]);
             $('#isActive').prop('checked', bom.isActive);
             
-            $('#productVariantId').empty().append(new Option(bom.productVariantName, bom.productVariantId, true, true)).trigger('change');
-            this.initSelect2ForRow($('#productVariantId'), 2);
+            const $finishedGood = $('#productVariantId');
+            if ($finishedGood.hasClass('select2-hidden-accessible')) $finishedGood.select2('destroy');
+            $finishedGood.empty().append(new Option(bom.productVariantName, bom.productVariantId, true, true));
+            this.initSelect2ForRow($finishedGood, 2);
 
             $('#rmList').empty();
             bom.components.forEach(c => this.appendComponentRow(c.materialVariantId, c.materialVariantName, c.quantity));

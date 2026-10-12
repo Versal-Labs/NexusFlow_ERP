@@ -1,5 +1,10 @@
-﻿window.receiptApp = {
+window.receiptApp = {
     _table: null,
+    _escape: value => $('<span>').text(value == null ? '' : value).html(),
+    _allocation: function (row, amount) {
+        const id = Number(row.data('id')), type = row.attr('data-type') || 'Invoice';
+        return { InvoiceId: type === 'Invoice' ? id : 0, OpeningItemId: type === 'OpeningItem' ? id : null, DebitMemoId: type === 'DebitMemo' ? id : null, Amount: amount };
+    },
     _modal: null,
     _viewModal: null,
     _currentDocId: null,
@@ -74,7 +79,7 @@
             columns: [
                 { data: 'referenceNo', className: 'fw-bold text-success font-monospace ps-3' },
                 { data: 'date', render: d => new Date(d).toLocaleDateString() },
-                { data: 'customerName', className: 'fw-bold text-dark' },
+                { data: 'customerName', className: 'fw-bold text-dark', render: $.fn.dataTable.render.text() },
                 { 
                     data: 'method', 
                     render: function(d) {
@@ -136,7 +141,7 @@
                 doc.allocations.forEach(a => {
                     tbody += `
                         <tr>
-                            <td class="fw-bold font-monospace text-primary">${a.invoiceNumber}</td>
+                            <td class="fw-bold font-monospace text-primary">${this._escape(a.invoiceNumber)}</td>
                             <td>${new Date(a.invoiceDate).toLocaleDateString()}</td>
                             <td class="text-end">${parseFloat(a.invoiceTotal).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
                             <td class="text-end fw-bold text-success">${parseFloat(a.amountAllocated).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
@@ -187,7 +192,7 @@
                 toastr.error(res.messages[0]);
             }
         } catch (e) {
-            toastr.error(e.responseJSON?.messages?.[0] || "Failed to void receipt.");
+            toastr.error(e.responseJSON?.message || e.responseJSON?.messages?.[0] || "Failed to void receipt.");
         }
     },
 
@@ -203,7 +208,7 @@
             ]);
 
             let custEl = $('#CustomerId').empty().append('<option value="">-- Select Customer --</option>');
-            (custRes.data || custRes || []).forEach(c => custEl.append(`<option value="${c.id}">${c.name}</option>`));
+            (custRes.data || custRes || []).forEach(c => custEl.append($('<option>').val(c.id).text(c.name)));
             custEl.select2({ dropdownParent: $('#receiptModal') });
 
             let accEl = $('#AccountId').empty().append('<option value="">-- Select Destination --</option>');
@@ -277,20 +282,23 @@
             const invoices = payload.invoices || [];
             const unappliedCredit = payload.unappliedCredit || 0;
 
-            // TIER 1: Show Unapplied Credit Alert
-            if (unappliedCredit > 0) {
-                const alertHtml = `
-                    <div id="creditBanner" class="alert alert-info border-info d-flex justify-content-between align-items-center mb-3 shadow-sm py-2">
-                        <div>
-                            <i class="fa-solid fa-wallet fs-5 me-2"></i>
-                            <strong>Customer has Available Credit:</strong> LKR ${unappliedCredit.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                        </div>
-                        <button type="button" class="btn btn-sm btn-info fw-bold text-dark shadow-sm" onclick="receiptApp.applyExistingCredit(${customerId}, ${unappliedCredit})">
-                            Apply Credit to Invoices
-                        </button>
-                    </div>`;
-                $('#receiptForm').prepend(alertHtml);
-            }
+            const credits = payload.openingCredits || [];
+            const banner = $('<div id="creditBanner" class="alert alert-info mb-3"></div>');
+            if (unappliedCredit > 0) banner.append($('<p>').text(`Available customer credit: LKR ${unappliedCredit.toLocaleString(undefined, { minimumFractionDigits: 2 })}. Apply a return credit below using the allocations entered in the table.`));
+            credits.forEach(credit => {
+                $('<button type="button" class="btn btn-sm btn-outline-primary me-2 mb-2">')
+                    .text(`Apply return credit ${credit.reference}: LKR ${credit.available.toFixed(2)}`)
+                    .on('click', () => this.applyExistingCredit(Number(customerId), credit.available, credit.id)).appendTo(banner);
+            });
+            const history = $('<div>'); banner.append(history);
+            const applications = await api.get(`/api/treasury/customer-credits/${customerId}`);
+            (applications.data || applications || []).forEach(application => {
+                const line = $('<div class="small mt-1">').text(`${application.creditReference} to ${application.targetReference}: LKR ${application.amount.toFixed(2)} (${application.date.slice(0,10)})${application.reversedDate ? ' - reversed' : ''} `);
+                if (!application.reversedDate) $('<button type="button" class="btn btn-sm btn-link text-danger">').text('Reverse Application')
+                    .on('click', () => this.reverseCredit(application.id, Number(customerId))).appendTo(line);
+                history.append(line);
+            });
+            if (unappliedCredit > 0 || history.children().length) $('#receiptForm').prepend(banner);
 
             let html = '';
             if (!invoices || invoices.length === 0) {
@@ -299,8 +307,8 @@
                 invoices.forEach(inv => {
                     const isOverdue = new Date(inv.dueDate) < new Date() ? 'text-danger fw-bold' : '';
                     html += `
-                        <tr data-id="${inv.id}">
-                            <td class="font-monospace fw-bold text-primary">${inv.invoiceNumber}</td>
+                        <tr data-id="${inv.id}" data-type="${this._escape(inv.targetType || 'Invoice')}">
+                            <td class="font-monospace fw-bold text-primary">${this._escape(inv.invoiceNumber)} <small>${this._escape(inv.targetType || 'Invoice')}</small></td>
                             <td>${new Date(inv.invoiceDate).toLocaleDateString()}</td>
                             <td class="${isOverdue}">${new Date(inv.dueDate).toLocaleDateString()}</td>
                             <td class="text-end">${inv.grandTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
@@ -347,7 +355,7 @@
     // ==========================================
     // APPLY EXISTING CREDIT (OVERPAYMENTS)
     // ==========================================
-    applyExistingCredit: async function (customerId, availableCredit) {
+    applyExistingCredit: async function (customerId, availableCredit, creditId) {
         let totalAllocated = 0;
         let allocations = [];
 
@@ -356,7 +364,7 @@
             let val = parseFloat($(this).val()) || 0;
             if (val > 0) {
                 totalAllocated += val;
-                allocations.push({ InvoiceId: parseInt($(this).closest('tr').data('id')), Amount: val });
+                allocations.push(receiptApp._allocation($(this).closest('tr'), val));
             }
         });
 
@@ -384,10 +392,12 @@
         try {
             const payload = {
                 CustomerId: customerId,
+                CreditOpeningItemId: creditId,
+                Date: $('#Date').val(),
                 Allocations: allocations
             };
 
-            const res = await api.post('/api/treasury/receipts/apply-credit', payload);
+            const res = await api.post('/api/treasury/customer-credits/apply', payload);
             if (res && res.succeeded) {
                 toastr.success("Credit applied successfully!");
                 this._modal.hide();
@@ -396,8 +406,18 @@
                 toastr.error(res.messages[0]);
             }
         } catch (e) {
-            toastr.error(e.responseJSON?.messages?.[0] || "Failed to apply credit.");
+            toastr.error(e.responseJSON?.message || e.responseJSON?.messages?.[0] || "Failed to apply credit.");
         }
+    },
+
+    reverseCredit: async function (id, customerId) {
+        const reason = window.prompt('Reason for reversing this credit application:');
+        if (!reason?.trim()) return;
+        try {
+            await api.post(`/api/treasury/customer-credits/${id}/reverse`, { Date: $('#Date').val(), Reason: reason });
+            toastr.success('Credit application reversed.');
+            await this._loadUnpaidInvoices(customerId);
+        } catch (e) { toastr.error(e.responseJSON?.message || 'Credit reversal failed.'); }
     },
 
     _calculateTotals: function () {
@@ -443,7 +463,7 @@
             let val = parseFloat($(this).val()) || 0;
             if (val > 0) {
                 totalAllocated += val;
-                allocations.push({ InvoiceId: parseInt($(this).closest('tr').data('id')), Amount: val });
+                allocations.push(receiptApp._allocation($(this).closest('tr'), val));
             }
         });
 
@@ -483,7 +503,7 @@
                 this._table.ajax.reload(null, false);
             } else if (res && res.messages) { toastr.error(res.messages[0]); }
         } catch (e) {
-            toastr.error(e.responseJSON?.messages?.[0] || "Failed to process receipt.");
+            toastr.error(e.responseJSON?.message || e.responseJSON?.messages?.[0] || "Failed to process receipt.");
         } finally {
             $btn.prop('disabled', false).html(ogText);
         }

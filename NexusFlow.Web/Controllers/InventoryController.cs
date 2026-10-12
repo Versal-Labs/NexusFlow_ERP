@@ -55,8 +55,12 @@ namespace NexusFlow.Web.Controllers
         [Authorize(Policy = Permissions.Inventory.AdjustStock)]
         public IActionResult OpeningStock()
         {
-            return View();
+            return Redirect("/Migration");
         }
+
+        [Authorize(Policy = Permissions.MasterData.ManageProducts)]
+        [Authorize(Policy = Permissions.Inventory.AdjustStock)]
+        public IActionResult RawMaterialImport() => Redirect("/Migration");
 
         [Authorize(Policy = Permissions.Inventory.PrintBarcodes)]
         public IActionResult BarcodeCenter()

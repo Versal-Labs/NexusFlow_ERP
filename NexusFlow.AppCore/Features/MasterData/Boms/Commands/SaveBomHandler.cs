@@ -3,6 +3,7 @@ using NexusFlow.AppCore.DTOs.Master;
 using Microsoft.EntityFrameworkCore;
 using NexusFlow.AppCore.Interfaces;
 using NexusFlow.Domain.Entities.Master;
+using NexusFlow.Domain.Enums;
 using NexusFlow.Shared.Wrapper;
 using System;
 using System.Collections.Generic;
@@ -31,6 +32,24 @@ namespace NexusFlow.AppCore.Features.MasterData.Boms.Commands
                 return Result<int>.Failure("A finished good cannot be used as its own material.");
             if (dto.Components.Select(x => x.MaterialVariantId).Distinct().Count() != dto.Components.Count)
                 return Result<int>.Failure("Duplicate material variants are not allowed in one BOM revision.");
+
+            var variantIds = dto.Components.Select(x => x.MaterialVariantId)
+                .Append(dto.ProductVariantId)
+                .Distinct()
+                .ToList();
+            var productTypes = await _context.ProductVariants
+                .AsNoTracking()
+                .Include(x => x.Product)
+                .Where(x => variantIds.Contains(x.Id) && x.IsActive)
+                .Select(x => new { x.Id, x.Product.Type })
+                .ToDictionaryAsync(x => x.Id, x => x.Type, cancellationToken);
+
+            if (!productTypes.TryGetValue(dto.ProductVariantId, out var finishedGoodType) || finishedGoodType != ProductType.FinishedGood)
+                return Result<int>.Failure("Select an active Finished Good for the BOM target.");
+            var invalidMaterial = dto.Components.FirstOrDefault(x => !productTypes.TryGetValue(x.MaterialVariantId, out var type)
+                || type != ProductType.RawMaterial);
+            if (invalidMaterial != null)
+                return Result<int>.Failure("Each BOM component must be an active Raw Material.");
 
             BillOfMaterial bom;
 

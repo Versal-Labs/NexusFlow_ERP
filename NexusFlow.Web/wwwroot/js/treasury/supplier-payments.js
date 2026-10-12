@@ -1,4 +1,5 @@
-﻿window.paymentApp = {
+window.paymentApp = {
+    _escape: value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])),
     _modal: null,
     _table: null,
 
@@ -46,9 +47,9 @@
                 }
             },
             columns: [
-                { data: 'referenceNo', className: 'fw-bold font-monospace text-danger ps-3' },
+                { data: 'referenceNo', className: 'fw-bold font-monospace text-danger ps-3', render: (d, type) => type === 'display' ? paymentApp._escape(d) : d },
                 { data: 'date', render: d => new Date(d).toLocaleDateString() },
-                { data: 'partyName', className: 'fw-bold text-dark' },
+                { data: 'partyName', className: 'fw-bold text-dark', render: (d, type) => type === 'display' ? paymentApp._escape(d) : d },
                 { 
                     data: 'method', 
                     render: function(d) {
@@ -91,15 +92,15 @@
             let $filterSupp = $('#filterPaySupplierId').empty().append('<option value="">All Suppliers</option>');
             
             (suppRes.data || suppRes || []).forEach(s => {
-                $supp.append(`<option value="${s.id}">${s.name}</option>`);
-                $filterSupp.append(`<option value="${s.id}">${s.name}</option>`);
+                $supp.append(`<option value="${s.id}">${this._escape(s.name)}</option>`);
+                $filterSupp.append(`<option value="${s.id}">${this._escape(s.name)}</option>`);
             });
             $supp.select2({ dropdownParent: $('#paymentModal') });
             $filterSupp.select2();
 
             const accRes = await api.get('/api/finance/accounts?type=Bank');
             let $acc = $('#accountId').empty().append('<option value="">-- Select Bank/Cash --</option>');
-            (accRes.data || accRes || []).forEach(a => $acc.append(`<option value="${a.id}">[${a.code}] ${a.name}</option>`));
+            (accRes.data || accRes || []).forEach(a => $acc.append(`<option value="${a.id}">[${this._escape(a.code)}] ${this._escape(a.name)}</option>`));
 
             // Load Unendorsed Cheques sitting in the safe
             const chqRes = await api.get('/api/treasury/cheques?status=0');
@@ -154,10 +155,10 @@
             } else {
                 bills.forEach(b => {
                     html += `
-                        <tr data-id="${b.id}">
-                            <td class="font-monospace fw-bold text-danger">${b.billNumber}</td>
+                        <tr data-id="${b.id}" data-type="${this._escape(b.targetType || 'Bill')}">
+                            <td class="font-monospace fw-bold text-danger">${this._escape(b.billNumber)}</td>
                             <td>${new Date(b.date).toLocaleDateString()}</td>
-                            <td>${new Date(b.date).toLocaleDateString()}</td>
+                            <td>${new Date(b.dueDate || b.date).toLocaleDateString()}</td>
                             <td class="text-end">${b.total.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
                             <td class="text-end fw-bold">${b.balance.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
                             <td>
@@ -168,6 +169,20 @@
                 });
             }
             $('#allocationBody').html(html);
+            const creditPanel = document.getElementById('supplierOpeningCredits') || (() => { const p = document.createElement('div'); p.id = 'supplierOpeningCredits'; p.className = 'card card-body my-2'; document.getElementById('allocationBody').closest('.table-responsive').before(p); return p; })();
+            creditPanel.replaceChildren();
+            const credits = await api.get(`/api/treasury/supplier-opening-credits/${supplierId}`).catch(() => []);
+            if (credits.length && bills.length) {
+                creditPanel.classList.remove('d-none');
+                const label = document.createElement('strong'); label.textContent = 'Apply supplier opening credit / advance'; creditPanel.append(label);
+                const creditSelect = document.createElement('select'); creditSelect.className = 'form-select my-1'; creditSelect.setAttribute('aria-label', 'Available supplier opening credit');
+                credits.forEach(c => creditSelect.add(new Option(`${c.referenceNo}: LKR ${c.available.toFixed(2)} available`, c.id)));
+                const target = document.createElement('select'); target.className = 'form-select my-1'; target.setAttribute('aria-label', 'Supplier debt to settle'); bills.forEach((b, i) => target.add(new Option(`${b.billNumber}: LKR ${b.balance.toFixed(2)}`, i)));
+                const amount = document.createElement('input'); amount.className = 'form-control my-1'; amount.type = 'number'; amount.step = '0.01'; amount.min = '0.01'; amount.placeholder = 'Credit amount to apply'; amount.setAttribute('aria-label', 'Supplier credit amount');
+                const button = document.createElement('button'); button.type = 'button'; button.className = 'btn btn-outline-primary align-self-start'; button.textContent = 'Apply Opening Credit';
+                button.onclick = async () => { try { const b = bills[Number(target.value)]; await api.post('/api/treasury/supplier-opening-credits/apply', { CreditId: Number(creditSelect.value), OpeningItemId: b.targetType === 'OpeningItem' ? b.id : null, BillId: b.targetType !== 'OpeningItem' ? b.id : null, Amount: Number(amount.value), Date: $('#paymentDate').val() }); toastr.success('Opening credit applied.'); await this._loadUnpaidBills(supplierId); } catch (e) { toastr.error(e.message || 'Credit could not be applied.'); } };
+                creditPanel.append(creditSelect, target, amount, button);
+            } else creditPanel.classList.add('d-none');
             this._calculateTotals();
             return bills;
         } catch (e) {
@@ -194,11 +209,11 @@
             document.getElementById('paymentDate').valueAsDate = new Date();
             $('#supplierId').val(String(bill.supplierId)).trigger('change.select2');
             const bills = await this._loadUnpaidBills(bill.supplierId);
-            const target = bills.find(x => x.id === billId);
+            const target = bills.find(x => x.id === billId && (x.targetType || 'Bill') === 'Bill');
             if (!target) throw new Error('This bill is not available for payment. It may already be settled or pending cheque clearance.');
 
             $('#amount').val(outstanding.toFixed(2));
-            const $allocation = $(`#allocationBody tr[data-id="${billId}"] .alloc-input`);
+            const $allocation = $(`#allocationBody tr[data-id="${billId}"][data-type="Bill"] .alloc-input`);
             $allocation.val(outstanding.toFixed(2));
             this.onMethodChange();
             this._calculateTotals();
@@ -295,7 +310,7 @@
                 data.allocations.forEach(a => {
                     html += `
                     <tr>
-                        <td class="font-monospace fw-bold">${a.billNumber}</td>
+                        <td class="font-monospace fw-bold">${this._escape(a.billNumber)}</td>
                         <td>${new Date(a.billDate).toLocaleDateString()}</td>
                         <td class="text-end fw-bold text-success">${a.amountApplied.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
                     </tr>`;
@@ -331,7 +346,8 @@
             let val = parseFloat($(this).val()) || 0;
             if (val > 0) {
                 totalAllocated += val;
-                allocations.push({ InvoiceId: parseInt($(this).closest('tr').data('id')), Amount: val });
+                const row = $(this).closest('tr'), opening = row.data('type') === 'OpeningItem';
+                allocations.push({ InvoiceId: opening ? 0 : parseInt(row.data('id')), SupplierOpeningItemId: opening ? parseInt(row.data('id')) : null, Amount: val });
             }
         });
 

@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using NexusFlow.AppCore.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using NexusFlow.Domain.Entities.Finance;
@@ -30,7 +30,7 @@ namespace NexusFlow.AppCore.Features.Finance.Banks.Commands
 
         public async Task<Result<int>> Handle(FinalizeReconciliationCommand request, CancellationToken cancellationToken)
         {
-            using var transaction = await _context.BeginTransactionAsync(cancellationToken);
+            using var transaction = await _context.BeginTransactionAsync(global::System.Data.IsolationLevel.Serializable, cancellationToken);
 
             try
             {
@@ -61,6 +61,7 @@ namespace NexusFlow.AppCore.Features.Finance.Banks.Commands
                 {
                     if (line.IsCleared) return Result<int>.Failure($"Transaction {line.JournalEntry.ReferenceNo} is already cleared.");
 
+                    if (line.JournalEntry.Date.Date > request.StatementDate.Date) return Result<int>.Failure("Statement date precedes a selected transaction.");
                     line.IsCleared = true;
                     line.BankReconciliationId = reconciliation.Id;
 
@@ -84,11 +85,13 @@ namespace NexusFlow.AppCore.Features.Finance.Banks.Commands
                     // Remember: In DepositChequeHandler, we set the Journal Ref as "DEP-{ChequeNumber}"
                     string expectedDepRef = $"DEP-{cheque.ChequeNumber}";
 
-                    if (clearedReferenceNumbers.Contains(expectedDepRef))
+                    if (cheque.DepositJournalEntryId.HasValue
+                        ? linesToClear.Any(x => x.JournalEntryId == cheque.DepositJournalEntryId)
+                        : clearedReferenceNumbers.Contains(expectedDepRef))
                     {
                         cheque.Status = ChequeStatus.Cleared;
                         cheque.ClearedDate = request.StatementDate;
-                        foreach (var allocation in cheque.OriginalReceipt.Allocations.Where(x => x.SalesInvoice != null))
+                        foreach (var allocation in (cheque.OriginalReceipt?.Allocations ?? []).Where(x => x.SalesInvoice != null))
                         {
                             var invoice = allocation.SalesInvoice!;
                             invoice.PaymentStatus = invoice.AmountPaid >= invoice.GrandTotal
@@ -101,7 +104,7 @@ namespace NexusFlow.AppCore.Features.Finance.Banks.Commands
 
                 var clearedInvoiceIds = depositedCheques
                     .Where(x => x.Status == ChequeStatus.Cleared)
-                    .SelectMany(x => x.OriginalReceipt.Allocations)
+                    .SelectMany(x => (x.OriginalReceipt?.Allocations ?? []))
                     .Where(x => x.SalesInvoiceId.HasValue)
                     .Select(x => x.SalesInvoiceId!.Value)
                     .Distinct().ToList();
@@ -110,6 +113,10 @@ namespace NexusFlow.AppCore.Features.Finance.Banks.Commands
                     .ToListAsync(cancellationToken);
                 pendingCommissions.ForEach(x => x.Status = CommissionStatus.ReadyToPay);
 
+                await _context.SaveChangesAsync(cancellationToken);
+                var settlement = new NexusFlow.AppCore.Services.CustomerSettlementService(_context, new(_context));
+                foreach (var customerId in depositedCheques.Where(x => x.Status == ChequeStatus.Cleared).Select(x => x.CustomerId).Distinct())
+                    await settlement.RefreshAsync(customerId, cancellationToken);
                 await _context.SaveChangesAsync(cancellationToken);
                 await transaction.CommitAsync(cancellationToken);
 

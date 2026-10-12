@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using NexusFlow.AppCore.Interfaces;
 using NexusFlow.Domain.Enums;
@@ -12,6 +12,10 @@ namespace NexusFlow.AppCore.Features.Treasury.Queries
     public class ChequeGridDto
     {
         public int Id { get; set; }
+        public int? MigrationBatchId { get; set; }
+        public string? LegacyReceiptReference { get; set; }
+        public string? LegacyDocumentReferences { get; set; }
+        public DateTime? ReceivedDate { get; set; }
         public string ChequeNumber { get; set; } = string.Empty;
         public string BankName { get; set; } = string.Empty;
         public string BranchName { get; set; } = string.Empty;
@@ -42,9 +46,11 @@ namespace NexusFlow.AppCore.Features.Treasury.Queries
                 .Include(c => c.BankBranch)
                 .Include(c => c.BankBranch.Bank)
                 .AsNoTracking()
+                .Where(c => c.MigrationBatchId == null || c.MigrationBatch!.Status == "Posted")
                 .AsQueryable();
 
             if (request.CustomerId.HasValue) query = query.Where(c => c.CustomerId == request.CustomerId);
+            if (request.BankId.HasValue) query = query.Where(c => c.BankBranch.BankId == request.BankId);
             if (request.BankBranchId.HasValue) query = query.Where(c => c.BankBranchId == request.BankBranchId);
             if (request.Status.HasValue) query = query.Where(c => c.Status == request.Status);
 
@@ -53,7 +59,8 @@ namespace NexusFlow.AppCore.Features.Treasury.Queries
                 .Select(c => new ChequeGridDto
                 {
                     Id = c.Id,
-                    ChequeNumber = c.ChequeNumber,
+                    ChequeNumber = c.ChequeNumber, MigrationBatchId = c.MigrationBatchId, LegacyReceiptReference = c.LegacyReceiptReference,
+                    LegacyDocumentReferences = c.LegacyDocumentReferences, ReceivedDate = c.ReceivedDate,
                     BankName = c.BankBranch.Bank.Name,
                     BranchName = c.BankBranch.BranchName,
                     ChequeDate = c.ChequeDate,

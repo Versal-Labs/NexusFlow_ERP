@@ -34,7 +34,7 @@ namespace NexusFlow.AppCore.Features.Treasury.Commands
             if (totalAllocated > command.PaymentAmount)
                 return Result<int>.Failure($"Cannot allocate more ({totalAllocated}) than the payment total ({command.PaymentAmount}).");
 
-            using var transaction = await _context.BeginTransactionAsync(cancellationToken);
+            using var transaction = await _context.BeginTransactionAsync(global::System.Data.IsolationLevel.Serializable, cancellationToken);
             try
             {
                 string payRef = await _sequenceService.GenerateNextNumberAsync("Payment", cancellationToken);
@@ -61,12 +61,22 @@ namespace NexusFlow.AppCore.Features.Treasury.Commands
                 // ==========================================
                 // 3. ALLOCATE TO SUPPLIER BILLS (AP)
                 // ==========================================
-                if (command.Allocations.Any())
+                var snapshot = await new NexusFlow.AppCore.Services.SupplierBalanceService(_context).GetAsync(command.SupplierId, command.Date, cancellationToken);
+                foreach (var alloc in command.Allocations)
                 {
-                    var billIds = command.Allocations.Select(a => a.InvoiceId).ToList();
+                    if (alloc.Amount <= 0 || decimal.Round(alloc.Amount, 2) != alloc.Amount || alloc.OpeningItemId.HasValue || alloc.DebitMemoId.HasValue)
+                        throw new InvalidOperationException("Each supplier allocation must have a positive LKR amount and a supplier bill/opening item target.");
+                    var target = snapshot.Debts.SingleOrDefault(x => x.Id == (alloc.SupplierOpeningItemId ?? alloc.InvoiceId) && x.TargetType == (alloc.SupplierOpeningItemId.HasValue ? "OpeningItem" : "Bill"));
+                    if (target == null || command.Allocations.Where(x => (x.SupplierOpeningItemId ?? x.InvoiceId) == target.Id && x.SupplierOpeningItemId.HasValue == alloc.SupplierOpeningItemId.HasValue).Sum(x => x.Amount) > target.Balance)
+                        throw new InvalidOperationException("Allocation belongs to a different supplier or exceeds the outstanding balance.");
+                    if (alloc.SupplierOpeningItemId.HasValue) payment.Allocations.Add(new PaymentAllocation { SupplierOpeningItemId = alloc.SupplierOpeningItemId, AmountAllocated = alloc.Amount });
+                }
+                if (command.Allocations.Any(x => !x.SupplierOpeningItemId.HasValue))
+                {
+                    var billIds = command.Allocations.Where(x => !x.SupplierOpeningItemId.HasValue).Select(a => a.InvoiceId).ToList();
                     var bills = await _context.SupplierBills.Where(b => billIds.Contains(b.Id)).ToDictionaryAsync(b => b.Id, cancellationToken);
 
-                    foreach (var alloc in command.Allocations)
+                    foreach (var alloc in command.Allocations.Where(x => !x.SupplierOpeningItemId.HasValue))
                     {
                         if (alloc.Amount <= 0 || !bills.TryGetValue(alloc.InvoiceId, out var bill)) continue;
 

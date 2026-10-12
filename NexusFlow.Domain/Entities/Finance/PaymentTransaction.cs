@@ -21,6 +21,7 @@ namespace NexusFlow.Domain.Entities.Finance
         public decimal Amount { get; set; }
         public string? Remarks { get; set; }
         public bool IsVoided { get; set; } = false;
+        public DateTime? VoidDate { get; set; }
         public DateTime? VoidedAt { get; set; }
         public string? VoidReason { get; set; }
         public string? ReversalReferenceNo { get; set; }

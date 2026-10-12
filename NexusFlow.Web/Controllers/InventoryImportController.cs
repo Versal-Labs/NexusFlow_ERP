@@ -27,7 +27,7 @@ namespace NexusFlow.Web.Controllers
         [Authorize(Policy = Permissions.MasterData.ManageProducts)]
         public IActionResult Index()
         {
-            return View();
+            return Redirect("/Migration");
         }
 
         [HttpPost("preview-import")]
@@ -44,6 +44,7 @@ namespace NexusFlow.Web.Controllers
         }
 
         [HttpPost("execute-import")]
+        [NexusFlow.Web.Filters.RetiredMigrationEndpoint]
         [Authorize(Policy = Permissions.MasterData.ManageProducts)]
         public async Task<IActionResult> ExecuteImport([FromBody] ExecuteLegacyProductsCommand command, CancellationToken cancellationToken)
         {

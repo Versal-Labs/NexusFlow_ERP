@@ -14,6 +14,8 @@ namespace NexusFlow.AppCore.Features.Purchasing.Queries
     // ==========================================
     public class UnpaidSupplierBillDto
     {
+        public string TargetType { get; set; } = "Bill";
+        public DateTime DueDate { get; set; }
         public int Id { get; set; }
         public string BillNumber { get; set; } = string.Empty;
         public DateTime Date { get; set; }
@@ -62,6 +64,8 @@ namespace NexusFlow.AppCore.Features.Purchasing.Queries
                 })
                 .ToListAsync(cancellationToken);
 
+            var snapshot = await new NexusFlow.AppCore.Services.SupplierBalanceService(_context).GetAsync(request.SupplierId, DateTime.UtcNow.Date, cancellationToken);
+            unpaidBills = snapshot.Debts.Where(x => x.Balance > 0).OrderBy(x => x.DueDate).Select(x => new UnpaidSupplierBillDto { Id = x.Id, TargetType = x.TargetType, BillNumber = x.Reference, Date = x.Date, DueDate = x.DueDate, Total = x.Amount, Balance = x.Balance }).ToList();
             return Result<List<UnpaidSupplierBillDto>>.Success(unpaidBills);
         }
     }

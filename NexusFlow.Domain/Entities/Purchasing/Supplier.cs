@@ -11,6 +11,8 @@ namespace NexusFlow.Domain.Entities.Purchasing
     [Table("Suppliers", Schema = "Purchasing")]
     public class Supplier : AuditableEntity
     {
+        [MaxLength(50)] public string? LegacySupplierCode { get; set; }
+        public bool DetailsIncomplete { get; set; }
         #region 1. Identity & Legal
         [Required, MaxLength(200)]
         public string Name { get; set; } = string.Empty;

@@ -1,0 +1,66 @@
+@{
+    ViewData["Title"] = "Customer Opening Migration";
+}
+<div class="container-fluid py-3 mb-5">
+    <h4>Customer Opening Migration</h4>
+    <p>Import customer debts, goods-return credits and cheques physically in hand together. All amounts are in LKR. Outstanding is taken from <code>creamt</code>; original dates are retained and debt is due after 30 days.</p>
+    @Html.AntiForgeryToken()
+    <div id="migrationMessage" class="alert d-none" role="status" aria-live="polite"></div>
+    <details class="card card-body mb-3">
+        <summary class="fw-bold">1. Prepare customer masters and legacy codes</summary>
+        <p class="mt-2">Complete real customer contact and address information. Use Id 0 to create; use the existing customer Id to update. Legacy codes must be unique. No temporary customer records are created by financial import.</p>
+        <p><a href="/Customer">Customer Master</a> · <a href="/api/finance/customer-migration/masters/template">Download Customer CSV Template</a></p>
+        <details><summary>Available master IDs for the CSV</summary><pre id="masterLookup" style="max-height:300px;overflow:auto"></pre></details>
+        <form id="masterUpload" class="mt-3"><label for="masterFile" class="form-label">Customer master CSV</label><input id="masterFile" type="file" accept=".csv" class="form-control" required>
+            <button class="btn btn-outline-primary mt-2" type="submit">Preview Customers</button></form>
+        <div id="masterPreview" class="d-none mt-3"><p id="masterSummary"></p><ul id="masterErrors" class="text-danger"></ul>
+            <div class="table-responsive"><table class="table table-sm"><thead><tr><th>Id</th><th>Legacy code</th><th>Name</th><th>Contact</th><th>Phone</th><th>Email</th><th>Address</th><th>Group Id</th><th>Price level Id</th><th>Sales rep Id</th><th>Payment term Id</th><th>Credit limit</th><th>Credit days</th><th>AR account Id</th><th>Revenue account Id</th><th>Bank Id</th><th>Branch Id</th><th>Bank account</th></tr></thead><tbody id="masterRows"></tbody></table></div>
+            <label class="form-check"><input id="masterConfirmed" type="checkbox" class="form-check-input"> I have checked these customer details and mappings.</label>
+            <button id="importMasters" type="button" class="btn btn-primary mt-2" disabled>Import Customers</button>
+        </div>
+    </details>
+    <form id="migrationUpload" class="card card-body mb-3">
+        <h5>2. Upload closing reports</h5>
+        <p>Export both reports at the close of the day before cutover. Include only InSafe cheques. The cheque report date must match the source date.</p>
+        <div class="row g-3">
+            <div class="col-md-3"><label for="cutoverDate" class="form-label">Cutover date</label><input id="cutoverDate" type="date" value="2026-10-01" class="form-control" required></div>
+            <div class="col-md-3"><label for="sourceDate" class="form-label">Source closing date</label><input id="sourceDate" type="date" value="2026-09-30" class="form-control" required></div>
+            <div class="col-md-6"><label for="outstandingFile" class="form-label">Customer outstanding report (cusout.xls)</label><input id="outstandingFile" type="file" accept=".xls,.xlsx" class="form-control" required></div>
+            <div class="col-md-6"><label for="chequeFile" class="form-label">Cheques in hand report</label><input id="chequeFile" type="file" accept=".xls,.xlsx" class="form-control" required></div>
+        </div>
+        <button class="btn btn-primary mt-3 align-self-start" type="submit">Validate and Preview</button>
+    </form>
+    <div class="card card-body mb-3"><h5>Saved migration batches</h5><div class="d-flex gap-2"><select id="savedBatch" class="form-select" aria-label="Saved migration batch"></select><button id="loadBatch" class="btn btn-outline-primary" type="button">Load Batch</button></div></div>
+    <section id="migrationReview" class="card card-body d-none mb-3" aria-label="Migration review">
+        <h5>3. Review mappings and opening totals</h5><p id="batchSummary" class="fw-bold"></p>
+        <div id="postingStatus" class="alert alert-info"></div>
+        <ul id="migrationErrors" class="text-danger"></ul><ul id="migrationWarnings" class="text-warning-emphasis"></ul>
+        <div class="table-responsive"><table class="table table-sm"><thead><tr><th>Legacy bank/branch code</th><th>Verified branch</th></tr></thead><tbody id="bankMappings"></tbody></table></div>
+        <button id="reviewMappings" class="btn btn-outline-primary align-self-start mb-3" type="button">Revalidate Mappings</button>
+        <p id="openingTotals" class="fw-bold"></p>
+        <div class="table-responsive" style="max-height:400px"><table class="table table-sm table-striped"><thead><tr><th>Legacy code</th><th>Customer</th><th>Debts</th><th>Return credits</th><th>Net AR</th><th>Cheques in hand</th></tr></thead><tbody id="customerTotals"></tbody></table></div>
+        <details class="mb-3"><summary>Opening journal</summary><table class="table table-sm"><thead><tr><th>Account</th><th>Debit</th><th>Credit</th></tr></thead><tbody id="openingJournal"></tbody></table>
+            <p>Cheques debit Undeposited Funds and credit Opening Balance Equity. They do not reduce AR again. Exclude these imported control accounts from the later Trial Balance import and reconcile the remaining Opening Balance Equity.</p></details>
+        <details class="mb-3"><summary>Outstanding detail and physical cheque checklist</summary><div class="table-responsive" style="max-height:400px"><table class="table table-sm"><thead><tr><th>Source row</th><th>Code</th><th>Reference</th><th>Type</th><th>Original date</th><th>Amount</th></tr></thead><tbody id="openingRows"></tbody></table></div>
+            <div class="table-responsive" style="max-height:400px"><table class="table table-sm"><thead><tr><th>Source row</th><th>Code</th><th>Receipt</th><th>Cheque number</th><th>Cheque date</th><th>Received date</th><th>Legacy references</th><th>Amount</th></tr></thead><tbody id="chequeRows"></tbody></table></div></details>
+        <label class="form-check mb-2"><input id="physicalConfirmed" type="checkbox" class="form-check-input"> I have reconciled the refreshed closing totals and checked every cheque physically in the safe.</label>
+        <button id="postMigration" class="btn btn-success align-self-start" type="button" disabled>Post Customer Opening</button>
+        <div id="batchActions" class="d-none mt-3">
+            <a id="downloadAudit" class="btn btn-outline-secondary">Download Customer Totals</a>
+            <a id="downloadOutstanding" class="btn btn-outline-secondary">Download Outstanding Source</a>
+            <a id="downloadCheques" class="btn btn-outline-secondary">Download Cheque Source</a>
+            <button id="reconcileBatch" type="button" class="btn btn-outline-primary">Reconcile Batch</button>
+            <div id="reconciliationResult" class="mt-2"></div>
+            <button id="signOffBatch" type="button" class="btn btn-primary" disabled>Sign Off and Lock Migration</button>
+            <details id="reversePanel" class="mt-3"><summary>Reverse unused migration batch</summary><p>Reversal is blocked after any downstream customer activity or sign-off.</p>
+                <label for="reverseDate">Reversal date</label><input id="reverseDate" type="date" class="form-control">
+                <label for="reverseReason">Reason</label><input id="reverseReason" class="form-control" maxlength="1000">
+                <button id="reverseBatch" type="button" class="btn btn-outline-danger mt-2">Reverse Batch</button></details>
+        </div>
+    </section>
+    <details class="card card-body"><summary class="fw-bold">Posting activation after UAT</summary><p class="mt-2">Posting is disabled by default. Enable only after the customer migration tests are approved. Sign-off locks subsequent migration posting.</p>
+        <label class="form-check"><input id="uatApproved" type="checkbox" class="form-check-input"> UAT for this migration has been approved.</label>
+        <div class="mt-2"><button id="enablePosting" type="button" class="btn btn-outline-primary">Enable Migration Posting</button> <button id="disablePosting" type="button" class="btn btn-outline-secondary">Disable Migration Posting</button></div>
+    </details>
+</div>
+@section Scripts { <script src="~/js/finance/customer-migration.js" asp-append-version="true"></script> }

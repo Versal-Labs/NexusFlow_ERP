@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using NexusFlow.AppCore.DTOs.Finance;
 using NexusFlow.AppCore.Interfaces;
@@ -30,7 +30,7 @@ namespace NexusFlow.AppCore.Features.Treasury.Commands
 
         public async Task<Result<int>> Handle(DepositChequeCommand request, CancellationToken cancellationToken)
         {
-            using var transaction = await _context.BeginTransactionAsync(cancellationToken);
+            using var transaction = await _context.BeginTransactionAsync(global::System.Data.IsolationLevel.Serializable, cancellationToken);
             try
             {
                 var cheque = await _context.ChequeRegisters.Include(c => c.Customer)
@@ -39,12 +39,19 @@ namespace NexusFlow.AppCore.Features.Treasury.Commands
                 if (cheque == null) return Result<int>.Failure("Cheque not found.");
                 if (cheque.Status != ChequeStatus.InSafe) return Result<int>.Failure($"Cannot deposit a cheque with status: {cheque.Status}");
 
+                if (cheque.MigrationBatchId.HasValue && !await _context.CustomerMigrationBatches.AnyAsync(x => x.Id == cheque.MigrationBatchId && x.Status == "Posted" && x.CutoverDate <= request.DepositDate.Date, cancellationToken))
+                    return Result<int>.Failure("Opening cheque batch is reversed or deposit date precedes cutover.");
+                if (request.DepositDate.Date < cheque.ChequeDate.Date || request.DepositDate.Date < (cheque.ReceivedDate ?? DateTime.MinValue).Date)
+                    return Result<int>.Failure("Deposit date cannot precede the cheque date or receipt date.");
+                if (!await _context.Accounts.AnyAsync(x => x.Id == request.BankAccountId && x.Type == AccountType.Asset && x.IsActive && x.IsTransactionAccount, cancellationToken))
+                    return Result<int>.Failure("Select an active bank asset transaction account.");
                 // Update Cheque Status
                 cheque.Status = ChequeStatus.Deposited;
                 cheque.DepositedBankAccountId = request.BankAccountId;
+                cheque.DepositedDate = request.DepositDate.Date;
 
                 // GL POSTING: Move money from Safe to Bank
-                int undepositedFundsId = await _accountResolver.ResolveAccountIdAsync("Account.Asset.UndepositedFunds", cancellationToken);
+                int undepositedFundsId = cheque.OpeningUndepositedAccountId ?? await _accountResolver.ResolveAccountIdAsync("Account.Asset.UndepositedFunds", cancellationToken);
 
                 var journalLines = new List<JournalLineRequest>
                 {
@@ -57,11 +64,12 @@ namespace NexusFlow.AppCore.Features.Treasury.Commands
                     Date = request.DepositDate,
                     Description = $"Cheque Deposit: {cheque.ChequeNumber} ({cheque.Customer.Name})",
                     Module = "Treasury",
-                    ReferenceNo = $"DEP-{cheque.ChequeNumber}",
+                    ReferenceNo = $"DEP-{cheque.Id}-{cheque.ChequeNumber}",
                     Lines = journalLines
                 });
 
                 if (!jResult.Succeeded) throw new Exception(jResult.Message);
+                cheque.DepositJournalEntryId = jResult.Data;
 
                 await _context.SaveChangesAsync(cancellationToken);
                 await transaction.CommitAsync(cancellationToken);
@@ -105,7 +113,7 @@ namespace NexusFlow.AppCore.Features.Treasury.Commands
             if (request.RecoverableFromCustomerAmount > request.BankFeeAmount)
                 return Result<int>.Failure("Customer recoverable amount cannot exceed the bank dishonor fee.");
 
-            using var transaction = await _context.BeginTransactionAsync(cancellationToken);
+            using var transaction = await _context.BeginTransactionAsync(global::System.Data.IsolationLevel.Serializable, cancellationToken);
             try
             {
                 var cheque = await _context.ChequeRegisters
@@ -123,6 +131,10 @@ namespace NexusFlow.AppCore.Features.Treasury.Commands
                 if (cheque.Status == ChequeStatus.Cleared || cheque.Status == ChequeStatus.Bounced)
                     return Result<int>.Failure($"Cannot bounce a cheque that is currently marked as {cheque.Status}.");
 
+                if (cheque.MigrationBatchId.HasValue && !await _context.CustomerMigrationBatches.AnyAsync(x => x.Id == cheque.MigrationBatchId && x.Status == "Posted" && x.CutoverDate <= request.BounceDate.Date, cancellationToken))
+                    return Result<int>.Failure("Opening cheque batch is reversed or dishonour date precedes cutover.");
+                if (request.BounceDate.Date < (cheque.DepositedDate ?? cheque.EndorsedDate ?? cheque.ReceivedDate ?? cheque.OriginalReceipt?.Date ?? DateTime.MinValue).Date)
+                    return Result<int>.Failure("Dishonour date precedes the latest cheque transaction.");
                 int creditAccountId;
                 string stateNote;
 
@@ -131,7 +143,7 @@ namespace NexusFlow.AppCore.Features.Treasury.Commands
                 // ==========================================
                 if (cheque.Status == ChequeStatus.InSafe)
                 {
-                    creditAccountId = await _accountResolver.ResolveAccountIdAsync("Account.Asset.UndepositedFunds", cancellationToken);
+                    creditAccountId = cheque.OpeningUndepositedAccountId ?? await _accountResolver.ResolveAccountIdAsync("Account.Asset.UndepositedFunds", cancellationToken);
                     stateNote = "In Safe";
                 }
                 else if (cheque.Status == ChequeStatus.Deposited)
@@ -142,31 +154,54 @@ namespace NexusFlow.AppCore.Features.Treasury.Commands
                 }
                 else if (cheque.Status == ChequeStatus.Endorsed)
                 {
-                    if (cheque.EndorsedPayment == null || !cheque.EndorsedPayment.SupplierId.HasValue)
+                    if ((cheque.EndorsedPayment == null || !cheque.EndorsedPayment.SupplierId.HasValue) && !cheque.OpeningEndorsedSupplierId.HasValue)
                         return Result<int>.Failure("Data corruption: Endorsed cheque has no linked supplier payment.");
 
-                    var supplier = await _context.Suppliers.FindAsync(new object[] { cheque.EndorsedPayment.SupplierId.Value }, cancellationToken);
+                    var supplierId = cheque.OpeningEndorsedSupplierId ?? cheque.EndorsedPayment!.SupplierId!.Value;
+                    var supplier = await _context.Suppliers.FindAsync(new object[] { supplierId }, cancellationToken);
                     if (supplier == null || supplier.DefaultPayableAccountId == 0) return Result<int>.Failure("Supplier AP Account mapping missing.");
 
                     creditAccountId = supplier.DefaultPayableAccountId ?? 0;
                     stateNote = "Endorsed";
 
-                    cheque.EndorsedPayment.IsVoided = true;
-                    cheque.EndorsedPayment.VoidedAt = DateTime.UtcNow;
-                    cheque.EndorsedPayment.VoidReason = $"Customer cheque {cheque.ChequeNumber} dishonored: {request.Reason}";
+                    if (cheque.EndorsedPayment != null) {
+                        cheque.EndorsedPayment.IsVoided = true;
+                        cheque.EndorsedPayment.VoidDate = request.BounceDate.Date;
+                        cheque.EndorsedPayment.VoidedAt = DateTime.UtcNow;
+                        cheque.EndorsedPayment.VoidReason = $"Customer cheque {cheque.ChequeNumber} dishonored: {request.Reason}";
+                    }
+                    else {
+                        var origin = await _context.MigrationOrigins.SingleAsync(x => x.EntityKind == "Cheque" && x.EntityId == cheque.Id && x.IsCurrent, cancellationToken);
+                        _context.SupplierOpeningItems.Add(new NexusFlow.Domain.Entities.Finance.SupplierOpeningItem { MigrationUnitId = origin.UnitId, SupplierId = supplierId, PayableAccountId = creditAccountId, ReferenceNo = $"ENDORSED-BNC-{cheque.Id}", Kind = "ChequeDishonour", DocumentDate = request.BounceDate.Date, PostingDate = request.BounceDate.Date, DueDate = request.BounceDate.Date, Amount = cheque.Amount });
+                    }
                 }
                 else return Result<int>.Failure($"Cheque status {cheque.Status} cannot be dishonored.");
 
                 var reversalReference = $"BNC-{cheque.Id}-{request.BounceDate:yyyyMMdd}";
-                cheque.OriginalReceipt.IsVoided = true;
-                cheque.OriginalReceipt.VoidedAt = DateTime.UtcNow;
-                cheque.OriginalReceipt.VoidReason = $"Cheque {cheque.ChequeNumber} dishonored: {request.Reason}";
-                cheque.OriginalReceipt.ReversalReferenceNo = reversalReference;
+                if (cheque.OriginalReceipt != null)
+                {
+                    cheque.OriginalReceipt.IsVoided = true;
+                    cheque.OriginalReceipt.VoidDate = request.BounceDate.Date;
+                    cheque.OriginalReceipt.VoidedAt = DateTime.UtcNow;
+                    cheque.OriginalReceipt.VoidReason = $"Cheque {cheque.ChequeNumber} dishonored: {request.Reason}";
+                    cheque.OriginalReceipt.ReversalReferenceNo = reversalReference;
+                }
+                else if (cheque.MigrationBatchId.HasValue)
+                {
+                    _context.CustomerDebitMemos.Add(new CustomerDebitMemo
+                    {
+                        DebitMemoNumber = $"OPEN-BNC-{cheque.Id}", Date = request.BounceDate.Date, DueDate = request.BounceDate.Date,
+                        CustomerId = cheque.CustomerId, ChequeRegisterId = cheque.Id, Amount = cheque.Amount,
+                        ReceivableAccountId = cheque.OpeningReceivableAccountId,
+                        Reason = $"Opening cheque {cheque.LegacyReceiptReference}/{cheque.ChequeNumber} dishonoured. Legacy references: {cheque.LegacyDocumentReferences}. {request.Reason}"
+                    });
+                }
+                else return Result<int>.Failure("Ordinary cheque has no original receipt.");
                 if (cheque.EndorsedPayment != null) cheque.EndorsedPayment.ReversalReferenceNo = reversalReference;
 
-                var invoiceIds = cheque.OriginalReceipt.Allocations.Where(a => a.SalesInvoiceId.HasValue)
+                var invoiceIds = (cheque.OriginalReceipt?.Allocations ?? []).Where(a => a.SalesInvoiceId.HasValue)
                     .Select(a => a.SalesInvoiceId!.Value).Distinct().ToList();
-                foreach (var alloc in cheque.OriginalReceipt.Allocations)
+                foreach (var alloc in (cheque.OriginalReceipt?.Allocations ?? []))
                 {
                     if (alloc.SalesInvoice != null)
                     {
@@ -215,7 +250,7 @@ namespace NexusFlow.AppCore.Features.Treasury.Commands
 
                 var journalLines = new List<JournalLineRequest>
                 {
-                    new JournalLineRequest { AccountId = cheque.Customer.DefaultReceivableAccountId, Debit = cheque.Amount, Credit = 0, Note = $"Bounced Cheque {cheque.ChequeNumber}" },
+                    new JournalLineRequest { AccountId = cheque.OpeningReceivableAccountId ?? cheque.Customer.DefaultReceivableAccountId, Debit = cheque.Amount, Credit = 0, Note = $"Bounced Cheque {cheque.ChequeNumber}" },
                     new JournalLineRequest { AccountId = creditAccountId, Debit = 0, Credit = cheque.Amount, Note = $"Bounce Reversal ({stateNote})" }
                 };
 
@@ -235,13 +270,14 @@ namespace NexusFlow.AppCore.Features.Treasury.Commands
                         _context.CustomerDebitMemos.Add(new CustomerDebitMemo
                         {
                             DebitMemoNumber = memoNo,
-                            Date = request.BounceDate,
+                            Date = request.BounceDate, DueDate = request.BounceDate.Date,
+                            ReceivableAccountId = cheque.OpeningReceivableAccountId ?? cheque.Customer.DefaultReceivableAccountId,
                             CustomerId = cheque.CustomerId,
                             ChequeRegisterId = cheque.Id,
                             Amount = request.RecoverableFromCustomerAmount,
                             Reason = $"Recoverable dishonor charge for cheque {cheque.ChequeNumber}"
                         });
-                        journalLines.Add(new JournalLineRequest { AccountId = cheque.Customer.DefaultReceivableAccountId, Debit = request.RecoverableFromCustomerAmount, Credit = 0, Note = memoNo });
+                        journalLines.Add(new JournalLineRequest { AccountId = cheque.OpeningReceivableAccountId ?? cheque.Customer.DefaultReceivableAccountId, Debit = request.RecoverableFromCustomerAmount, Credit = 0, Note = memoNo });
                         journalLines.Add(new JournalLineRequest { AccountId = bankFeesAccountId, Debit = 0, Credit = request.RecoverableFromCustomerAmount, Note = "Customer-recoverable dishonor fee" });
                     }
                 }
@@ -263,6 +299,12 @@ namespace NexusFlow.AppCore.Features.Treasury.Commands
                 cheque.DishonoredDate = request.BounceDate;
                 cheque.ReversalReferenceNo = reversalReference;
 
+                if (cheque.MigrationBatchId.HasValue)
+                    foreach (var pending in await _context.OpeningBankItems.Where(x => x.ReceivedChequeId == cheque.Id && x.ClearedDate == null && x.CancelledDate == null).ToListAsync(cancellationToken))
+                        pending.CancelledDate = request.BounceDate.Date;
+
+                await _context.SaveChangesAsync(cancellationToken);
+                await new NexusFlow.AppCore.Services.CustomerSettlementService(_context, new(_context)).RefreshAsync(cheque.CustomerId, cancellationToken);
                 await _context.SaveChangesAsync(cancellationToken);
                 await transaction.CommitAsync(cancellationToken);
 

@@ -291,7 +291,10 @@ namespace NexusFlow.AppCore.Features.Print
                 .Include(x => x.Customer)
                 .Include(x => x.Supplier)
                 .Include(x => x.Allocations).ThenInclude(x => x.SalesInvoice)
+                .Include(x => x.Allocations).ThenInclude(x => x.CustomerOpeningItem)
+                .Include(x => x.Allocations).ThenInclude(x => x.CustomerDebitMemo)
                 .Include(x => x.Allocations).ThenInclude(x => x.SupplierBill)
+                .Include(x => x.Allocations).ThenInclude(x => x.SupplierOpeningItem)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
 
@@ -323,8 +326,8 @@ namespace NexusFlow.AppCore.Features.Print
                 GrandTotal = payment.Amount,
                 LineItems = payment.Allocations.Select(x => new PrintLineItemDto
                 {
-                    ItemCode = isCustomerReceipt ? x.SalesInvoice?.InvoiceNumber ?? string.Empty : x.SupplierBill?.BillNumber ?? string.Empty,
-                    Description = isCustomerReceipt ? "Invoice Allocation" : "Bill Allocation",
+                    ItemCode = isCustomerReceipt ? x.SalesInvoice?.InvoiceNumber ?? x.CustomerOpeningItem?.ReferenceNo ?? x.CustomerDebitMemo?.DebitMemoNumber ?? string.Empty : x.SupplierBill?.BillNumber ?? x.SupplierOpeningItem?.ReferenceNo ?? string.Empty,
+                    Description = isCustomerReceipt ? x.CustomerOpeningItemId.HasValue ? "Opening Item Allocation" : x.CustomerDebitMemoId.HasValue ? "Debit Memo Allocation" : "Invoice Allocation" : "Bill Allocation",
                     Quantity = 1,
                     Unit = "Doc",
                     UnitPrice = x.AmountAllocated,
@@ -488,14 +491,27 @@ namespace NexusFlow.AppCore.Features.Print
                 .AsNoTracking().FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
             if (order == null) return Result<PrintDocumentDto>.Failure("Production order not found.");
 
-            var lines = order.Components.Select(x => new PrintLineItemDto
+            var lines = order.Components.Select(x =>
             {
-                ItemCode = x.MaterialVariant.SKU,
-                Description = x.MaterialVariant.Product.Name,
-                Quantity = type == DocumentType.ProductionClosureReconciliation ? x.ConsumedQuantity + x.NormalWasteQuantity + x.AbnormalLossQuantity + x.ContractorRecoverableQuantity : x.PlannedQuantity,
-                Unit = x.MaterialVariant.Product.UnitOfMeasure?.Symbol ?? "Unit",
-                UnitPrice = x.IssuedQuantity == 0 ? 0 : x.IssuedCost / x.IssuedQuantity,
-                LineTotal = type == DocumentType.ProductionClosureReconciliation ? x.ConsumedCost + x.NormalWasteCost + x.AbnormalLossCost + x.ContractorRecoverableCost : 0
+                var quantity = type == DocumentType.ProductionClosureReconciliation
+                    ? x.ConsumedQuantity + x.NormalWasteQuantity + x.AbnormalLossQuantity + x.ContractorRecoverableQuantity
+                    : x.PlannedQuantity;
+                var unitPrice = x.IssuedQuantity == 0 ? 0 : x.IssuedCost / x.IssuedQuantity;
+                var lineTotal = type == DocumentType.ProductionClosureReconciliation
+                    ? x.ConsumedCost + x.NormalWasteCost + x.AbnormalLossCost + x.ContractorRecoverableCost
+                    : quantity * unitPrice;
+
+                // Production order PDFs display planned material quantities with the latest issued FIFO average cost.
+                // The line and document totals must mirror those visible columns instead of staying zero.
+                return new PrintLineItemDto
+                {
+                    ItemCode = x.MaterialVariant.SKU,
+                    Description = x.MaterialVariant.Product.Name,
+                    Quantity = quantity,
+                    Unit = x.MaterialVariant.Product.UnitOfMeasure?.Symbol ?? "Unit",
+                    UnitPrice = unitPrice,
+                    LineTotal = lineTotal
+                };
             }).ToList();
             return Success(new PrintDocumentDto
             {

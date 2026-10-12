@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using NexusFlow.AppCore.Interfaces;
 using NexusFlow.Domain.Enums;
@@ -43,6 +43,7 @@ namespace NexusFlow.AppCore.Features.Reporting.Queries
                 .Include(c => c.Customer)
                 .Include(c => c.BankBranch)
                     .ThenInclude(b => b.Bank)
+                .Where(c => c.MigrationBatchId == null || c.MigrationBatch!.Status == "Posted")
                 .AsQueryable();
 
             if (request.StartDate.HasValue) query = query.Where(c => c.ChequeDate >= request.StartDate.Value.Date);

@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using NexusFlow.AppCore.DTOs.Finance;
 using NexusFlow.AppCore.Interfaces;
@@ -39,63 +39,32 @@ namespace NexusFlow.AppCore.Features.Finance.Commands
 
         public async Task<Result<string>> Handle(ImportOpenInvoicesCommand request, CancellationToken cancellationToken)
         {
+            if (request.Invoices.Any(x => !string.Equals(x.Type, "AP", StringComparison.OrdinalIgnoreCase)))
+                return Result<string>.Failure("Customer AR must be imported through /Finance/CustomerMigration. This legacy wizard supports supplier AP only.");
             if (!request.Invoices.Any()) return Result<string>.Failure("No records to import.");
 
             int obeAccountId = await _accountResolver.ResolveAccountIdAsync("Account.Equity.OpeningBalance", cancellationToken);
-            int arAccountId = await _accountResolver.ResolveAccountIdAsync("Account.Asset.AccountsReceivable", cancellationToken);
             int apAccountId = await _accountResolver.ResolveAccountIdAsync("Account.Liability.AccountsPayable", cancellationToken);
 
-            if (obeAccountId == 0 || arAccountId == 0 || apAccountId == 0)
-                return Result<string>.Failure("CRITICAL: AR, AP, or OBE control accounts are missing from System Config.");
+            if (obeAccountId == 0 || apAccountId == 0)
+                return Result<string>.Failure("CRITICAL: AP or OBE control accounts are missing from System Config.");
 
             using var transaction = await _context.BeginTransactionAsync(cancellationToken);
             string migrationRef = $"MIG-ARAP-{DateTime.UtcNow:yyyyMMddHHmmss}";
 
             try
             {
-                decimal totalAr = 0;
                 decimal totalAp = 0;
                 int recordsProcessed = 0;
 
                 // Cache to avoid hitting DB in a loop for every row
-                var customers = await _context.Customers.ToDictionaryAsync(c => c.Name.ToUpper(), c => c, cancellationToken);
                 var suppliers = await _context.Suppliers.ToDictionaryAsync(s => s.Name.ToUpper(), s => s, cancellationToken);
 
                 foreach (var inv in request.Invoices.Where(i => i.OutstandingAmount > 0))
                 {
                     string party = inv.PartyName.Trim().ToUpper();
 
-                    if (inv.Type.ToUpper() == "AR")
-                    {
-                        // 1. Resolve Customer
-                        if (!customers.TryGetValue(party, out var customer))
-                        {
-                            customer = new Customer { Name = party, Email = "migrated@legacy.com", IsActive = true };
-                            _context.Customers.Add(customer);
-                            customers[party] = customer;
-                        }
-
-                        // 2. Create Stripped-Down Sales Invoice PERFECTLY MAPPED
-                        var salesInvoice = new SalesInvoice
-                        {
-                            Customer = customer,
-                            InvoiceNumber = inv.DocumentNo,
-                            InvoiceDate = inv.Date,
-                            DueDate = inv.Date.AddDays(30), // Defaulting to Net 30
-                            SubTotal = inv.OutstandingAmount,
-                            TotalTax = 0,
-                            TotalDiscount = 0,
-                            GrandTotal = inv.OutstandingAmount,
-                            AmountPaid = 0,
-                            PaymentStatus = InvoicePaymentStatus.Unpaid,
-                            IsPosted = true, // Make sure it's recognized as a final document
-                            ApplyVat = false, // VAT was handled in legacy system
-                            Notes = "Legacy Migration Balance"
-                        };
-                        _context.SalesInvoices.Add(salesInvoice);
-                        totalAr += inv.OutstandingAmount;
-                    }
-                    else if (inv.Type.ToUpper() == "AP")
+                    if (inv.Type.ToUpper() == "AP")
                     {
                         // 1. Resolve Supplier
                         if (!suppliers.TryGetValue(party, out var supplier))
@@ -134,12 +103,6 @@ namespace NexusFlow.AppCore.Features.Finance.Commands
                 // 3. POST THE AR/AP CUTOVER JOURNAL
                 var journalLines = new List<JournalLineRequest>();
 
-                if (totalAr > 0)
-                {
-                    journalLines.Add(new JournalLineRequest { AccountId = arAccountId, Debit = totalAr, Credit = 0, Note = "AR Migration Opening Balance" });
-                    journalLines.Add(new JournalLineRequest { AccountId = obeAccountId, Debit = 0, Credit = totalAr, Note = "Offset for AR Cutover" });
-                }
-
                 if (totalAp > 0)
                 {
                     journalLines.Add(new JournalLineRequest { AccountId = apAccountId, Debit = 0, Credit = totalAp, Note = "AP Migration Opening Balance" });
@@ -160,7 +123,7 @@ namespace NexusFlow.AppCore.Features.Finance.Commands
                 }
 
                 await transaction.CommitAsync(cancellationToken);
-                return Result<string>.Success($"Migrated {recordsProcessed} open records. AR: {totalAr:C}, AP: {totalAp:C}.");
+                return Result<string>.Success($"Migrated {recordsProcessed} open records. AP: {totalAp:C}.");
             }
             catch (Exception ex)
             {

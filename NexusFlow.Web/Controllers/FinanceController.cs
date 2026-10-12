@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NexusFlow.AppCore.Constants;
 
@@ -47,15 +47,16 @@ namespace NexusFlow.Web.Controllers
         }
 
         [Authorize(Policy = Permissions.Finance.ManageAccounts)]
-        public IActionResult ImportOpenInvoices()
-        {
-            return View();
-        }
+        public IActionResult ImportOpenInvoices() => Redirect("/Migration");
+
+        [Authorize(Policy = Permissions.Finance.ManageAccounts)]
+        [Authorize(Policy = Permissions.Treasury.ManageCheques)]
+        public IActionResult CustomerMigration() => Redirect("/Migration");
 
         [Authorize(Policy = Permissions.Finance.ManageAccounts)]
         public IActionResult ImportTrialBalance()
         {
-            return View();
+            return Redirect("/Migration");
         }
     }
 }

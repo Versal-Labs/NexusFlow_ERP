@@ -1,4 +1,5 @@
-﻿using MediatR;
+using MediatR;
+using Microsoft.EntityFrameworkCore;
 using NexusFlow.AppCore.DTOs.Purchasing;
 using NexusFlow.AppCore.Interfaces;
 using NexusFlow.Domain.Entities.Purchasing;
@@ -37,6 +38,8 @@ namespace NexusFlow.AppCore.Features.Purchasing.Suppliers.Commands
             var dto = request.Supplier;
             var entity = await _context.Suppliers.FindAsync(new object[] { dto.Id }, token);
             if (entity == null) return Result<int>.Failure("Supplier not found");
+            if (entity.DefaultPayableAccountId != dto.DefaultPayableAccountId && _context.SupplierOpeningItems != null && (await _context.SupplierOpeningItems.AnyAsync(x => x.SupplierId == entity.Id, token) || await _context.OpeningBankItems.AnyAsync(x => x.SupplierId == entity.Id, token) || await _context.ChequeRegisters.AnyAsync(x => x.OpeningEndorsedSupplierId == entity.Id, token)))
+                return Result<int>.Failure("Supplier payable account is locked after opening migration. Use a reviewed financial correction.");
 
             MapDtoToEntity(dto, entity);
             await _context.SaveChangesAsync(token);
@@ -82,6 +85,7 @@ namespace NexusFlow.AppCore.Features.Purchasing.Suppliers.Commands
 
             entity.IsActive = dto.IsActive;
             entity.InternalNotes = dto.InternalNotes;
+            entity.DetailsIncomplete = new[] { entity.Email, entity.ContactPerson, entity.Phone, entity.AddressLine1, entity.TaxRegNo }.Any(string.IsNullOrWhiteSpace);
         }
     }
 }

@@ -11,6 +11,7 @@ namespace NexusFlow.Domain.Entities.Finance
     [Table("ChequeRegister", Schema = "Finance")]
     public class ChequeRegister : AuditableEntity
     {
+        public int? OpeningEndorsedSupplierId { get; set; }
         public string ChequeNumber { get; set; } = string.Empty;
         public int BankBranchId { get; set; }
         public BankBranch BankBranch { get; set; } = null!;
@@ -21,9 +22,20 @@ namespace NexusFlow.Domain.Entities.Finance
         public Customer Customer { get; set; } = null!;
 
         // 1. The original Customer Receipt that generated this cheque
-        public int OriginalReceiptId { get; set; }
+        public int? OriginalReceiptId { get; set; }
         [ForeignKey("OriginalReceiptId")]
-        public PaymentTransaction OriginalReceipt { get; set; } = null!; // <--- ADDED THIS
+        public PaymentTransaction? OriginalReceipt { get; set; }
+
+        public int? MigrationBatchId { get; set; }
+        public CustomerMigrationBatch? MigrationBatch { get; set; }
+        public DateTime? ReceivedDate { get; set; }
+        public string? LegacyReceiptReference { get; set; }
+        public string? LegacyDocumentReferences { get; set; }
+        public int? OpeningReceivableAccountId { get; set; }
+        public int? OpeningUndepositedAccountId { get; set; }
+        public int? DepositJournalEntryId { get; set; }
+        public DateTime? DepositedDate { get; set; }
+        public int? OpeningSourceRow { get; set; }
 
         // 2. Links to the Supplier Payment if we Endorse (Swap) it
         public int? EndorsedPaymentId { get; set; } // <--- ADDED THIS

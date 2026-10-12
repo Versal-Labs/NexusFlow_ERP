@@ -98,7 +98,7 @@
                 dataSrc: function (json) { return json.data || json || []; }
             },
             columns: [
-                { data: 'chequeNumber', className: 'fw-bold text-dark font-monospace' },
+                { data: 'chequeNumber', className: 'fw-bold text-dark font-monospace', render: (value, type, row) => type !== 'display' ? value : $('<span>').text(value).html() + (row.migrationBatchId ? '<br><small class="text-muted">Opening #' + row.migrationBatchId + ': ' + $('<span>').text(row.legacyReceiptReference || '').html() + '<br>Legacy refs: ' + $('<span>').text(row.legacyDocumentReferences || '').html() + '</small>' : '') },
                 { data: null, render: row => `${row.bankName} - ${row.branchName}` },
                 { 
                     data: 'chequeDate', 
@@ -110,7 +110,7 @@
                         return `<span class="${isOverdue}">${date.toLocaleDateString()}</span>`;
                     }
                 },
-                { data: 'customerName', className: 'text-muted' },
+                { data: 'customerName', className: 'text-muted', render: $.fn.dataTable.render.text() },
                 { data: 'amount', className: 'text-end fw-bold text-success', render: d => d.toLocaleString(undefined, { minimumFractionDigits: 2 }) },
                 {
                     data: 'statusId',
@@ -130,6 +130,7 @@
                     orderable: false,
                     render: function (data, type, row) {
                         let btns = '';
+                        const chequeArgument = $('<span>').text(JSON.stringify(row.chequeNumber)).html().replaceAll('"', '&quot;');
                         // You can only bounce cheques that are NOT already bounced or cleared.
                         if (row.statusId === 0 || row.statusId === 1 || row.statusId === 2) {
                             btns += `<button class="btn btn-sm btn-outline-danger shadow-sm" onclick="vaultApp.openBounceModal(${row.id})" title="Dishonor / Bounce"><i class="fa-solid fa-burst"></i> Bounce</button>`;
@@ -143,10 +144,10 @@
                         if (row.statusId === 0) { 
                         
                             // ACTION: ENDORSE TO SUPPLIER
-                            btns += `<button class="btn btn-sm btn-secondary shadow-sm ms-1" onclick="vaultApp.openEndorseModal(${row.id}, '${row.chequeNumber}', ${row.amount})" title="Endorse to Supplier"><i class="fa-solid fa-handshake"></i> Endorse</button>`;
+                            btns += `<button class="btn btn-sm btn-secondary shadow-sm ms-1" onclick="vaultApp.openEndorseModal(${row.id}, ${chequeArgument}, ${row.amount})" title="Endorse to Supplier"><i class="fa-solid fa-handshake"></i> Endorse</button>`;
                         
                             // ACTION: DEPOSIT TO BANK (Just in case you missed this from earlier!)
-                            btns += `<button class="btn btn-sm btn-primary shadow-sm ms-1" onclick="vaultApp.openDeposit(${row.id}, '${row.chequeNumber}', ${row.amount})" title="Deposit to Bank"><i class="fa-solid fa-building-columns"></i> Deposit</button>`;
+                            btns += `<button class="btn btn-sm btn-primary shadow-sm ms-1" onclick="vaultApp.openDeposit(${row.id}, ${chequeArgument}, ${row.amount})" title="Deposit to Bank"><i class="fa-solid fa-building-columns"></i> Deposit</button>`;
                         }
                         return btns;
                     }

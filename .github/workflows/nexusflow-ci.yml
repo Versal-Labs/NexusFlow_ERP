@@ -1,0 +1,94 @@
+name: NexusFlow CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nexusflow-ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-test-package:
+    runs-on: windows-2022
+    timeout-minutes: 45
+    defaults:
+      run:
+        shell: pwsh
+    env:
+      DOTNET_NOLOGO: 'true'
+      DOTNET_CLI_TELEMETRY_OPTOUT: 'true'
+      NEXUSFLOW_RUN_LOCALDB_IMPORT_TESTS: '1'
+      NEXUSFLOW_RUN_LOCALDB_CUSTOMER_TESTS: '1'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4
+        with:
+          dotnet-version: '10.0.x'
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Start disposable test SQL instance
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $sql = Get-Command SqlLocalDB.exe -ErrorAction SilentlyContinue
+          if (!$sql) {
+            $sql = Get-ChildItem 'C:\Program Files\Microsoft SQL Server' -Filter SqlLocalDB.exe -Recurse | Select-Object -First 1
+            if (!$sql) { throw 'SQL LocalDB is required; SQL tests must not be silently skipped.' }
+            $sqlPath = $sql.FullName
+          } else { $sqlPath = $sql.Source }
+          & $sqlPath start MSSQLLocalDB
+          if ($LASTEXITCODE -ne 0) { throw 'LocalDB failed to start.' }
+      - name: Restore and build
+        run: |
+          dotnet restore NexusFlow_ERP.sln
+          if ($LASTEXITCODE -ne 0) { throw 'Restore failed.' }
+          dotnet build NexusFlow_ERP.sln --configuration Release --no-restore
+          if ($LASTEXITCODE -ne 0) { throw 'Build failed.' }
+      - name: Application and SQL integration tests
+        run: |
+          dotnet test NexusFlow.IntegrationTests/NexusFlow.IntegrationTests.csproj --configuration Release --no-build --logger 'trx;LogFileName=application.trx' --results-directory artifacts/test-results
+          if ($LASTEXITCODE -ne 0) { throw 'Application tests failed.' }
+          node --test NexusFlow.IntegrationTests/raw-material-import.client.test.cjs
+          if ($LASTEXITCODE -ne 0) { throw 'Client tests failed.' }
+      - name: Deployment regression tests (PowerShell 5.1)
+        shell: powershell
+        run: |
+          & ./deploy/tests/Test-GarnetRelease.ps1
+      - name: Check EF model migration coverage
+        run: |
+          dotnet tool install dotnet-ef --version 10.0.5 --tool-path "$env:RUNNER_TEMP/ef"
+          if ($LASTEXITCODE -ne 0) { throw 'EF tool install failed.' }
+          & "$env:RUNNER_TEMP/ef/dotnet-ef.exe" migrations has-pending-model-changes --project NexusFlow.Infrastructure --startup-project NexusFlow.Web --configuration Release --no-build
+          if ($LASTEXITCODE -ne 0) { throw 'EF model needs a migration.' }
+      - name: Publish tested main release
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          dotnet publish NexusFlow.Web/NexusFlow.Web.csproj --configuration Release --no-build --no-restore --self-contained false --output "$env:RUNNER_TEMP/garnet-publish"
+          if ($LASTEXITCODE -ne 0) { throw 'Publish failed.' }
+          & ./deploy/New-GarnetRelease.ps1 -PublishPath "$env:RUNNER_TEMP/garnet-publish" -OutputPath "$env:RUNNER_TEMP/garnet-release" -CommitSha $env:GITHUB_SHA -CiRunId $env:GITHUB_RUN_ID -CiRunAttempt $env:GITHUB_RUN_ATTEMPT
+      - name: Upload tested release
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: garnet-release-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/garnet-release/release.zip
+            ${{ runner.temp }}/garnet-release/release.zip.sha256
+          if-no-files-found: error
+          retention-days: 30
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: test-results-${{ github.run_id }}-${{ github.run_attempt }}
+          path: artifacts/test-results
+          if-no-files-found: warn
+          retention-days: 30

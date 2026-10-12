@@ -23,6 +23,29 @@ namespace NexusFlow.Infrastructure
 {
     public class ErpDbContext : IdentityDbContext<ApplicationUser>, IErpDbContext
     {
+        public DbSet<MigrationProject> MigrationProjects { get; set; }
+        public DbSet<MigrationDataset> MigrationDatasets { get; set; }
+        public DbSet<MigrationScope> MigrationScopes { get; set; }
+        public DbSet<MigrationUnit> MigrationUnits { get; set; }
+        public DbSet<MigrationOrigin> MigrationOrigins { get; set; }
+        public DbSet<MigrationRun> MigrationRuns { get; set; }
+        public DbSet<MigrationAudit> MigrationAudits { get; set; }
+        public DbSet<SupplierOpeningItem> SupplierOpeningItems { get; set; }
+        public DbSet<SupplierCreditApplication> SupplierCreditApplications { get; set; }
+        public DbSet<OpeningBankItem> OpeningBankItems { get; set; }
+        private int? migrationPostingProject;
+        public IDisposable EnterMigrationPosting(int projectId)
+        {
+            if (migrationPostingProject != null) throw new InvalidOperationException("Nested migration posting is not permitted.");
+            migrationPostingProject = projectId; return new MigrationWriteLease(() => migrationPostingProject = null);
+        }
+        private sealed class MigrationWriteLease(Action dispose) : IDisposable { public void Dispose() => dispose(); }
+        public async Task LockMigrationProjectAsync(int projectId, CancellationToken ct = default)
+        {
+            if (!Database.IsSqlServer()) return;
+            var resource = "NexusFlow.Migration." + projectId;
+            await Database.ExecuteSqlInterpolatedAsync($"DECLARE @result int; EXEC @result = sys.sp_getapplock @Resource={resource}, @LockMode='Exclusive', @LockOwner='Transaction', @LockTimeout=30000; IF @result < 0 THROW 51000, 'Migration project is busy. Refresh and retry.', 1;", ct);
+        }
         private readonly ICurrentUserService _currentUserService;
         public ErpDbContext(DbContextOptions<ErpDbContext> options, ICurrentUserService currentUserService) : base(options)
         {
@@ -60,6 +83,9 @@ namespace NexusFlow.Infrastructure
         public DbSet<JournalLine> JournalLines { get; set; }
         public DbSet<FinancialPeriod> FinancialPeriods { get; set; }
         public DbSet<Customer> Customers { get; set; }
+        public DbSet<CustomerMigrationBatch> CustomerMigrationBatches { get; set; }
+        public DbSet<CustomerOpeningItem> CustomerOpeningItems { get; set; }
+        public DbSet<CustomerCreditApplication> CustomerCreditApplications { get; set; }
         public DbSet<SalesInvoice> SalesInvoices { get; set; }
         public DbSet<SalesInvoiceItem> SalesInvoiceItems { get; set; }
         public DbSet<Supplier> Suppliers { get; set; }
@@ -142,7 +168,12 @@ namespace NexusFlow.Infrastructure
                     // We use 18,2 for money. 
                     // If the property name contains 'Qty' or 'Quantity' or 'Rate', 
                     // we use 18,4 for higher precision.
-                    if (property.Name.Contains("Qty") ||
+                    if (property.Name.Contains("UnitCost") || property.Name is "CostPrice" or "MovingAverageCost")
+                    {
+                        // Retain the sixteen integer digits of the former decimal(18,2) costs.
+                        property.SetColumnType("decimal(22,6)");
+                    }
+                    else if (property.Name.Contains("Qty") ||
                         property.Name.Contains("Quantity") ||   
                         property.Name.Contains("Rate") ||
                         property.Name.Contains("Level"))
@@ -191,6 +222,8 @@ namespace NexusFlow.Infrastructure
 
         public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
+            if (migrationPostingProject == null)
+                await NexusFlow.AppCore.Features.Migration.MigrationTradingGuard.CheckAsync(this, ChangeTracker.Entries().Where(x => x.State is EntityState.Added or EntityState.Modified).Select(x => x.Entity).ToList(), cancellationToken);
             string currentUser = _currentUserService.UserId;
 
             foreach (var entry in ChangeTracker.Entries<AuditableEntity>())
@@ -220,6 +253,14 @@ namespace NexusFlow.Infrastructure
         public async Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default)
         {
             return await Database.BeginTransactionAsync(cancellationToken);
+        }
+
+        public async Task<IDbContextTransaction> BeginTransactionAsync(System.Data.IsolationLevel isolationLevel, CancellationToken cancellationToken = default)
+        {
+            // InMemory is used by non-relational tests; SQL Server honors the requested isolation level.
+            return Database.IsRelational()
+                ? await Database.BeginTransactionAsync(isolationLevel, cancellationToken)
+                : await Database.BeginTransactionAsync(cancellationToken);
         }
     }
 }

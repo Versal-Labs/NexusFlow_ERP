@@ -270,6 +270,7 @@ namespace NexusFlow.Web.Controllers.Api
         }
 
         [HttpPost("execute-import")]
+        [RetiredMigrationEndpoint]
         [Authorize(Policy = Permissions.MasterData.ManageProducts)]
         public async Task<IActionResult> ExecuteImport([FromBody] ExecuteLegacyProductsCommand command, CancellationToken cancellationToken)
         {

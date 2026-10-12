@@ -156,7 +156,6 @@
                             }
                             @if (CurrentUser.HasPermission(Permissions.Inventory.AdjustStock))
                             {
-                                <a href="/Inventory/OpeningStock" class="nav-link py-1 small">Opening Stock</a>
                                 <a href="/Inventory/Adjustments" class="nav-link py-1 small">Stock Adjustments</a>
                             }
                             @if (CurrentUser.HasPermission(Permissions.Inventory.PrintBarcodes))
@@ -166,10 +165,6 @@
                             @if (CurrentUser.HasPermission(Permissions.Inventory.ManageBarcodeTemplates))
                             {
                                 <a href="/Inventory/BarcodeTemplates" class="nav-link py-1 small">Barcode Templates</a>
-                            }
-                            @if (CurrentUser.HasPermission(Permissions.SuperAdmin))
-                            {
-                                <a href="/InventoryImport" class="nav-link py-1 small">Opening Balances Wizard</a>
                             }
 
                             <span class="nav-link py-1 small fw-bold opacity-75 text-uppercase mt-2" style="font-size:10px;">Manufacturing</span>
@@ -229,7 +224,8 @@
                         </div>
                     }
 
-                    @if (CurrentUser.HasPermission(Permissions.Finance.ViewJournals) || CurrentUser.HasPermission(Permissions.Finance.ViewReports))
+                    @if (CurrentUser.HasPermission(Permissions.Finance.ViewJournals) || CurrentUser.HasPermission(Permissions.Finance.ViewReports) ||
+                        (CurrentUser.HasPermission(Permissions.Finance.ManageAccounts) && CurrentUser.HasPermission(Permissions.Treasury.ManageCheques)))
                     {
                         <a class="list-group-item list-group-item-action border-0 d-flex justify-content-between align-items-center py-2 px-3"
                                data-bs-toggle="collapse" href="#menuFinance" role="button" aria-expanded="false">
@@ -265,12 +261,6 @@
                                     <a href="/Finance/BalanceSheet" class="nav-link py-1 small">Balance Sheet</a>
                                 }
                         
-                                @if (CurrentUser.HasPermission(Permissions.SuperAdmin))
-                                {
-                                    <span class="nav-link py-1 small fw-bold opacity-75 text-uppercase mt-2" style="font-size:10px;">Import Opening Balance</span>
-                                    <a href="/Finance/ImportOpenInvoices" class="nav-link py-1 small">Import AR AP</a>
-                                    <a href="/Finance/ImportTrialBalance" class="nav-link py-1 small">Import Trial Balance</a>
-                                }
                             </nav>
                         </div>
                     }
@@ -298,7 +288,7 @@
                     </div>
                 }
 
-                @if (CurrentUser.HasPermission(Permissions.System.ViewUsers) || CurrentUser.HasPermission(Permissions.System.ManageConfigs))
+                @if (CurrentUser.HasPermission(Permissions.System.ViewUsers) || CurrentUser.HasPermission(Permissions.System.ManageConfigs) || CurrentUser.HasPermission(Permissions.Migration.View))
                 {
                     <div class="small fw-semibold text-uppercase px-3 mt-4 mb-2 sidebar-section-header">Administration</div>
 
@@ -312,6 +302,10 @@
                     </a>
                     <div class="collapse" id="menuConfig">
                         <nav class="nav flex-column py-1 ps-4">
+                            @if (CurrentUser.HasPermission(Permissions.Migration.View))
+                            {
+                                <a href="/Migration" class="nav-link py-1 small">Migration Centre</a>
+                            }
                             @if (CurrentUser.HasPermission(Permissions.System.ViewUsers))
                             {
                                 <a href="/System/Users" class="nav-link py-1 small">Identity & Access (IAM)</a>

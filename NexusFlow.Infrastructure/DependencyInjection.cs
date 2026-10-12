@@ -85,6 +85,8 @@ namespace NexusFlow.Infrastructure
             services.AddScoped<INumberSequenceService, NumberSequenceService>();
             services.AddScoped<IFinancialAccountResolver, FinancialAccountResolver>();
             services.AddScoped<IExportService, SyncfusionExportService>();
+            services.AddScoped<NexusFlow.AppCore.Features.Finance.CustomerMigration.ICustomerMigrationFileReader, CustomerMigrationFileReader>();
+            services.AddScoped<NexusFlow.AppCore.Features.Migration.IMigrationFileReader, MigrationFileReader>();
             services.AddScoped<ISmsGatewayService, SmsGatewayService>();
             services.AddScoped<ISecretValidationService, SecretValidationService>();
             services.AddScoped<ICurrentUserPasswordValidator, CurrentUserPasswordValidator>();

@@ -9,6 +9,7 @@ namespace NexusFlow.AppCore.Features.Sales.Queries
     public class UnpaidInvoiceDto
     {
         public int Id { get; set; }
+        public string TargetType { get; set; } = "Invoice";
         public string InvoiceNumber { get; set; } = string.Empty;
         public DateTime InvoiceDate { get; set; }
         public DateTime DueDate { get; set; }
@@ -21,6 +22,8 @@ namespace NexusFlow.AppCore.Features.Sales.Queries
     public class UnpaidInvoicesResponseDto
     {
         public decimal UnappliedCredit { get; set; }
+        public decimal NetBalance { get; set; }
+        public List<NexusFlow.AppCore.Services.CustomerCreditBalance> OpeningCredits { get; set; } = new();
         public List<UnpaidInvoiceDto> Invoices { get; set; } = new();
     }
 

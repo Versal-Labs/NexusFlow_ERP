@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using NexusFlow.AppCore.DTOs.Finance;
 using NexusFlow.AppCore.Constants;
@@ -35,10 +35,10 @@ namespace NexusFlow.AppCore.Features.Treasury.Commands
 
         public async Task<Result<int>> Handle(EndorseChequeCommand request, CancellationToken cancellationToken)
         {
-            if (request.Allocations.GroupBy(x => x.InvoiceId).Any(x => x.Count() > 1))
+            if (request.Allocations.GroupBy(x => new { Id = x.SupplierOpeningItemId ?? x.InvoiceId, Opening = x.SupplierOpeningItemId.HasValue }).Any(x => x.Count() > 1))
                 return Result<int>.Failure("Duplicate supplier bill allocations are not allowed.");
 
-            using var transaction = await _context.BeginTransactionAsync(cancellationToken);
+            using var transaction = await _context.BeginTransactionAsync(global::System.Data.IsolationLevel.Serializable, cancellationToken);
 
             try
             {
@@ -46,9 +46,12 @@ namespace NexusFlow.AppCore.Features.Treasury.Commands
                 var cheque = await _context.ChequeRegisters.FirstOrDefaultAsync(c => c.Id == request.ChequeId, cancellationToken);
 
                 if (cheque == null) return Result<int>.Failure("Cheque not found.");
+                if (cheque.MigrationBatchId.HasValue && !await _context.CustomerMigrationBatches.AnyAsync(x => x.Id == cheque.MigrationBatchId && x.Status == "Posted" && x.CutoverDate <= request.EndorsementDate.Date, cancellationToken))
+                    return Result<int>.Failure("Opening cheque is reversed or endorsement predates cutover.");
                 if (cheque.Status != ChequeStatus.InSafe)
                     return Result<int>.Failure($"Cannot endorse a cheque that is currently {cheque.Status}. It must be in the Safe.");
 
+                if (request.EndorsementDate.Date < (cheque.ReceivedDate ?? DateTime.MinValue).Date) return Result<int>.Failure("Endorsement date precedes receipt date.");
                 var supplier = await _context.Suppliers.FindAsync(new object[] { request.SupplierId }, cancellationToken);
                 if (supplier == null || supplier.DefaultPayableAccountId == 0)
                     return Result<int>.Failure("Supplier or AP Account mapping missing.");
@@ -60,12 +63,14 @@ namespace NexusFlow.AppCore.Features.Treasury.Commands
                 if (totalAllocated > cheque.Amount)
                     return Result<int>.Failure("You cannot allocate more money to bills than the cheque is worth.");
 
-                var billIds = request.Allocations.Select(x => x.InvoiceId).ToList();
+                var snapshot = await new NexusFlow.AppCore.Services.SupplierBalanceService(_context).GetAsync(request.SupplierId, request.EndorsementDate, cancellationToken);
+                foreach (var a in request.Allocations) { var debt = snapshot.Debts.SingleOrDefault(x => x.Id == (a.SupplierOpeningItemId ?? a.InvoiceId) && x.TargetType == (a.SupplierOpeningItemId.HasValue ? "OpeningItem" : "Bill")); if (debt == null || a.Amount > debt.Balance || decimal.Round(a.Amount, 2) != a.Amount || a.OpeningItemId.HasValue || a.DebitMemoId.HasValue) return Result<int>.Failure("Invalid supplier allocation or amount exceeds its balance."); }
+                var billIds = request.Allocations.Where(x => !x.SupplierOpeningItemId.HasValue).Select(x => x.InvoiceId).ToList();
                 var bills = await _context.SupplierBills
                     .Where(x => billIds.Contains(x.Id))
                     .ToDictionaryAsync(x => x.Id, cancellationToken);
 
-                foreach (var allocation in request.Allocations)
+                foreach (var allocation in request.Allocations.Where(x => !x.SupplierOpeningItemId.HasValue))
                 {
                     if (!bills.TryGetValue(allocation.InvoiceId, out var bill) || bill.SupplierId != request.SupplierId || !bill.IsPosted)
                         return Result<int>.Failure($"Supplier bill {allocation.InvoiceId} is invalid for this endorsement.");
@@ -93,6 +98,7 @@ namespace NexusFlow.AppCore.Features.Treasury.Commands
                 {
                     foreach (var alloc in request.Allocations)
                     {
+                        if (alloc.SupplierOpeningItemId.HasValue) { payment.Allocations.Add(new PaymentAllocation { SupplierOpeningItemId = alloc.SupplierOpeningItemId, AmountAllocated = alloc.Amount }); continue; }
                         payment.Allocations.Add(new PaymentAllocation
                         {
                             SupplierBillId = alloc.InvoiceId,
@@ -115,7 +121,7 @@ namespace NexusFlow.AppCore.Features.Treasury.Commands
                 cheque.EndorsedDate = request.EndorsementDate;
 
                 // 5. POST GENERAL LEDGER
-                int safeAccountId = await _accountResolver.ResolveAccountIdAsync(AccountMappingKeys.UndepositedFunds, cancellationToken);
+                int safeAccountId = cheque.OpeningUndepositedAccountId ?? await _accountResolver.ResolveAccountIdAsync(AccountMappingKeys.UndepositedFunds, cancellationToken);
 
                 var journalLines = new List<JournalLineRequest>
                 {

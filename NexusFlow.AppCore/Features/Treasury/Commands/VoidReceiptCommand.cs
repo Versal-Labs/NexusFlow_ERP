@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using NexusFlow.AppCore.DTOs.Finance;
 using NexusFlow.AppCore.Interfaces;
@@ -28,7 +28,7 @@ namespace NexusFlow.AppCore.Features.Treasury.Commands
 
         public async Task<Result<int>> Handle(VoidReceiptCommand request, CancellationToken cancellationToken)
         {
-            using var transaction = await _context.BeginTransactionAsync(cancellationToken);
+            using var transaction = await _context.BeginTransactionAsync(global::System.Data.IsolationLevel.Serializable, cancellationToken);
 
             try
             {
@@ -40,6 +40,7 @@ namespace NexusFlow.AppCore.Features.Treasury.Commands
 
                 if (receipt == null) return Result<int>.Failure("Receipt not found.");
                 if (receipt.IsVoided) return Result<int>.Failure("This receipt is already voided.");
+                if (request.VoidDate.Date < receipt.Date.Date) return Result<int>.Failure("Void date cannot precede the receipt.");
 
                 // 2. ENTERPRISE CHEQUE VAULT GUARD
                 if (receipt.Method == PaymentMethod.Cheque)
@@ -68,6 +69,7 @@ namespace NexusFlow.AppCore.Features.Treasury.Commands
                 foreach (var allocation in receipt.Allocations)
                 {
                     var invoice = allocation.SalesInvoice;
+                    if (invoice == null) continue;
 
                     // Reverse the payment applied
                     invoice.AmountPaid -= allocation.AmountAllocated;
@@ -120,6 +122,11 @@ namespace NexusFlow.AppCore.Features.Treasury.Commands
 
                 // 5. FINALIZE
                 receipt.IsVoided = true;
+                receipt.VoidDate = request.VoidDate.Date;
+                receipt.VoidedAt = DateTime.UtcNow;
+                await _context.SaveChangesAsync(cancellationToken);
+                if (receipt.CustomerId.HasValue)
+                    await new NexusFlow.AppCore.Services.CustomerSettlementService(_context, new(_context)).RefreshAsync(receipt.CustomerId.Value, cancellationToken);
 
                 await _context.SaveChangesAsync(cancellationToken);
                 await transaction.CommitAsync(cancellationToken);

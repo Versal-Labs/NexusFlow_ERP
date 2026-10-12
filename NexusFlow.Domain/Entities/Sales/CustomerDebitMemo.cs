@@ -10,6 +10,8 @@ namespace NexusFlow.Domain.Entities.Sales
     {
         public string DebitMemoNumber { get; set; } = string.Empty;
         public DateTime Date { get; set; }
+        public DateTime? DueDate { get; set; }
+        public int? ReceivableAccountId { get; set; }
         public int CustomerId { get; set; }
         public Customer Customer { get; set; } = null!;
         public int? ChequeRegisterId { get; set; }

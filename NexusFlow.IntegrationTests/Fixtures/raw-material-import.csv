@@ -1,0 +1,3 @@
+ProductGroup,ProductName,SKU,Category,Brand,Unit,Quantity,UnitCost,WarehouseCode,OpeningDate
+,"Tag, black",SMOKE-RM-001,Ignored category,Ignored brand,m,10,2.50,Ignored warehouse,01/01/2000
+,Button,SMOKE-RM-002,Ignored category,Ignored brand,m,1,1,Ignored warehouse,01/01/2000

@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using NexusFlow.Shared.Wrapper;
 using System;
 using System.Collections.Generic;
@@ -12,6 +12,7 @@ namespace NexusFlow.AppCore.Features.Sales.Customers.Commands
         public int Id { get; set; } // 0 for Create, >0 for Update
 
         [Required] public string Name { get; set; } = string.Empty;
+        public string? LegacyCustomerCode { get; set; }
         [Required] public string TaxRegNo { get; set; } = string.Empty;
         public int CustomerGroupId { get; set; }
         public int PriceLevelId { get; set; }

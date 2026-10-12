@@ -40,6 +40,7 @@
                 { data: 'days31To60', className: 'text-end', render: d => parseFloat(d || 0).toLocaleString(undefined, { minimumFractionDigits: 2 }) },
                 { data: 'days61To90', className: 'text-end', render: d => parseFloat(d || 0).toLocaleString(undefined, { minimumFractionDigits: 2 }) },
                 { data: 'over90Days', className: 'text-end fw-bold text-danger', render: d => parseFloat(d || 0).toLocaleString(undefined, { minimumFractionDigits: 2 }) },
+                { data: 'unappliedCredit', className: 'text-end', render: d => parseFloat(d || 0).toLocaleString(undefined, { minimumFractionDigits: 2 }) },
                 {
                     data: null, className: 'text-center pe-3', orderable: false,
                     render: function (data, type, row) {
@@ -67,6 +68,7 @@
                 $('#foot60').html(sums[3].toLocaleString(undefined, { minimumFractionDigits: 2 }));
                 $('#foot90').html(sums[4].toLocaleString(undefined, { minimumFractionDigits: 2 }));
                 $('#footOver90').html(sums[5].toLocaleString(undefined, { minimumFractionDigits: 2 }));
+                $('#footCredit').text(api.column(7, { page: 'current' }).data().reduce((a, b) => intVal(a) + intVal(b), 0).toLocaleString(undefined, { minimumFractionDigits: 2 }));
             }
         });
     },

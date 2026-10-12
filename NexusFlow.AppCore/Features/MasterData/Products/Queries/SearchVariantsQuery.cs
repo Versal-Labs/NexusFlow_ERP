@@ -15,7 +15,8 @@ namespace NexusFlow.AppCore.Features.MasterData.Products.Queries
         int? ProductType = null,
         bool StockedOnly = false,
         int? WarehouseId = null,
-        bool ExcludeWarehouseActivity = false) : IRequest<IEnumerable<VariantSearchResultDto>>;
+        bool ExcludeWarehouseActivity = false,
+        bool RequireQuery = false) : IRequest<IEnumerable<VariantSearchResultDto>>;
 
     public class SearchVariantsHandler : IRequestHandler<SearchVariantsQuery, IEnumerable<VariantSearchResultDto>>
     {
@@ -30,13 +31,19 @@ namespace NexusFlow.AppCore.Features.MasterData.Products.Queries
         public async Task<IEnumerable<VariantSearchResultDto>> Handle(SearchVariantsQuery request, CancellationToken cancellationToken)
         {
             using IDbConnection db = new SqlConnection(_connectionString);
+            var query = string.IsNullOrWhiteSpace(request.Query) ? null : request.Query.Trim();
+
+            // Some high-volume lookups (such as BOM creation) opt into a search term.
+            // Existing callers retain their current blank-search behavior.
+            if (request.RequireQuery && (query is null or { Length: < 2 })) return Enumerable.Empty<VariantSearchResultDto>();
 
             // Enforcing the ProductType filter directly at the database level for maximum performance
             var sql = @"
             SELECT TOP 50
                 pv.Id,
                 pv.SKU,
-                p.Name + COALESCE(' - ' + pv.Size, '') + COALESCE(' - ' + pv.Color, '') AS Name,
+                p.Name + CASE WHEN NULLIF(pv.Size, '') IS NULL THEN '' ELSE ' - ' + pv.Size END
+                    + CASE WHEN NULLIF(pv.Color, '') IS NULL THEN '' ELSE ' - ' + pv.Color END AS Name,
                 COALESCE(NULLIF(pv.CostPrice, 0), pv.MovingAverageCost) AS CostPrice,
                 pv.SellingPrice,
                 COALESCE(u.Symbol, '') AS UomSymbol
@@ -57,15 +64,18 @@ namespace NexusFlow.AppCore.Features.MasterData.Products.Queries
                     )
                   )
               AND (@Query IS NULL OR p.Name LIKE '%' + @Query + '%' OR pv.SKU LIKE '%' + @Query + '%')
-            ORDER BY p.Name, pv.SKU";
+            ORDER BY
+                CASE WHEN pv.SKU LIKE @Query + '%' THEN 0 WHEN p.Name LIKE @Query + '%' THEN 1 ELSE 2 END,
+                p.Name, pv.SKU";
 
             return await db.QueryAsync<VariantSearchResultDto>(sql, new
             {
-                Query = request.Query,
+                Query = query,
                 ProductType = request.ProductType,
                 request.StockedOnly,
                 request.WarehouseId,
                 request.ExcludeWarehouseActivity,
+                request.RequireQuery,
                 ServiceProductType = (int)NexusFlow.Domain.Enums.ProductType.Service
             });
         }

@@ -1,0 +1,107 @@
+name: Garnet Release
+run-name: Garnet ${{ inputs.action }} / CI ${{ inputs.ci_run_id }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: Deploy application files or verify the already deployed release
+        type: choice
+        options: [Deploy, Verify]
+        default: Deploy
+        required: true
+      ci_run_id:
+        description: Successful push-to-main NexusFlow CI run ID
+        type: string
+        required: true
+      ci_run_attempt:
+        description: Optional successful CI attempt number; blank selects latest. For Verify use the deployed attempt.
+        type: string
+      database_backup_reference:
+        description: Database name and backup file/job reference (required for Deploy; no passwords)
+        type: string
+      backup_confirmed:
+        description: A current, restorable backup of the correct database exists
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: garnet-existing-site-release
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    runs-on: windows-2022
+    timeout-minutes: 5
+    outputs:
+      commit_sha: ${{ steps.ci.outputs.commit_sha }}
+      ci_run_attempt: ${{ steps.ci.outputs.ci_run_attempt }}
+      artifact_name: ${{ steps.ci.outputs.artifact_name }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Validate release request
+        shell: pwsh
+        env:
+          RELEASE_ACTION: ${{ inputs.action }}
+          BACKUP_CONFIRMED: ${{ inputs.backup_confirmed }}
+          BACKUP_REFERENCE: ${{ inputs.database_backup_reference }}
+        run: |
+          if ($env:RELEASE_ACTION -eq 'Deploy' -and ($env:BACKUP_CONFIRMED -ne 'true' -or [string]::IsNullOrWhiteSpace($env:BACKUP_REFERENCE))) {
+            throw 'Confirm a current restorable database backup and provide its reference before deployment.'
+          }
+      - name: Validate successful CI provenance
+        id: ci
+        shell: pwsh
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          CI_RUN_ID: ${{ inputs.ci_run_id }}
+          CI_RUN_ATTEMPT: ${{ inputs.ci_run_attempt }}
+        run: |
+          & ./deploy/Assert-GarnetCiRun.ps1 -CiRunId $env:CI_RUN_ID -CiRunAttempt $env:CI_RUN_ATTEMPT
+  update-existing-site:
+    needs: validate
+    if: github.ref == 'refs/heads/main'
+    runs-on: [self-hosted, Windows, X64, garnet-deploy]
+    timeout-minutes: 45
+    defaults:
+      run:
+        shell: powershell
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Download approved CI artifact
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: ${{ needs.validate.outputs.artifact_name }}
+          run-id: ${{ inputs.ci_run_id }}
+          github-token: ${{ github.token }}
+          path: ${{ runner.temp }}/garnet-${{ github.run_id }}-${{ github.run_attempt }}
+      - name: Update or verify existing Garnet site
+        id: release
+        env:
+          RELEASE_ACTION: ${{ inputs.action }}
+          CI_RUN_ID: ${{ inputs.ci_run_id }}
+          CI_RUN_ATTEMPT: ${{ needs.validate.outputs.ci_run_attempt }}
+          COMMIT_SHA: ${{ needs.validate.outputs.commit_sha }}
+          BACKUP_REFERENCE: ${{ inputs.database_backup_reference }}
+          BACKUP_CONFIRMED: ${{ inputs.backup_confirmed }}
+        run: |
+          $package = Join-Path $env:RUNNER_TEMP "garnet-$env:GITHUB_RUN_ID-$env:GITHUB_RUN_ATTEMPT/release.zip"
+          $parameters = @{
+            Action = $env:RELEASE_ACTION
+            PackagePath = $package
+            CommitSha = $env:COMMIT_SHA
+            CiRunId = $env:CI_RUN_ID
+            CiRunAttempt = $env:CI_RUN_ATTEMPT
+            DatabaseBackupReference = $env:BACKUP_REFERENCE
+            BackupConfirmed = ($env:BACKUP_CONFIRMED -eq 'true')
+          }
+          & ./deploy/Update-GarnetSite.ps1 @parameters

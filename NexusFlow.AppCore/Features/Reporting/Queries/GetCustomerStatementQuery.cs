@@ -36,78 +36,20 @@ namespace NexusFlow.AppCore.Features.Reporting.Queries
         {
             if (request.CustomerId <= 0) return Result<List<CustomerStatementRowDto>>.Failure("Customer ID is required.");
 
-            var endOfDay = request.EndDate.Date.AddDays(1).AddTicks(-1);
-            var startOfDay = request.StartDate.Date;
-
-            // 1. CALCULATE OPENING BALANCE (Everything before StartDate)
-            decimal openingInvoices = await _context.SalesInvoices
-                .Where(i => i.CustomerId == request.CustomerId && i.IsPosted && i.InvoiceDate < startOfDay)
-                .SumAsync(i => i.GrandTotal, cancellationToken);
-
-            decimal openingPayments = await _context.PaymentTransactions
-                .Where(p => p.CustomerId == request.CustomerId && !p.IsVoided && p.Type == PaymentType.CustomerReceipt && p.Date < startOfDay)
-                .SumAsync(p => p.Amount, cancellationToken);
-
-            decimal openingCreditNotes = await _context.CreditNotes
-                .Where(c => c.CustomerId == request.CustomerId && c.IsPosted && c.Date < startOfDay)
-                .SumAsync(c => c.GrandTotal, cancellationToken);
-            decimal openingDebitMemos = await _context.CustomerDebitMemos
-                .Where(x => x.CustomerId == request.CustomerId && x.Date < startOfDay)
-                .SumAsync(x => x.Amount, cancellationToken);
-
-            decimal runningBalance = openingInvoices + openingDebitMemos - openingPayments - openingCreditNotes;
-
-            var statement = new List<CustomerStatementRowDto>
+            if (request.StartDate.Date > request.EndDate.Date) return Result<List<CustomerStatementRowDto>>.Failure("Start date must precede end date.");
+            if (!await _context.Customers.AnyAsync(x => x.Id == request.CustomerId, cancellationToken)) return Result<List<CustomerStatementRowDto>>.Failure("Customer not found.");
+            var snapshot = await new NexusFlow.AppCore.Services.CustomerBalanceService(_context).GetAsync(request.CustomerId, request.EndDate, cancellationToken);
+            decimal runningBalance = snapshot.Events.Where(x => x.Date < request.StartDate.Date).Sum(x => x.Amount);
+            var statement = new List<CustomerStatementRowDto> { new() {
+                Date = request.StartDate.ToString("yyyy-MM-dd"), TransactionType = "Opening Balance", ReferenceNo = "-",
+                Description = "Balance Brought Forward", Balance = runningBalance
+            }};
+            foreach (var item in snapshot.Events.Where(x => x.Date >= request.StartDate.Date).OrderBy(x => x.Date).ThenBy(x => x.Reference).ThenBy(x => x.Type))
             {
-                new CustomerStatementRowDto
-                {
-                    Date = startOfDay.ToString("yyyy-MM-dd"),
-                    TransactionType = "Opening Balance",
-                    ReferenceNo = "-",
-                    Description = "Balance Brought Forward",
-                    Debit = 0, Credit = 0, Balance = runningBalance
-                }
-            };
-
-            // 2. FETCH TRANSACTIONS IN DATE RANGE
-            var invoices = await _context.SalesInvoices
-                .Where(i => i.CustomerId == request.CustomerId && i.IsPosted && i.InvoiceDate >= startOfDay && i.InvoiceDate <= endOfDay)
-                .Select(i => new { Date = i.InvoiceDate, Type = "Invoice", Ref = i.InvoiceNumber, Desc = "Sales Invoice", Debit = i.GrandTotal, Credit = 0M })
-                .ToListAsync(cancellationToken);
-
-            var payments = await _context.PaymentTransactions
-                .Where(p => p.CustomerId == request.CustomerId && !p.IsVoided && p.Type == PaymentType.CustomerReceipt && p.Date >= startOfDay && p.Date <= endOfDay)
-                .Select(p => new { Date = p.Date, Type = "Payment Receipt", Ref = p.ReferenceNo, Desc = p.Method.ToString(), Debit = 0M, Credit = p.Amount })
-                .ToListAsync(cancellationToken);
-
-            var creditNotes = await _context.CreditNotes
-                .Where(c => c.CustomerId == request.CustomerId && c.IsPosted && c.Date >= startOfDay && c.Date <= endOfDay)
-                .Select(c => new { Date = c.Date, Type = "Credit Note", Ref = c.CreditNoteNumber, Desc = c.Reason, Debit = 0M, Credit = c.GrandTotal })
-                .ToListAsync(cancellationToken);
-
-            var debitMemos = await _context.CustomerDebitMemos
-                .Where(x => x.CustomerId == request.CustomerId && x.Date >= startOfDay && x.Date <= endOfDay)
-                .Select(x => new { Date = x.Date, Type = "Debit Memo", Ref = x.DebitMemoNumber, Desc = x.Reason, Debit = x.Amount, Credit = 0M })
-                .ToListAsync(cancellationToken);
-
-            // 3. COMBINE, SORT, AND COMPUTE RUNNING BALANCE
-            var allTransactions = invoices.Concat(payments).Concat(creditNotes).Concat(debitMemos).OrderBy(t => t.Date).ToList();
-
-            foreach (var t in allTransactions)
-            {
-                runningBalance += t.Debit;  // Invoice increases owed amount
-                runningBalance -= t.Credit; // Payment/CN decreases owed amount
-
-                statement.Add(new CustomerStatementRowDto
-                {
-                    Date = t.Date.ToString("yyyy-MM-dd"),
-                    TransactionType = t.Type,
-                    ReferenceNo = t.Ref,
-                    Description = t.Desc,
-                    Debit = t.Debit,
-                    Credit = t.Credit,
-                    Balance = runningBalance
-                });
+                runningBalance += item.Amount;
+                statement.Add(new() { Date = item.Date.ToString("yyyy-MM-dd"), TransactionType = item.Type,
+                    ReferenceNo = item.Reference, Description = item.Description, Debit = Math.Max(item.Amount, 0),
+                    Credit = Math.Max(-item.Amount, 0), Balance = runningBalance });
             }
 
             return Result<List<CustomerStatementRowDto>>.Success(statement);

@@ -50,6 +50,7 @@ namespace NexusFlow.AppCore.Features.Treasury.Queries
                 .Include(p => p.Supplier)
                 .Include(p => p.Allocations)
                     .ThenInclude(a => a.SupplierBill)
+                .Include(p => p.Allocations).ThenInclude(a => a.SupplierOpeningItem)
                 .FirstOrDefaultAsync(p => p.Id == request.PaymentId && p.Type == PaymentType.SupplierPayment, cancellationToken);
 
             if (payment == null) return Result<PaymentDetailDto>.Failure("Payment not found.");
@@ -79,11 +80,11 @@ namespace NexusFlow.AppCore.Features.Treasury.Queries
                 Remarks = payment.Remarks ?? "",
                 SourceName = sourceName,
                 Allocations = payment.Allocations
-                    .Where(a => a.SupplierBill != null)
+                    .Where(a => a.SupplierBill != null || a.SupplierOpeningItem != null)
                     .Select(a => new PaymentAllocationDetailDto
                     {
-                        BillNumber = a.SupplierBill!.BillNumber,
-                        BillDate = a.SupplierBill.BillDate,
+                        BillNumber = a.SupplierBill?.BillNumber ?? a.SupplierOpeningItem!.ReferenceNo,
+                        BillDate = a.SupplierBill?.BillDate ?? a.SupplierOpeningItem!.DocumentDate,
                         AmountApplied = a.AmountAllocated
                     }).ToList()
             };

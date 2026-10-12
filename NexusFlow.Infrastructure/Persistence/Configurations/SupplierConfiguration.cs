@@ -13,7 +13,7 @@ namespace NexusFlow.Infrastructure.Persistence.Configurations
         {
             // Unique Constraints
             // We cannot have two vendors with the same Tax ID (prevents duplicate vendor creation)
-            builder.HasIndex(x => x.TaxRegNo).IsUnique();
+            builder.HasIndex(x => x.TaxRegNo).IsUnique().HasFilter("[TaxRegNo] <> N''");
 
             // Decimal Precision for Credit Limit
             builder.Property(x => x.CreditLimit)

@@ -8,6 +8,9 @@ namespace NexusFlow.AppCore.Interfaces
     {
         /// <summary>Fire and forget — runs once immediately.</summary>
         string Enqueue<T>(System.Linq.Expressions.Expression<Action<T>> methodCall);
+        string EnqueueAsync<T>(System.Linq.Expressions.Expression<Func<T, Task>> methodCall)
+            => throw new NotSupportedException("Async background jobs are not configured.");
+        string? GetState(string jobId) => null;
 
         /// <summary>Delayed job — runs once after a delay.</summary>
         string Schedule<T>(System.Linq.Expressions.Expression<Action<T>> methodCall, TimeSpan delay);

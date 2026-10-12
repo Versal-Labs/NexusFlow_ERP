@@ -66,6 +66,7 @@
 
             <div class="container-fluid px-4 py-4 overflow-auto" style="flex: 1;">
                 <main role="main">
+                    <div id="migrationProvisionalNotice" class="alert alert-warning d-none" role="status">Migration incomplete — opening position provisional</div>
                     @RenderBody()
                 </main>
                 <div style="height: 40px;"></div>
@@ -107,6 +108,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/js/migration/notice.js" asp-append-version="true"></script>
     <script src="~/js/shared/print-engine.js" asp-append-version="true"></script>
 
     @await RenderSectionAsync("Scripts", required: false)

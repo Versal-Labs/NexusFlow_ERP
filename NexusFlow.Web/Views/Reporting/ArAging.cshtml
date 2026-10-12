@@ -6,7 +6,7 @@
     <div class="d-flex justify-content-between align-items-center mb-3">
         <div>
             <h4 class="mb-0 text-dark fw-bold"><i class="fa-solid fa-clock-rotate-left text-warning me-2"></i>Accounts Receivable Aging</h4>
-            <p class="text-muted mb-0 fs-14">Track overdue customer balances and dispatch payment reminders.</p>
+            <p class="text-muted mb-0 fs-14">Track overdue customer balances and dispatch payment reminders. Ageing buckets show gross unsettled debts; Net AR equals gross debt less unapplied credits.</p>
         </div>
         <div>
             <button class="btn btn-success shadow-sm btn-sm px-3 fw-bold me-2" onclick="arApp.export('excel')">
@@ -25,7 +25,8 @@
                     <label class="form-label mb-0 fw-bold text-muted">Specific Customer</label>
                     <select class="form-select form-select-sm shadow-sm" id="filterCustomer"></select>
                 </div>
-                <div class="col-md-8 text-end mt-4">
+                <div class="col-md-3"><label for="asOfDate" class="form-label mb-0 fw-bold text-muted">As of date</label><input id="asOfDate" type="date" class="form-control form-control-sm"></div>
+                <div class="col-md-5 text-end mt-4">
                     <button class="btn btn-sm btn-primary px-4 fw-bold shadow-sm" onclick="arApp.reloadGrid()"><i class="fa-solid fa-filter"></i> Apply Filter</button>
                 </div>
             </div>
@@ -38,7 +39,9 @@
                 <thead class="table-light text-secondary text-center">
                     <tr>
                         <th class="text-start ps-3">Customer</th>
-                        <th class="text-end text-primary">Total Owed</th>
+                        <th class="text-end text-primary">Net AR</th>
+                        <th class="text-end">Gross Debts</th>
+                        <th class="text-end">Unapplied Credits</th>
                         <th class="text-end">Current (Not Due)</th>
                         <th class="text-end">1 - 30 Days</th>
                         <th class="text-end">31 - 60 Days</th>
@@ -51,6 +54,8 @@
                     <tr>
                         <td class="text-end pe-3">Totals:</td>
                         <td class="text-end text-primary" id="footTotal">0.00</td>
+                        <td class="text-end" id="footGross">0.00</td>
+                        <td class="text-end" id="footCredits">0.00</td>
                         <td class="text-end" id="footCurrent">0.00</td>
                         <td class="text-end" id="foot30">0.00</td>
                         <td class="text-end" id="foot60">0.00</td>

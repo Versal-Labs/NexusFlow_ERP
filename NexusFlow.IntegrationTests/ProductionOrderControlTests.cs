@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using NexusFlow.AppCore.Features.Inventory.ProductionOrders;
+using NexusFlow.AppCore.Features.Print;
 using NexusFlow.Domain.Entities.Inventory;
 using NexusFlow.Domain.Enums;
 using Xunit;
@@ -80,6 +81,41 @@ namespace NexusFlow.IntegrationTests
             using var verifyScope = _scopeFactory.CreateScope();
             var verify = verifyScope.ServiceProvider.GetRequiredService<Infrastructure.ErpDbContext>();
             Assert.Equal(1, await verify.NumberSequences.Where(x => x.Module == "ProductionOrder").Select(x => x.NextNumber).SingleAsync());
+        }
+
+        [Fact]
+        public async Task ProductionOrderPrint_IncludesMaterialLineAndDocumentTotals()
+        {
+            var orderId = await CreateAndReleaseOrderAsync(10);
+            int componentId;
+            using (var scope = _scopeFactory.CreateScope())
+            {
+                var context = scope.ServiceProvider.GetRequiredService<Infrastructure.ErpDbContext>();
+                componentId = await context.ProductionOrderComponents.Where(x => x.ProductionOrderId == orderId).Select(x => x.Id).SingleAsync();
+                context.StockLayers.Add(new StockLayer
+                {
+                    ProductVariantId = 100, WarehouseId = 1, BatchNo = "FIFO-PRINT", DateReceived = DateTime.UtcNow.AddDays(-5),
+                    InitialQty = 15, RemainingQty = 15, UnitCost = 100, IsExhausted = false
+                });
+                await context.SaveChangesAsync();
+            }
+
+            var issue = await SendAsync(new IssueProductionMaterialsCommand
+            {
+                ProductionOrderId = orderId, IssueDate = DateTime.UtcNow.Date,
+                Lines = new() { new ProductionMaterialLineRequest(componentId, 15) }
+            });
+            Assert.True(issue.Succeeded, issue.Message);
+
+            var document = await SendAsync(new GetPrintDocumentQuery(DocumentType.ProductionOrder, orderId.ToString()));
+
+            Assert.True(document.Succeeded, document.Message);
+            var line = Assert.Single(document.Data.LineItems);
+            Assert.Equal(15m, line.Quantity);
+            Assert.Equal(100m, line.UnitPrice);
+            Assert.Equal(1500m, line.LineTotal);
+            Assert.Equal(1500m, document.Data.SubTotal);
+            Assert.Equal(1500m, document.Data.GrandTotal);
         }
 
         private async Task<int> CreateAndReleaseOrderAsync(decimal quantity)

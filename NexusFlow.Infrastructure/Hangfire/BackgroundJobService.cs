@@ -22,6 +22,13 @@ namespace NexusFlow.Infrastructure.Hangfire
 
         public string Enqueue<T>(Expression<Action<T>> methodCall)
             => _client.Enqueue(methodCall);
+        public string EnqueueAsync<T>(Expression<Func<T, Task>> methodCall)
+            => _client.Enqueue(methodCall);
+        public string? GetState(string jobId)
+        {
+            using var connection = JobStorage.Current.GetConnection();
+            return connection.GetStateData(jobId)?.Name;
+        }
 
         public string Schedule<T>(Expression<Action<T>> methodCall, TimeSpan delay)
             => _client.Schedule(methodCall, delay);

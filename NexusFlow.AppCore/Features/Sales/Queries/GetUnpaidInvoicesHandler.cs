@@ -1,55 +1,20 @@
-﻿using Dapper;
 using MediatR;
-using Microsoft.Data.SqlClient;
-using Microsoft.Extensions.Configuration;
+using Microsoft.EntityFrameworkCore;
+using NexusFlow.AppCore.Interfaces;
+using NexusFlow.AppCore.Services;
 using NexusFlow.Shared.Wrapper;
-using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace NexusFlow.AppCore.Features.Sales.Queries
+namespace NexusFlow.AppCore.Features.Sales.Queries;
+public class GetUnpaidInvoicesHandler(IErpDbContext db) : IRequestHandler<GetUnpaidInvoicesQuery, Result<UnpaidInvoicesResponseDto>>
 {
-    public class GetUnpaidInvoicesHandler : IRequestHandler<GetUnpaidInvoicesQuery, Result<UnpaidInvoicesResponseDto>>
+    public async Task<Result<UnpaidInvoicesResponseDto>> Handle(GetUnpaidInvoicesQuery request, CancellationToken ct)
     {
-        private readonly string _conn;
-        public GetUnpaidInvoicesHandler(IConfiguration config) => _conn = config.GetConnectionString("DefaultConnection")!;
-
-        public async Task<Result<UnpaidInvoicesResponseDto>> Handle(GetUnpaidInvoicesQuery request, CancellationToken ct)
-        {
-            using var connection = new SqlConnection(_conn);
-
-            // Dapper QueryMultiple allows multiple SELECT statements separated by semicolons
-            var sql = @"
-            -- 1. Get Unpaid Invoices (FIFO)
-            SELECT 
-                Id, InvoiceNumber, InvoiceDate, DueDate, 
-                GrandTotal, AmountPaid, (GrandTotal - AmountPaid) AS Balance
-            FROM Sales.SalesInvoices
-            WHERE CustomerId = @CustomerId 
-               AND IsPosted = 1 
-               AND GrandTotal > AmountPaid
-            ORDER BY DueDate ASC;
-
-            -- 2. Calculate Unapplied Credit (Total Receipts minus Total Allocations)
-            SELECT 
-                ISNULL((SELECT SUM(Amount) FROM Finance.PaymentTransactions WHERE CustomerId = @CustomerId AND IsVoided = 0 AND Type = 1), 0) -
-                ISNULL((SELECT SUM(pa.AmountAllocated) FROM Finance.PaymentAllocations pa 
-                        INNER JOIN Finance.PaymentTransactions pt ON pa.PaymentTransactionId = pt.Id 
-                        WHERE pt.CustomerId = @CustomerId AND pt.IsVoided = 0 AND pt.Type = 1), 0) AS UnappliedCredit;
-        ";
-
-            // Execute both queries in one database hit
-            using var multi = await connection.QueryMultipleAsync(sql, new { request.CustomerId });
-
-            var response = new UnpaidInvoicesResponseDto();
-
-            // Read the first SELECT (Invoices)
-            response.Invoices = (await multi.ReadAsync<UnpaidInvoiceDto>()).ToList();
-
-            // Read the second SELECT (Unapplied Credit)
-            response.UnappliedCredit = await multi.ReadSingleAsync<decimal>();
-
-            return Result<UnpaidInvoicesResponseDto>.Success(response);
-        }
+        if (!await db.Customers.AnyAsync(x => x.Id == request.CustomerId, ct)) return Result<UnpaidInvoicesResponseDto>.Failure("Customer not found.");
+        var balance = await new CustomerBalanceService(db).GetAsync(request.CustomerId, DateTime.MaxValue.Date.AddDays(-1), ct);
+        return Result<UnpaidInvoicesResponseDto>.Success(new() {
+            NetBalance = balance.NetBalance, UnappliedCredit = balance.UnappliedCredit, OpeningCredits = balance.OpeningCredits.Where(x => x.Available > 0).ToList(),
+            Invoices = balance.Debits.Where(x => x.Balance > 0).OrderBy(x => x.DueDate).ThenBy(x => x.Id).Select(x => new UnpaidInvoiceDto {
+                Id = x.Id, TargetType = x.TargetType, InvoiceNumber = x.Reference, InvoiceDate = x.DocumentDate, DueDate = x.DueDate,
+                GrandTotal = x.Amount, AmountPaid = x.Settled, Balance = x.Balance }).ToList()
+        });
     }
 }

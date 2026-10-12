@@ -11,6 +11,8 @@ namespace NexusFlow.Domain.Entities.Sales
     [Table("Customers", Schema = "Sales")]
     public class Customer : AuditableEntity
     {
+        [MaxLength(50)] public string? LegacyCustomerCode { get; set; }
+        public bool DetailsIncomplete { get; set; }
         #region 1. Identity & Legal
         [Required, MaxLength(200)]
         public string Name { get; set; } = string.Empty;

@@ -80,9 +80,10 @@ namespace NexusFlow.Web.Controllers.Api
             [FromQuery] int? productType,
             [FromQuery] bool stockedOnly = false,
             [FromQuery] int? warehouseId = null,
-            [FromQuery] bool excludeWarehouseActivity = false)
+            [FromQuery] bool excludeWarehouseActivity = false,
+            [FromQuery] bool requireQuery = false)
         {
-            var data = await _mediator.Send(new SearchVariantsQuery(query, productType, stockedOnly, warehouseId, excludeWarehouseActivity));
+            var data = await _mediator.Send(new SearchVariantsQuery(query, productType, stockedOnly, warehouseId, excludeWarehouseActivity, requireQuery));
             return Ok(data);
         }
     }

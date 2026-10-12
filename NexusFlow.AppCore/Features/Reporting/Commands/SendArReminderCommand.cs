@@ -33,9 +33,8 @@ namespace NexusFlow.AppCore.Features.Reporting.Commands
 
             var companyName = await _context.SystemConfigs.Where(x => x.Key == "Company.Name").Select(x => x.Value).FirstOrDefaultAsync(cancellationToken);
             // Calculate total outstanding quickly
-            var outstandingBalance = await _context.SalesInvoices
-                .Where(i => i.CustomerId == request.CustomerId && i.IsPosted && i.PaymentStatus != InvoicePaymentStatus.Paid)
-                .SumAsync(i => i.GrandTotal - i.AmountPaid, cancellationToken);
+            var outstandingBalance = (await new NexusFlow.AppCore.Services.CustomerBalanceService(_context)
+                .GetAsync(request.CustomerId, DateTime.UtcNow.Date, cancellationToken)).NetBalance;
 
             if (outstandingBalance <= 0)
                 return Result<bool>.Failure("Customer has no outstanding balance.");

@@ -59,6 +59,8 @@ namespace NexusFlow.AppCore.Features.Treasury.Queries
             var receipt = await _context.PaymentTransactions
                     .Include(p => p.Allocations)
                         .ThenInclude(a => a.SalesInvoice)
+                    .Include(p => p.Allocations).ThenInclude(a => a.CustomerOpeningItem)
+                    .Include(p => p.Allocations).ThenInclude(a => a.CustomerDebitMemo)
                     .AsNoTracking()
                     .FirstOrDefaultAsync(p => p.Id == request.ReceiptId, cancellationToken);
 
@@ -87,9 +89,9 @@ namespace NexusFlow.AppCore.Features.Treasury.Queries
 
                 Allocations = receipt.Allocations.Select(a => new ReceiptAllocationDto
                 {
-                    InvoiceNumber = a.SalesInvoice.InvoiceNumber,
-                    InvoiceDate = a.SalesInvoice.InvoiceDate,
-                    InvoiceTotal = a.SalesInvoice.GrandTotal,
+                    InvoiceNumber = a.SalesInvoice?.InvoiceNumber ?? a.CustomerOpeningItem?.ReferenceNo ?? a.CustomerDebitMemo?.DebitMemoNumber ?? "",
+                    InvoiceDate = a.SalesInvoice?.InvoiceDate ?? a.CustomerOpeningItem?.DocumentDate ?? a.CustomerDebitMemo?.Date ?? receipt.Date,
+                    InvoiceTotal = a.SalesInvoice?.GrandTotal ?? a.CustomerOpeningItem?.Amount ?? a.CustomerDebitMemo?.Amount ?? 0,
                     AmountAllocated = a.AmountAllocated
                 }).ToList()
             };
