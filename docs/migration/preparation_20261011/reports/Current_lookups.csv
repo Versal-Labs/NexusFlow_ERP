@@ -1,0 +1,25 @@
+Type,Code,Label,Active,Local ID
+PaymentMethod,CARD,Card,True,1
+PaymentMethod,CASH,Cash,True,2
+PaymentMethod,CHEQUE,Cheque,True,3
+PaymentTerm,CASH ON DELIVERY (COD),Cash on Delivery (COD),True,7
+PaymentTerm,NET 15 DAYS,Net 15 Days,True,8
+PaymentTerm,NET 30 DAYS,Net 30 Days,True,9
+PriceLevel,STANDARD TIER,Standard Tier,True,10
+PriceLevel,DISTRIBUTOR TIER,Distributor Tier,True,11
+PriceLevel,WHOLESALE TIER,Wholesale Tier,True,12
+CustomerGroup,TRADE,Trade,True,13
+ContractorType,CONTRACTOR,Contractor,True,14
+SupplierGroup,DOM,Domestic Suppliers,True,15
+SupplierGroup,IMP,International / Import,True,16
+SupplierGroup,SUB,Sub-Contractors,True,17
+SupplierGroup,SRV,Service Providers,True,18
+SupplierGroup,ONE,One-Time Vendors,True,19
+VendorRating,A,Strategic Partner,True,20
+VendorRating,B,Approved / Standard,True,21
+VendorRating,C,Conditional,True,22
+ExpenseCategory,OFFICE,Office Supplies & Stationery,True,23
+VendorRating,TEST ,ts,True,24
+PaymentMethod,BANK,Bank Transfer,True,25
+PaymentTerm,COD,Cash on Delivery,True,26
+PaymentTerm,NET30,30 Days,True,27

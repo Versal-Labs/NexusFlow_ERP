@@ -1,0 +1,29 @@
+{
+  "opening_date": "2026-10-01",
+  "closing_date": "2026-09-30",
+  "currency": "LKR",
+  "customer_due_days": 30,
+  "supplier_due_days": 30,
+  "supplier_negative_kind": "Credit",
+  "supplier_positive_signs": "Preserve dtfbal, including ADVANCE/OVER PAID remarks",
+  "warehouse": "WH_MAIN",
+  "finished_goods_cost": "avar",
+  "summarized_layers": true,
+  "cheque_date": "To be Dep Date, carried forward within its report group",
+  "cheque_status": "InSafe",
+  "party_reflected": "true",
+  "bank_reflected": "false",
+  "customer_group": "TRADE",
+  "price_level": "STANDARD TIER",
+  "payment_term": "NET30",
+  "supplier_group_mappings": {
+    "A": "DOM",
+    "B": "DOM",
+    "C": "DOM",
+    "G": "DOM",
+    "S": "DOM"
+  },
+  "BA366_email": "Blank, explicitly confirmed genuinely unknown",
+  "supplier_expense_account": "6210 assigned to RE187/RS149; 6220 assigned to EL264; remaining 210 need approved supplier-specific expense assignments",
+  "history": "Retain supplied source files read-only; full pre-cutover transaction archive still required"
+}

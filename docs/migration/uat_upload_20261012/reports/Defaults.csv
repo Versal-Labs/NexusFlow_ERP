@@ -1,0 +1,18 @@
+UI field,Selection,Reason
+Opening equity account,3200 — Retained Earnings,Verified active posting account
+Default customer control,1120 — Accounts Receivable (AR),Verified active posting account
+Default customer revenue,4110 — Sales Revenue - FG,Verified active posting account
+Default supplier control,2110 — Accounts Payable (AP),Verified active posting account
+Default supplier expense,5110 — Raw Material Consumption,Temporary UAT expense
+Undeposited cheque account,1151 — Cheques In Hand,Verified active posting account
+Default customer group,TRADE — Trade,Also map TRADE explicitly
+Default supplier group,DOM — Domestic Suppliers,Also map DOM explicitly
+Default price level,STANDARD TIER — Standard Tier,Also map explicitly
+Default customer payment term,NET30 — 30 Days,Do not use COD
+Default supplier payment term,NET30 — 30 Days,Do not use COD
+Approved base unit when source unit is missing,pcs — Piece,Temporary UAT unit for new FG
+Approved warehouse when source location is missing,WH_MAIN — Main Garnet,All stock rows populated
+Approved supplier terms in days (optional),30,Due dates already populated
+Summarized stock layer approval,UAT fixture: approved summarized layer per SKU in WH_MAIN at 2026-09-30; original FIFO dates not claimed.,Paste evidence
+Legacy finished goods valuation,Average cost (avar × warehouse quantity),Final UnitCost already populated
+Valuation discrepancy resolution evidence,UAT uses approved avar; original costval difference -3173818.42 LKR retained in archive; not production sign-off.,Paste evidence

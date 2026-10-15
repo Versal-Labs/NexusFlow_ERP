@@ -1,0 +1,13 @@
+Module,Rows,Data basis,Upload status,Execution status
+Accounts,39,Current verified masters,Ready for UAT staging,Target validation/approval required
+CustomerMaster,896,Legacy-derived with recorded UAT changes,Ready for UAT staging,Target validation/approval required
+SupplierMaster,215,Legacy-derived with recorded UAT changes,Ready for UAT staging,Target validation/approval required
+CustomerOpenings,1150,Legacy-derived with recorded UAT changes,Ready for UAT staging,Target validation/approval required
+SupplierOpenings,180,Legacy-derived with recorded UAT changes,Ready for UAT staging,Target validation/approval required
+ReceivedCheques,49,Legacy-derived with recorded UAT changes,Ready for UAT staging,Target validation/approval required
+IssuedCheques,1,Synthetic fixture/expected controls,Ready for UAT staging,Target validation/approval required
+Stock,938,Legacy-derived with recorded UAT changes,Ready for UAT staging,Target validation/approval required
+BankOpening,1,Synthetic fixture/expected controls,Ready for UAT staging,Target validation/approval required
+BankRecon,1,Synthetic fixture/expected controls,Ready for UAT staging,Target validation/approval required
+ControlTotals,5212,Synthetic fixture/expected controls,Ready for UAT staging,Target validation/approval required
+TrialBalance,39,Synthetic fixture/expected controls,Ready for UAT staging,Target validation/approval required

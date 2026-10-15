@@ -12,10 +12,23 @@ public sealed partial class MigrationCentreService
         var p = await Project(id, false, ct); var s = MigrationJson.Read<MigrationSettings>(p.SettingsJson);
         var result = new MigrationPreview { ProjectId = id, Version = p.Version };
         if (selection.Modules.Count == 0 || selection.Modules.Distinct().Count() != selection.Modules.Count || selection.Modules.Except(MigrationCatalog.Modules.Keys).Any()) throw new InvalidOperationException("Select one or more known modules once each.");
-        var datasets = await db.MigrationDatasets.AsNoTracking().Where(x => x.ProjectId == id && x.IsCurrent).ToListAsync(ct);
-        var origins = await db.MigrationOrigins.AsNoTracking().Where(x => x.SourceSystem == p.SourceSystem && x.IsCurrent).ToListAsync(ct);
-        var posted = await db.MigrationUnits.AsNoTracking().Where(x => x.ProjectId == id).ToListAsync(ct);
-        var projectScopes = await db.MigrationScopes.AsNoTracking().Where(x => x.ProjectId == id).ToListAsync(ct);
+        // Scoped checks still use fresh database state, but must not repeatedly read and parse
+        // unrelated files (especially the large independent control schedule) for every SKU/party.
+        var requiredDatasets = selection.Modules.ToHashSet(StringComparer.Ordinal);
+        if (selection.Modules.Any(x => x is "CustomerOpenings" or "ReceivedCheques")) requiredDatasets.Add("CustomerMaster");
+        if (selection.Modules.Any(x => x is "SupplierOpenings" or "IssuedCheques" or "ReceivedCheques")) requiredDatasets.Add("SupplierMaster");
+        if (selection.Modules.Contains("BankRecon")) requiredDatasets.UnionWith(["ReceivedCheques", "IssuedCheques"]);
+        var datasetModules = requiredDatasets.ToArray();
+        var datasets = await db.MigrationDatasets.AsNoTracking().Where(x => x.ProjectId == id && x.IsCurrent && datasetModules.Contains(x.Module)).ToListAsync(ct);
+        var origins = await db.MigrationOrigins.AsNoTracking().Where(x => x.SourceSystem == p.SourceSystem && x.IsCurrent && selection.Modules.Contains(x.RecordKind))
+            .Select(x => new { x.RecordKind, x.IdentityHash, x.ContentHash }).ToListAsync(ct);
+        var originsByIdentity = origins.ToDictionary(x => (x.RecordKind, x.IdentityHash));
+        var needsLedger = selection.Modules.Contains("TrialBalance");
+        var posted = await db.MigrationUnits.AsNoTracking().Where(x => x.ProjectId == id && (needsLedger || selection.Modules.Contains(x.Module)))
+            .Select(x => new MigrationUnit { Id = x.Id, Module = x.Module, ScopeKey = x.ScopeKey, Hash = x.Hash, Status = x.Status,
+                JournalEntryId = x.JournalEntryId, RowsJson = needsLedger ? x.RowsJson : "[]" }).ToListAsync(ct);
+        var projectScopes = await db.MigrationScopes.AsNoTracking().Where(x => x.ProjectId == id)
+            .Select(x => new { x.Kind, x.Code, x.Status }).ToListAsync(ct);
         var accounts = await db.Accounts.AsNoTracking().ToListAsync(ct);
         var customers = await db.Customers.AsNoTracking().ToListAsync(ct);
         var suppliers = await db.Suppliers.AsNoTracking().ToListAsync(ct);
@@ -95,7 +108,7 @@ public sealed partial class MigrationCentreService
                         if (r.Get("Code").Length == 0 || r.Get("Code").Length > 100) Error(r, "A nonblank legacy code of up to 100 characters is required.");
                         if (MigrationCatalog.Identity(module, r).Length > 300) Error(r, "LegacyRecordId/composite key exceeds 300 characters. Supply a shorter stable ID.");
                         if (r.Get("LegacyRecordId") == "") u.Warnings.Add($"Row {r.Row}: using a composite legacy identity; verify that it is stable and unique.");
-                        var existing = origins.SingleOrDefault(x => x.RecordKind == module && x.IdentityHash == MigrationJson.Hash(MigrationCatalog.Identity(module, r)));
+                        var existing = originsByIdentity.GetValueOrDefault((module, MigrationJson.Hash(MigrationCatalog.Identity(module, r))));
                         // Compare after business normalization below.
                         if (module is "CustomerMaster" or "SupplierMaster")
                         {
@@ -286,7 +299,7 @@ public sealed partial class MigrationCentreService
                 u.Hash = MigrationJson.Hash(MigrationJson.Write(new { module, Scope = group.Key, Date = p.OpeningDate, Rows = u.Rows.OrderBy(x => x.Canonical).Select(x => new { Source = x.Canonical, Resolved = x.Data.Where(f => resolvedKeys.Contains(f.Key)).OrderBy(f => f.Key).ToDictionary(f => f.Key, f => f.Value) }).ToList(), u.Journal }));
                 var previous = posted.SingleOrDefault(x => x.Module == module && x.ScopeKey == group.Key && x.Status == "Posted");
                 if (previous != null) { u.Status = previous.Status == "Posted" ? "Already imported" : "Reversed"; if (previous.Hash != u.Hash) u.Errors.Add(new(module, group.Key, 0, "This posted scope has changed. A full original scope snapshot and dated correction are required.")); }
-                if (u.Rows.Any(r => origins.Any(x => x.RecordKind == module && x.IdentityHash == MigrationJson.Hash(MigrationCatalog.Identity(module, r)))) && previous == null) u.Errors.Add(new(module, group.Key, 0, "Some records were imported in a different project/scope. They cannot be posted again."));
+                if (u.Rows.Any(r => originsByIdentity.ContainsKey((module, MigrationJson.Hash(MigrationCatalog.Identity(module, r))))) && previous == null) u.Errors.Add(new(module, group.Key, 0, "Some records were imported in a different project/scope. They cannot be posted again."));
                 u.Warnings = u.Warnings.Distinct().ToList();
             }
         }

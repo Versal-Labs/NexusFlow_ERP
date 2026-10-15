@@ -1,0 +1,20 @@
+Workbook,Rows,Headers,CSV comparison,Formulas,Dates,Amounts,Identifiers
+Accounts,39,Exact current template,Equal,None,ISO / typed,Numeric,Text
+CustomerMaster,896,Exact current template,Equal,None,ISO / typed,Numeric,Text
+SupplierMaster,215,Exact current template,Equal,None,ISO / typed,Numeric,Text
+CustomerOpenings,1150,Exact current template,Equal,None,ISO / typed,Numeric,Text
+SupplierOpenings,180,Exact current template,Equal,None,ISO / typed,Numeric,Text
+ReceivedCheques,49,Exact current template,Equal,None,ISO / typed,Numeric,Text
+IssuedCheques,1,Exact current template,Equal,None,ISO / typed,Numeric,Text
+Stock,938,Exact current template,Equal,None,ISO / typed,Numeric,Text
+BankOpening,1,Exact current template,Equal,None,ISO / typed,Numeric,Text
+BankRecon,1,Exact current template,Equal,None,ISO / typed,Numeric,Text
+ControlTotals,5212,Exact current template,Equal,None,ISO / typed,Numeric,Text
+TrialBalance,39,Exact current template,Equal,None,ISO / typed,Numeric,Text
+UAT_Review.xlsx,7026,Seven review sheets,Matrix equality,None,As applicable,As applicable,As applicable
+UAT_Review.xlsx,7026,Seven review sheets,Matrix equality,None,As applicable,As applicable,As applicable
+UAT_Review.xlsx,7026,Seven review sheets,Matrix equality,None,As applicable,As applicable,As applicable
+UAT_Review.xlsx,7026,Seven review sheets,Matrix equality,None,As applicable,As applicable,As applicable
+UAT_Review.xlsx,7026,Seven review sheets,Matrix equality,None,As applicable,As applicable,As applicable
+UAT_Review.xlsx,7026,Seven review sheets,Matrix equality,None,As applicable,As applicable,As applicable
+UAT_Review.xlsx,7026,Seven review sheets,Matrix equality,None,As applicable,As applicable,As applicable

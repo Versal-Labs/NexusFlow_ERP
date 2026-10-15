@@ -1,0 +1,14 @@
+Module,Account code,Account name,Debit (LKR),Credit (LKR),Net (LKR)
+CustomerOpenings,1120,Accounts Receivable (AR),162114985.14,0.00,162114985.14
+CustomerOpenings,3200,Retained Earnings,0.00,162114985.14,-162114985.14
+SupplierOpenings,2110,Accounts Payable (AP),0.00,94190250.55,-94190250.55
+SupplierOpenings,3200,Retained Earnings,94190250.55,0.00,94190250.55
+ReceivedCheques,1151,Cheques In Hand,5328628.00,0.00,5328628.00
+ReceivedCheques,3200,Retained Earnings,0.00,5328628.00,-5328628.00
+Stock,1131,Raw Materials (RM) Inventory,29727743.70,0.00,29727743.70
+Stock,1132,Finished Goods (FG) Inventory,84689502.04,0.00,84689502.04
+Stock,3200,Retained Earnings,0.00,114417245.74,-114417245.74
+BankOpening,1112,Bank - Sampath,100000.00,0.00,100000.00
+BankOpening,3200,Retained Earnings,0.00,100000.00,-100000.00
+TrialBalance,6210,Rent Expense,1000000.00,0.00,1000000.00
+TrialBalance,4110,Sales Revenue - FG,0.00,1000000.00,-1000000.00

@@ -1,0 +1,893 @@
+Mapping type,Exact legacy code,Local target ID for reference,NexusFlow master label,Status,Reason
+CustomerGroup,TRADE,13,Trade,Confirmed,Explicit mapping required even when code already matches.
+PriceLevel,STANDARD TIER,10,Standard Tier,Confirmed,Explicit mapping required even when code already matches.
+PaymentTerm,NET30,27,30 Days,Confirmed,Explicit mapping required even when code already matches.
+SupplierGroup,A,15,Domestic Suppliers,Confirmed,User approved all source supplier groups to DOM.
+SupplierGroup,B,15,Domestic Suppliers,Confirmed,User approved all source supplier groups to DOM.
+SupplierGroup,C,15,Domestic Suppliers,Confirmed,User approved all source supplier groups to DOM.
+SupplierGroup,G,15,Domestic Suppliers,Confirmed,User approved all source supplier groups to DOM.
+SupplierGroup,S,15,Domestic Suppliers,Confirmed,User approved all source supplier groups to DOM.
+Account,B450    -001,2001,2110 — Accounts Payable (AP),Reconciliation candidate,Active posting account of type Liability. Preserve internal source-code spaces.
+Account,1120,1001,1120 — Accounts Receivable (AR),Verified configuration,Active posting account of type Asset. Preserve internal source-code spaces.
+Account,4110,9,4110 — Sales Revenue - FG,Verified configuration,Active posting account of type Revenue. Preserve internal source-code spaces.
+Account,1151,5006,1151 — Cheques In Hand,Verified configuration,Active posting account of type Asset. Preserve internal source-code spaces.
+Account,6210,10,6210 — Rent Expense,Verified configuration,Active posting account of type Expense. Preserve internal source-code spaces.
+Account,6220,11,6220 — Electricity & Utilities,Verified configuration,Active posting account of type Expense. Preserve internal source-code spaces.
+Warehouse,WH_MAIN,3,Main Garnet,Confirmed,All source locations combined into this approved warehouse.
+Unit,Pcs,1,Piece,Exact label candidate,Required explicit mapping. Source quantities must be pieces; current exact matched base unit must agree.
+Unit,pcs,1,Piece,Exact existing base unit,"Copied from exact SKU master, without inventing source conversions."
+Brand,UNBRANDED,5,UNBRANDED,Exact label candidate,Explicit mapping when needed for a new product.
+BankBranch,7010-058,,,Unmatched,Create/verify actual bank branch; do not choose by similar bank name.
+BankBranch,7010-501,,,Unmatched,Create/verify actual bank branch; do not choose by similar bank name.
+BankBranch,7056-006,84,Commercial Bank of Ceylon / Kurunegala,Exact code match,Verify the branch on the physical instrument.
+BankBranch,7056-152,,,Unmatched,Create/verify actual bank branch; do not choose by similar bank name.
+BankBranch,7083-064,,,Unmatched,Create/verify actual bank branch; do not choose by similar bank name.
+BankBranch,7083-094,,,Unmatched,Create/verify actual bank branch; do not choose by similar bank name.
+BankBranch,7135-040,,,Unmatched,Create/verify actual bank branch; do not choose by similar bank name.
+BankBranch,7135-123,,,Unmatched,Create/verify actual bank branch; do not choose by similar bank name.
+BankBranch,7135-200,,,Unmatched,Create/verify actual bank branch; do not choose by similar bank name.
+BankBranch,7135-329,,,Unmatched,Create/verify actual bank branch; do not choose by similar bank name.
+BankBranch,7162-012,224,Nations Trust Bank / Kurunegala,Exact code match,Verify the branch on the physical instrument.
+BankBranch,7278-929,,,Unmatched,Create/verify actual bank branch; do not choose by similar bank name.
+BankBranch,7287-085,,,Unmatched,Create/verify actual bank branch; do not choose by similar bank name.
+BankBranch,7311-085,,,Unmatched,Create/verify actual bank branch; do not choose by similar bank name.
+BankBranch,7454-026,,,Unmatched,Create/verify actual bank branch; do not choose by similar bank name.
+BankBranch,7463-008,319,Amana Bank / Kurunegala,Exact code match,Verify the branch on the physical instrument.
+BankBranch,7463-021,,,Unmatched,Create/verify actual bank branch; do not choose by similar bank name.
+Stock,3030000,15,3030000 — VESTI SET,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,10100115,16,10100115 — DES NO: 437 L/S,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,108003000/15H,61,108003000/15H — SCOPIO CASUAL PRINTED S/S 15H,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,5010000512/28,62,5010000512/28 — B TROUSER 5010000512/28,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,1088002000S/S 15,65,1088002000S/S 15 — SCOPIO CASUAL CHECK SHIRT S/S,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,1088002000L/S 15,66,1088002000L/S 15 — SCOPIO CASUAL CHECK SHIRT L/S,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,108004000/15,67,108004000/15 — GARNET CASUAL SHIRT CHECK L/S ( M TO XL ),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,108004000/15 S/S,69,108004000/15 S/S — GARNET CASUAL PRINTED S/S,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,108004000/15 L/S,70,108004000/15 L/S — GARNET CASUAL PRINTED L/S,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,5120000518/32,71,5120000518/32 — TOMMY TROUSER 5120000518/32,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,1088004000L/S 15,73,1088004000L/S 15 — SCOPIO WHITE LINEN 1088004000 L/S 15,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,5010000519/28,74,5010000519/28 — GLAMOUR TROUSER 5010000519/28,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,5010000519/30,75,5010000519/30 — GLAMOUR TROUSER 5010000519/30,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,5010000519/32,76,5010000519/32 — GLAMOUR TROUSER 5010000519/32,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,110006000/15H,84,110006000/15H — COOL KHAKIS SHIRT S/S (2XL TO 5XL),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,110006000/15,85,110006000/15 — COOL KHAKIS SHIRT S/S (S TO XL),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,108001502/15,86,108001502/15 — GARNET WHITE CASUAL L/S 15,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,108001502/15H,87,108001502/15H — GARNET WHITE CASUAL L/S 15H,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,108001502/16H,89,108001502/16H — GARNET WHITE CASUAL L/S 16H,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,108001502/17,90,108001502/17 — GARNET WHITE CASUAL L/S 17,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,108001502/17H,91,108001502/17H — GARNET WHITE CASUAL L/S 17H,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,108004002/SS,92,108004002/SS — GARNET CASUAL PRINTED SHIRT 4002 S/S,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,108004003/LS,93,108004003/LS — GARNET PLAIN SHIRT 4003 L/S,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001206/15H,94,11001206/15H — SHIRT 1206 L/S 15H,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001206/19,99,11001206/19 — SHIRT 1206 L/S 19,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001207/15H,100,11001207/15H — SHIRT 1207 L/S 15H,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001207/16,101,11001207/16 — SHIRT 1207 L/S 16,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001207/17,103,11001207/17 — SHIRT 1207 L/S 17,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001208/15H,108,11001208/15H — SHIRT 1208 L/S 15H,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001208/16H,109,11001208/16H — SHIRT 1208 L/S 16H,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001209/15H,110,11001209/15H — SHIRT 1209 L/S 15H,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001209/18,115,11001209/18 — SHIRT 1209 L/S 18,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001210/18,120,11001210/18 — SHIRT 1210 L/S 18,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001211/15H,122,11001211/15H — SHIRT 1211 L/S 15H,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001211/17H,126,11001211/17H — SHIRT 1211 L/S 17H,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001212/15H,129,11001212/15H — SHIRT 1212 L/S 15H,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001212/16,130,11001212/16 — SHIRT 1212 L/S 16,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001213/15H,136,11001213/15H — SHIRT 1213 L/S 15H,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001214/15H,143,11001214/15H — SHIRT 1214 L/S 15H,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001214/16,144,11001214/16 — SHIRT 1214 L/S 16,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001214/17,146,11001214/17 — SHIRT 1214 L/S 17,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001215/15H,150,11001215/15H — SHIRT 1215 L/S 15H,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001215/17,153,11001215/17 — SHIRT 1215 L/S 17,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001218/15H,169,11001218/15H — SHIRT 1218 L/S 15H,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001218/17,172,11001218/17 — SHIRT 1218 L/S 17,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001219/15H,176,11001219/15H — SHIRT 1219 L/S 15H,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001212/17H,133,11001212/17H — SHIRT 1212 L/S 17H,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001212/18H,135,11001212/18H — SHIRT 1212 L/S 18H,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001220/15H,183,11001220/15H — SHIRT 1220 L/S 15H S/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11201234/15H,187,11201234/15H — SHIRT 1234 S/S 15H S/O,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11201234/16,188,11201234/16 — SHIRT 1234 S/S 16 S/O,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11201235/15H,191,11201235/15H — SHIRT 1235 S/S 15H S/O,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11201235/16,192,11201235/16 — SHIRT 1235 S/S 16 S/O,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11201235/16H,193,11201235/16H — SHIRT 1235 S/S 16H S/O,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11201235/17,194,11201235/17 — SHIRT 1235 S/S 17 S/O,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11201235/17H,195,11201235/17H — SHIRT 1235 S/S 17H S/O,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11201236/15H,196,11201236/15H — SHIRT 1236 S/S 15H S/O,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11201236/16,197,11201236/16 — SHIRT 1236 S/S 16 S/O,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11201236/16H,198,11201236/16H — SHIRT 1236 S/S 16H S/O,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11201236/17,199,11201236/17 — SHIRT 1236 S/S 17 S/O,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11201236/17H,200,11201236/17H — SHIRT 1236 S/S 17H S/O,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,108004000/17,68,108004000/17 — GARNET CASUAL SHIRT CHECK L/S ( 2XL TO 4XL ),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11201239-1/15H,202,11201239-1/15H — SHIRT 1239-1 S/S 15H S/O,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11201239-1/16,203,11201239-1/16 — SHIRT 1239-1 S/S 16 S/O,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11201239-1/16H,204,11201239-1/16H — SHIRT 1239-1 S/S 16H S/O,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11201239-2/15H,205,11201239-2/15H — SHIRT 1239-2 S/S 15H S/O,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11201239-2/16,206,11201239-2/16 — SHIRT 1239-2 S/S 16 S/O,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11201239-2/16H,207,11201239-2/16H — SHIRT 1239-2 S/S 16H S/O,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11201239-2/17,208,11201239-2/17 — SHIRT 1239-2 S/S 17 S/O,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11201239-2/17H,209,11201239-2/17H — SHIRT 1239-2 S/S 17H S/O,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11201239-4/16,210,11201239-4/16 — SHIRT 1239-4 S/S 16 S/O,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11201239-6/16,211,11201239-6/16 — SHIRT 1239-6 S/S 16 S/O,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11201239-6/16H,212,11201239-6/16H — SHIRT 1239-6 S/S 16H S/O,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11201239-6/17,213,11201239-6/17 — SHIRT 1239-6 S/S 17 S/O,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11201239-6/17H,214,11201239-6/17H — SHIRT 1239-6 S/S 17H S/O,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11201239-7/16,215,11201239-7/16 — SHIRT 1239-7 S/S 16 S/O,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11201239-7/16H,216,11201239-7/16H — SHIRT 1239-7 S/S 16H S/O,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11201239-7/17,217,11201239-7/17 — SHIRT 1239-7 S/S 17 S/O,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11201239-9/15H,218,11201239-9/15H — SHIRT 1239-9 S/S 15H S/O,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11201239-9/17H,219,11201239-9/17H — SHIRT 1239-9 S/S 17H S/O,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11201239-11/16H,220,11201239-11/16H — SHIRT 1239-11 S/S 16H S/O,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11201239-11/17H,221,11201239-11/17H — SHIRT 1239-11 S/S 17H S/O,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11201239-16/16H,222,11201239-16/16H — SHIRT 1239-16 S/S 16H S/O,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11201239-16/17,223,11201239-16/17 — SHIRT 1239-16 S/S 17 S/O,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11201239-16/17H,224,11201239-16/17H — SHIRT 1239-16 S/S 17H S/O,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,108004100/15 S/S,225,108004100/15 S/S — GARNET CHECK SHIRT DOUBLE POCKET S/S,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001256/15,226,11001256/15 — SHIRT 1256 L/S 15 S/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001256/16,227,11001256/16 — SHIRT 1256 L/S 16 S/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001256/17,228,11001256/17 — SHIRT 1256 L/S 17 S/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11101256/17H,229,11101256/17H — SHIRT 1256 L/S 17H R/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11101256/18,230,11101256/18 — SHIRT 1256 L/S 18 R/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001255/15H,231,11001255/15H — SHIRT 1255 L/S 15H S/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001255/15,232,11001255/15 — SHIRT 1255 L/S 15 S/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001255/16,233,11001255/16 — SHIRT 1255 L/S 16 S/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001255/16H,234,11001255/16H — SHIRT 1255 L/S 16H S/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001255/17,235,11001255/17 — SHIRT 1255 L/S 17 S/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11201258-1/15H,236,11201258-1/15H — SHIRT 1258-1 S/S 15H S/O,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11201258-2/16H,237,11201258-2/16H — SHIRT 1258-2 S/S 16H S/O,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11201258-4/17,238,11201258-4/17 — SHIRT 1258-4 S/S 17 S/O,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11201258-4/17H,239,11201258-4/17H — SHIRT 1258-4 S/S 17H S/O,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11201258-5/15H,240,11201258-5/15H — SHIRT 1258-5 S/S 15H S/O,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11201258-5/16,241,11201258-5/16 — SHIRT 1258-5 S/S 16 S/O,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11201258-5/16H,242,11201258-5/16H — SHIRT 1258-5 S/S 16H S/O,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11201258-5/17,243,11201258-5/17 — SHIRT 1258-5 S/S 17 S/O,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11201258-5/17H,244,11201258-5/17H — SHIRT 1258-5 S/S 17H S/O,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11201258-6/15H,245,11201258-6/15H — SHIRT 1258-6 S/S 15H S/O,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11201258-6/16,246,11201258-6/16 — SHIRT 1258-6 S/S 16 S/O,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11201258-6/16H,247,11201258-6/16H — SHIRT 1258-6 S/S 16H S/O,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11201258-6/17,248,11201258-6/17 — SHIRT 1258-6 S/S 17 S/O,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11201258-6/17H,249,11201258-6/17H — SHIRT 1258-6 S/S 17H S/O,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11201258-7/15H,250,11201258-7/15H — SHIRT 1258-7 S/S 15H S/O,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11201258-7/16,251,11201258-7/16 — SHIRT 1258-7 S/S 16 S/O,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11201258-7/16H,252,11201258-7/16H — SHIRT 1258-7 S/S 16H S/O,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11201258-7/17,253,11201258-7/17 — SHIRT 1258-7 S/S 17 S/O,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11201258-7/17H,254,11201258-7/17H — SHIRT 1258-7 S/S 17H S/O,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,50300000D02,255,50300000D02 — MAXZONE GENTS S/S R/N D02 (M TO XL),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,50300000B91,256,50300000B91 — MAXZONE SPORTS GENTS S/S R/N - B91 (M TO 2XL),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001272/15H,257,11001272/15H — SHIRT 1272 L/S 15H S/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,5210004490/32,261,5210004490/32 — DENIM TROUSER 5210004490/32,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,5210004702/34,262,5210004702/34 — DENIM TROUSER 5210004702/34,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001317/15H,263,11001317/15H — SHIRT 1317 L/S 15H,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001317/16,264,11001317/16 — SHIRT 1317 L/S 16,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001317/16H,265,11001317/16H — SHIRT 1317 L/S 16H,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001316/16,266,11001316/16 — SHIRT 1316 L/S 16 S/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001600/15,268,11001600/15 — SHIRT S/F 1600  15 L/S,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001600/16,270,11001600/16 — SHIRT S/F 1600 16 L/S,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001599/15H,272,11001599/15H — SHIRT 1599 S/S 15H S/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001601/15H,275,11001601/15H — SHIRT 1601 L/S 15H S/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001601/16,276,11001601/16 — SHIRT 1601 L/S 16 S/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001603/15H,279,11001603/15H — SHIRT 1603 L/S 15H S/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001603/16,280,11001603/16 — SHIRT 1603 L/S 16 S/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001603/16H,281,11001603/16H — SHIRT 1603 L/S 16H S/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001598/16,282,11001598/16 — SHIRT 1598 L/S 16 S/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001598/16H,283,11001598/16H — SHIRT 1598 L/S 16H S/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001598/17,284,11001598/17 — SHIRT 1598 L/S 17 S/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001598/17H,285,11001598/17H — SHIRT 1598 L/S 17H S/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001598/18,286,11001598/18 — SHIRT 1598 L/S 18 S/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001605/15H,287,11001605/15H — SHIRT 1605 L/S 15H S/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001605/16H,289,11001605/16H — SHIRT 1605 L/S 16H S/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001604/15H,291,11001604/15H — SHIRT 1604 L/S 15H S/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,5030000D017,292,5030000D017 — T SHIRT D017 MAXZONE  GENTS   R/N  S/S,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,50300000B92,293,50300000B92 — T SHIRT B92 MAXZONE  GENTS   R/N  S/S,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001606/16H,295,11001606/16H — SHIRT 1606 L/S 16H S/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,20100521/38,296,20100521/38 — SPICYJET 521 38,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,20100521/40,297,20100521/40 — SPICYJET 521 40,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,20100520/42,298,20100520/42 — BOND 520 42,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,20100522/30,299,20100522/30 — BOND 522 30,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,20100522/40,301,20100522/40 — BOND 522 40,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,20100522/42,302,20100522/42 — BOND 522 42,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,20100523/30,303,20100523/30 — BOND 523 30,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001608/15H,313,11001608/15H — SHIRT 1608 L/S 15H S/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001609/15H,317,11001609/15H — SHIRT 1609 L/S 15H S/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001609/16,318,11001609/16 — SHIRT 1609 L/S 16 S/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001609/16H,319,11001609/16H — SHIRT 1609 L/S 16H S/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001609/17,320,11001609/17 — SHIRT 1609 L/S 17 S/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001610/15H,321,11001610/15H — SHIRT 1610 L/S 15H S/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001610/16,322,11001610/16 — SHIRT 1610 L/S 16 S/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001610/16H,323,11001610/16H — SHIRT 1610 L/S 16H S/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001610/17,324,11001610/17 — SHIRT 1610 L/S 17 S/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001611/15H,325,11001611/15H — SHIRT 1611 S/S 15H S/S 3090,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001611/16,326,11001611/16 — SHIRT 1611 S/S 16 S/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001611/16H,327,11001611/16H — SHIRT 1611 S/S 16H S/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001612/15H,331,11001612/15H — SHIRT 1612 S/S 15H S/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001611/17,328,11001611/17 — SHIRT 1611 S/S 17 R/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001611/17H,329,11001611/17H — SHIRT 1611 S/S 17H R/F 3090,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001611/18,330,11001611/18 — SHIRT 1611 S/S 18 R/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001613/15H,332,11001613/15H — SHIRT 1613 S/S 15 H,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001613/16,333,11001613/16 — SHIRT 1613 S/S 16 S/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001613/16H,334,11001613/16H — SHIRT 1613 S/S 16H S/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001613/17,335,11001613/17 — SHIRT 1613 S/S 17 S/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001613/17H,336,11001613/17H — SHIRT 1613 S/S 17H S/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001613/ 18,337,11001613/ 18 — SHIRT 1613 S/S 18 S/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001614/15H,338,11001614/15H — SHIRT 1614 L/S 15H S/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001614/17,341,11001614/17 — SHIRT 1614 L/S 17 S/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001615/15H,342,11001615/15H — SHIRT 1615 L/S 15H R/F (32%),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001615/17,343,11001615/17 — SHIRT 1615 L/S 17 R/F (32%),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001616/15H,344,11001616/15H — SHIRT 1616 L/S 15H S/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001616/16,345,11001616/16 — SHIRT 1616 L/S 16 S/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001616/16H,346,11001616/16H — SHIRT 1616 L/S 16H S/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001616/17,347,11001616/17 — SHIRT 1616 L/S 17 S/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001619/15H,348,11001619/15H — SHIRT 1619 L/S 15H S/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001619/16,349,11001619/16 — SHIRT 1619 L/S 16 S/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001619/16H,350,11001619/16H — SHIRT 1619 L/S 16H S/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001619/17H,351,11001619/17H — SHIRT 1619 L/S 17H S/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001620/15H,352,11001620/15H — SHIRT 1620 L/S 15H S/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001620/16,353,11001620/16 — SHIRT 1620 L/S 16 S/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001620/16H,354,11001620/16H — SHIRT 1620 L/S 16H S/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001620/17,355,11001620/17 — SHIRT 1620 L/S 17 S/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001620/17H,356,11001620/17H — SHIRT 1620 L/S 17H S/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001620/18,357,11001620/18 — SHIRT 1620 L/S 18 S/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001621/15H,358,11001621/15H — SHIRT 1621 L/S 15H S/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001621/16,359,11001621/16 — SHIRT 1621 L/S 16 S/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001621/17,360,11001621/17 — SHIRT 1621 L/S 17 S/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001621/17H,361,11001621/17H — SHIRT 1621 L/S 17H S/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001621/18,362,11001621/18 — SHIRT 1621 L/S 18 S/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001622/15H,363,11001622/15H — SHIRT 1622 L/S 15H S/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001622/16H,365,11001622/16H — SHIRT 1622 L/S 16H S/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001622/17,366,11001622/17 — SHIRT 1622 L/S 17 S/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,20100525/30,369,20100525/30 — TROUSER BRIETLING 525 30,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,20100525/42,370,20100525/42 — TROUSER BRIETLING 525 42,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11400006001,371,11400006001 — LADIES SHIRT LOTUS 6001,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11400006002,372,11400006002 — LADIES LOTUS BLOUSE 6002,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11400006004,373,11400006004 — LADIES LOTUS SHIRT 6004,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11300006007,374,11300006007 — LOTUS TOP 6007,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11600006006,375,11600006006 — LADIES LOTUS FROCK 6006,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,1160000T601,376,1160000T601 — LADIES PARTY FROCK 1160000T601,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,1130000T603,377,1130000T603 — LADIES TOP 1160000T603,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,1160000T604,378,1160000T604 — LADIES SKIRT 1160000T604,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,1140000T605,379,1140000T605 — LADEIS BLOUSE 1140000T605,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,20100526/30,380,20100526/30 — H DAIZ COTTON TROUSER 20100526/30,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11400006003,382,11400006003 — LADIES PLEATED BLOUSE 6003 (1850),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,521000G7009,384,521000G7009 — GIRLS DENIM DES NO G 7009 3090,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,521000G7012,385,521000G7012 — GIRLS DENIM DES NO G7012 (3290),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,521000G7011,386,521000G7011 — GIRLS DENIM G 7011 (2700),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,521000K7020,387,521000K7020 — KIDS DENIM DES NO K 7020 (2290),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,521000L7004,388,521000L7004 — LAIES DENIM DES NO L7004,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,521000L7008,389,521000L7008 — GIRLS DENIM DES NO L7008,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,521000G7015,390,521000G7015 — GIRLS DENIM G7015 (2690),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,521000G7013,391,521000G7013 — GIRLS DENIM ACID WASH G7013 (3290),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,20100526/28,381,20100526/28 — H DAIZ COTTON TROUSER 20100526/28 (2990),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,521000G7022,393,521000G7022 — GIRLS DENIM 3 QTR G7022 (1990),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,20200527/26,394,20200527/26 — GENTS COTTON SHORTS  527,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,521000G7024,395,521000G7024 — GIRLS DENIM SHORTS G7024 (2090),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,521000L8021,396,521000L8021 — LADIES DENIM JEANS L8021 (2990),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,521000B9028,397,521000B9028 — DENIM BOYS ELASTIC B9028 (2890),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11300006014,398,11300006014 — LADIES RUFFLE FROCK 6014 (SP2295),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,521000G7014,399,521000G7014 — GIRLS DENIM G7014 (SP 2595),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,521000L8009,400,521000L8009 — LADIES DENIM L8009,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,521000L8012,402,521000L8012 — LADIES DENIM L8012,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,20100528/28,403,20100528/28 — H DIAZ COTTON TROUSER 20100528/28,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,521000L8041,404,521000L8041 — LADIES DENIM L8041 (2490),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,521ACIDL8041,405,521ACIDL8041 — LADIES DENIM ACID L8041 (3900),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001623/15H,406,11001623/15H — SHIRT 1623 L/S 15H S/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001623/16,407,11001623/16 — SHIRT 1623 L/S 16 S/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001623/17,408,11001623/17 — SHIRT 1623 L/S 17 S/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001623/17H,409,11001623/17H — SHIRT 1623 L/S 17H R/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001623/19,410,11001623/19 — SHIRT 1623 L/S 19 R/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,521SLVG7054,411,521SLVG7054 — DENIM GIRLS SLVG7054 (2590),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,521000B9003,412,521000B9003 — DENIM BOYS B9003 (23-28) (2990),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001624/16,415,11001624/16 — SHIRT 1624 L/S 16 S/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001624/16H,416,11001624/16H — SHIRT 1624 L/S 16H L/S,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001624/17H,417,11001624/17H — SHIRT 1624 L/S 17H S/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,1101624-1/16H,419,1101624-1/16H — SHIRT 1624-1 S/S 16H S/O,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,1101624-1/17H,420,1101624-1/17H — SHIRT 1624-1 S/S 17H S/O,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,521000G7044,421,521000G7044 — DENIM GIRLS G7044 (2890),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,521K9002ACID,422,521K9002ACID — KIDS CARGO PANT DENIM 521K9002ACID (16-22) (2590),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,521B9003ACID,423,521B9003ACID — BOYS CARGO PANT DENIM 521B9003ACID (23-28) (3290),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,521ACIDL8015,425,521ACIDL8015 — LADIEN DENIM JACKET ACID L8015 (2990),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,521000G7037,427,521000G7037 — DENIM GIRLS G7037 (2590),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001630/15H,428,11001630/15H — SHIRT S/F 1630 15H L/S,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001630/16,429,11001630/16 — SHIRT S/F 1630 16 L/S,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001630/16H,430,11001630/16H — SHIRT S/F 1630 16H L/S,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001630/17,431,11001630/17 — SHIRT S/F 1630 17 L/S,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001630/17H,432,11001630/17H — SHIRT S/F 1630 17H L/S,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001629/16H,433,11001629/16H — SHIRT 1629 L/S 16H S/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001625/16H,435,11001625/16H — SHIRT 1625 L/S 16H S/F (2890),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001625/15H,436,11001625/15H — SHIRT 1625 L/S 15H S/F (2890),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001626/15H,437,11001626/15H — SHIRT 1626 L/S 15H S/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001629/15H,434,11001629/15H — SHIRT 1629 L/S 15H S/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001626/16,438,11001626/16 — SHIRT 1626 L/S 16 S/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001626/16H,439,11001626/16H — SHIRT 1626 L/S 16H S/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001627/15H,440,11001627/15H — SHIRT 1627 L/S 15H S/F (2790),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001627/16,441,11001627/16 — SHIRT 1627 L/S 16 S/F (2790),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001627/16H,442,11001627/16H — SHIRT 1627 L/S 16H S/F(2790),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,521000G7005,443,521000G7005 — DENIM GILRLS G7005 (2690),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,5211000L8050,444,5211000L8050 — LADIM DENIM  BUTTONED HALF SKIRT L 8050 (2690),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,108001632/15H,445,108001632/15H — GARNET CASUAL SHIRT S/F 1632 S/S,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,108001637/15H,447,108001637/15H — GARNET CASUAL SHIRT S/F 1637 L/S (2250),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,1101631-1/15H,448,1101631-1/15H — SHIRT 1631-1 S/S 15H S/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001628/15H,449,11001628/15H — SHIRT 1628 S/S 15H S/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,108001634-L/S,450,108001634-L/S — GARNET CASUAL SHIRT S/F 1634 L/S (2250),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,1080001639,451,1080001639 — GARNET CASUAL SHIRT L/S 1639 S/F (2250),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,1080001635,453,1080001635 — GARNET CASUAL SHIRT L/S 1635 S/F (2250),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,1080001633-1,454,1080001633-1 — GARNET CASUAL SHIRT S/S 1633-1 S/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,5211000L8017,456,5211000L8017 — FRONT SPLIT DENIM SKIRT 8017 (3090),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,5221000L8016,457,5221000L8016 — LADOES DENIM OPEN JACKE L 8016,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,5221000L8051,458,5221000L8051 — LADIESDENIM MINI SKIRT L8051 (2290),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,522ACIDL8049,459,522ACIDL8049 — LADIES DENIM A LINE SKIRT ACID L8049,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,5221000L8049,460,5221000L8049 — LADIES DENIM A LINE SKIRT L8049,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,52310007055,462,52310007055 — DENIM SLEVELESS OPEN JACKET 7055 (2090),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,52310008052,463,52310008052 — DENIM PINAFORE 8052 (2990),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,5231007056-K,464,5231007056-K — KIDS LONG JACKET 7056-K (2290),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,52310009015-B,465,52310009015-B — BOYS DENIM JACKET 9015-B - 2090,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,201006021,466,201006021 — LADIES COTTON TROUSER CARGO 6021 (2295),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,2010 06025,467,2010 06025 — LADIES COTTON TROUSER 6025 (2390),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001641,468,11001641 — SHIRT 1641 L/S S/F (3295),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001641-1,469,11001641-1 — SHIRT 1641-1 S/S S/F (3195),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11001641-2,470,11001641-2 — SHIRT 1641-2 S/S S/F (3XL 4XL),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,5211000L8058,471,5211000L8058 — LADIES DENIM SKIRT LONG SPLIT ACID L 8058 (2990),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,110001643,473,110001643 — GARNET CASUAL SHIRT PRINTED 1643 L/S S/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,1100001644,474,1100001644 — GARNET CASUAL SHIRT PRINTED 1644 L/S S/F 2490,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,1100001645,475,1100001645 — GARNET CASUAL SHIRT PRINTED 1645 L/S S/F (no Bag & box) 2590,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,1100001647,476,1100001647 — LINEN SHIRT S/S 1647 R/F (3090),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,1100001640,477,1100001640 — SHIRT 1640 L/S  S/F (3395),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,110001640-1,478,110001640-1 — SHIRT 1640-1 S/S S/F (3290),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,1100001648,479,1100001648 — SHIRT 1648 L/S S/F 3390,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,5221ACIDL8051,480,5221ACIDL8051 — LADIED DENIM MINI SKIRT ACID L8051 (2490),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,523ACID9014B,481,523ACID9014B — BOYS DENIM JACKET 9014B ACID,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,20100000529,482,20100000529 — H DIAZ COTTON TROUSER 529 (2900),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,5221000L8055,483,5221000L8055 — LADIES DENIM CARGO SKIRT L8055 (3090),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,20221000L6030,484,20221000L6030 — LADIES CARGO PANT COTTON TROUSER L6030 (2590),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,2061000L6028,485,2061000L6028 — LADIES JOGGER PANT L6028 2590,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,20610007059-B,486,20610007059-B — BOYS CARGO PANT 7059-B,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,5211000L8062,487,5211000L8062 — DENIM LADIES DUNGREE L8062,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,5211ACIDG7063,488,5211ACIDG7063 — GIRLS DENIM PANT ACID  G7063 (3290),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,1100001649,489,1100001649 — LINEN PRINTED SHIRT 1649 L/S R/F (3090),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,1100001650,490,1100001650 — LINEN PRINTED SHIRT 1650 S/S S/O (2990),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,1100001651,491,1100001651 — PRINTED SHIRT 1651 L/S S/F (2890),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,52400006029,492,52400006029 — LADIES SHORTS 6029,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,522 G7067,493,522 G7067 — GIRLS DENIM SKIRT G7067,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,522 ACID G7067,494,522 ACID G7067 — GIRLS DENIM SKIRT ACID G7067 (3290),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,522000L6026,495,522000L6026 — LADIES BENKALIN TWILL KNEE LENGTH SKIRT L 6026 (2590),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,5220000L8068,496,5220000L8068 — LADIES CARGO SKIRT L8068 ACID (3290),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,52300007066,497,52300007066 — GIRLS JUMBER DRESS 7066 (2490),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,523108052ACID,498,523108052ACID — LADEIS DENIM PINAFORE 8052 ACID,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,5210ACID7058,499,5210ACID7058 — LADIES DENIM DART JEANS 7058,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,5210ACID7062,500,5210ACID7062 — GIRLS DENIM JEANS  POCKET CHAIN ACID 7062,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,52300008060,501,52300008060 — LADIES DENIM SLEEVE LESS FORCK 8060 (3390,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,52100007070,502,52100007070 — DENIM BOOT CUT FAIRED JEANS G7070 (3090),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,52200008057,503,52200008057 — DENIM 6 PANEL SKIRT 8057 - 3090,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,522ACID8057,504,522ACID8057 — DENIM LADIES 6 PANEL SKIRT 8057 ACID,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,52100008058,505,52100008058 — LADIES DENIM LONG SKIRT SPLIT  8058,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,202000531-B,507,202000531-B — BOYS COTTON TROUSER 531-B,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,110000001652,508,110000001652 — OFFICE SHIRT 1652 S/F S/S (3375),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,52200008068,509,52200008068 — LADEIS DENIM SKIRT 8068,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,521009021-B,510,521009021-B — BOYS DENIM R/F LOOP 9021-B 2990,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,52100008056,511,52100008056 — LADIES DENIM TROUSER 8056,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,5217069-ACID,512,5217069-ACID — GIRLS ELASTIC MINI AKIRT 7069-K-ACID,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,522ACID8055,513,522ACID8055 — LADIES SKIRT ACID 8055,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,521ACID8056,514,521ACID8056 — LADIES DENIM TROUSER 8056 ACID - 3490,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,52100008054,515,52100008054 — LADIES DENIM CRAGO PANT 8054,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,52400007036,516,52400007036 — GIRLS DENIM FLAP SHORTS 7036 ACID - 2290,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,5231ACID7056K,517,5231ACID7056K — GIRLS DENIM FROCK ACID 7056-K (2290),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,1100006001,518,1100006001 — COOL KAKIS PRINTED 6001 S/S (1350),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,521ACID7074,519,521ACID7074 — GIRLS DENIM SIDE OPEN WIDE LEG 7074 ACID - 3390,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,521ACIDG7080,520,521ACIDG7080 — GIRLS DENIM BOOT CUT POCKET JEANS ACID G7080 -,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,522000G7091,521,522000G7091 — DENIM GIRLS PATCH POCKET MINI SKIRT G7091 - 2190,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,522ACIDG7072,523,522ACIDG7072 — DENIM GIRLS SHORT SKIRT G7072 ACID,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,525000K9022,524,525000K9022 — DENIM KIDS DUNGAREES SHORT K9022 - 2590,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,5240000K9033,525,5240000K9033 — DENIM KIDS CARGO POCKET SHORTS K9033 - 2290,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,522000L8065,526,522000L8065 — DENIM LADIES GORED LONG SKIRT L8065,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,521000L8074,527,521000L8074 — DENIM LADIES LASTICATED WIDE LEG PANT L8074,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,522ACIDL8065,528,522ACIDL8065 — DENIM LADIES GORED LONG SKIRT L8065 ACID - 3290,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,522ACIDL8072,529,522ACIDL8072 — DENIM LADIES UNEAVEN SKIRT L8072 ACID,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,521000L8077,530,521000L8077 — LADIES DENIM CARGO POCKRT L8077 ACID,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,521ACIDL8075,531,521ACIDL8075 — DENIM LADIES 5 BUTTON JEANS L8075M ACID - 3490,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,5210000G7076,532,5210000G7076 — DENIM GIRLS FRAYED JEANS G7076 - 3290,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,20600000536,533,20600000536 — GENTS TWILL CARGO PANT 536 2890,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,521ACID7075,534,521ACID7075 — GIRLS WRAP JEANS 7075-ACID - 3390,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,52100007073,536,52100007073 — GIRLS LOOP WITH CORD WIDE LEG 7073 3290,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,52100007090,537,52100007090 — GIRLS DENIM TWO TORN WIDE LEG 7090 -3090,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,52400009038,538,52400009038 — GENTS DENIM KNEE LENGTH SHORTS REGULAR FIT 9038,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,5240ACID9038,539,5240ACID9038 — GENTS DENIM KNEE LENGTH SHORTS REGULAR FIT 9038 ACID,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,526000M9005,540,526000M9005 — GENTS DENIM TROUSER REGULAR FIT 9005-M 3690,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,202100000530,541,202100000530 — H DIAZ COTTON TROUSER REGULER FIT 530,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,20200006033,542,20200006033 — LADIES CARGO JOGGER PANT 6033,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11108001656,543,11108001656 — GENTS SHIRT 1656 L/S R/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11108001657,544,11108001657 — GENTS SHIRT 1657 L/S R/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11108001658,545,11108001658 — GENTS SHIRT 1658 L/S R/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,525ACID7082-K,546,525ACID7082-K — DENIM WAIST LASTIC FLARED FROCK 7082-K - ACID,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,52700009044,547,52700009044 — DENIM 5 POCKET BOYS JEANS 9044,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,52600001010,549,52600001010 — DENIM GENTS LOOSE FIT STRIGHT LEG 1010,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,526ACID1010,550,526ACID1010 — DENIM GENTS LOOSE FIT STRIGHT LEG 1010 ACID,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,202000L529,551,"202000L529 — H DIAZ COTTON TROUSER REGULER FIT 529 40,42",Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,526ACID1008,552,526ACID1008 — DENIM GENTS CARGO STRIGHT LEG 1008 ACID (4 POCKET),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,521ACID8083,553,521ACID8083 — DENIM LADIES BOOTCUT 4BUTTON JEANS 8083 ACID,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,52400009024,554,52400009024 — DENIM BOYS REGULSER FIT GENTS SHORTS 9024,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,52500008079,555,52500008079 — DENIM LADIES  YOKE DRESS 8079,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11108001661,556,11108001661 — COTTON WHITE SHIRT S/F 1661 L/S,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,526ACID9036,558,526ACID9036 — DENIM GENTS JEANS 9036 ACID REGULER FIT,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,524ACID8089,559,524ACID8089 — DENIM LADIES WRAP SHORTS 8089 ACID,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,526ACID8081,560,526ACID8081 — DENIM GENTS CARGO JEANS 8081 ACID,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11000001667,564,11000001667 — CASUAL SHIRT 1667 S/S  R/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11000001668,565,11000001668 — CASUAL SHIRT 1668 S/S R/F,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11000001670,566,11000001670 — SHIRT 1670 L/S LINEN SLUB,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11000001671,567,11000001671 — SHIRT 1671 L/S COTTON MAGIC,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,5220008069,568,"5220008069 — DENIM LADIES FRYED HEM, FLOWER SKIRT 8069",Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,526ACID1001,569,526ACID1001 — DENIM GENREGULER FIT  ACID 1001,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,524ACID1009,570,524ACID1009 — DENIM GENTS SHORTS KNEE LENGTH 1009 ACID,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,52100008092,571,52100008092 — DENIM LADIES SLANT POKET STRAIGHT LEG 8092,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,52100008100,572,52100008100 — DENIM SLIM FIT LADIES TROUSER 8100 ACID,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,521ACID8101,573,521ACID8101 — DENIM LADES WAIST FRY JEANS ACID 8101,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,526ACID9029,574,526ACID9029 — DENIM GENTS WIDE LOOSE FIT CARGO JEANS 9029 ACID,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11000001674,576,11000001674 — CASUAL SHIRT S/F 1674 S/S,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11000001675,577,11000001675 — CASUAL SHIRT S/F 1675 S/S,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11000001676,578,11000001676 — CASUAL SHIRT S/F 1676 S/S,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11000001677,579,11000001677 — CASUAL SHIRT S/F 1677 S/S,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11000001678,580,11000001678 — CASUAL SHIRT S/F 1678 S/S,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11000001679,581,11000001679 — CASUAL SHIRT S/F 1679 S/S,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11000001680,582,11000001680 — CASUAL SHIRT S/F 1680 S/S,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11000001672-1,583,11000001672-1 — CASUAL SHIRT S/F 1672-1 S/S,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11000001681,584,11000001681 — CASUAL SHIRT S/F 1681 L/S,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11000001682,585,11000001682 — CASUAL SHIRT S/F 1682 L/S,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11000001683,586,11000001683 — CASUAL SHIRT S/F 1683 L/S,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11000001684,587,11000001684 — CASUAL SHIRT S/F 1684 L/S,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11000001685,588,11000001685 — CASUAL SHIRT S/F 1685 L/S,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11000001686,589,11000001686 — CASUAL SHIRT S/F 1686 L/S,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11000001687,590,11000001687 — CASUAL SHIRT S/F 1687 L/S,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11000001688,591,11000001688 — CASUAL SHIRT S/F 1688 L/S,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11000001689,592,11000001689 — CASUAL SHIRT S/F 1689 L/S,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,527ACID7088K,593,527ACID7088K — DENIM ELESTIC FLARED SHORTS 7088K ACID,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,524ACID7086K,594,524ACID7086K — DENIM SPLIT JEANS 7086K ACID,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,52100007097,595,52100007097 — DENIM BELL JEANS 7097,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,521ACID7089,596,521ACID7089 — DENIM TOW TONE STRAIGHT LEG 7089 ACID,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,52100008109,597,52100008109 — DENIM TWO TONE STRAIGHT LEG 8109,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,52600001002,598,52600001002 — DENIM SCOPIO REGULAR FIT 1002,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,521ACID8106,599,521ACID8106 — DENIM POKET STYLE SLIM FIT JEANS 8106 ACID,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,524ACID1011,600,524ACID1011 — DENIM CARGO KNEE LENGTH SHORTS 1011 ACID,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,527ACID9040,601,527ACID9040 — DENIM BOYS REGULER FIT CARGO 3 QUATER 9040 ACID,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,52409049TPZ,605,52409049TPZ — DENIM BOYS SHORTS 9049TPZ,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,11000001695,608,11000001695 — SHIRT SU#111 S/F S/S 1695,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,521ACID8118,609,521ACID8118 — DENIM LADIES WIDE LEG JEANS 8118 ACID,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,522ACID8136,610,522ACID8136 — DENIM LADIES UNEAVEN SKIRT L8136 ACID,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A001,1613,A001 — GARNET HANG TAG SHIRT (BLACK & RED),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A002,1614,A002 — GARNET HANG TAG CASUAL SHIRT BIG (BLACK),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A003,1615,A003 — GARNET HANG TAG CASUAL SHIRT SMALL (BLACK),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A004,1616,A004 — GARNET HANG TAG CASUAL SHIRT (BLUE),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A005 - S,1617,A005 - S — GARNET COLLAR TAG - S,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A005 - M,1618,A005 - M — GARNET COLLAR TAG - M,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A005 - L,1619,A005 - L — GARNET COLLAR TAG - L,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A005 - XL,1620,A005 - XL — GARNET COLLAR TAG - XL,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A005 - 2XL,1621,A005 - 2XL — GARNET COLLAR TAG- 2XL,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A005 - 3XL,1622,A005 - 3XL — GARNET COLLAR TAG - 3XL,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A005 - 4XL,1623,A005 - 4XL — GARNET COLLAR TAG - 4XL,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A005 - 5 XL,1624,A005 - 5 XL — GARNET COLLAR TAG - 5XL,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A006,1625,A006 — COLLAR BONE,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A007,1626,A007 — GARNET MAIN LABLE -  CASUAL (PURPLE),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A008 - S,1627,A008 - S — GARNET MAIN LABLE - S,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A008 - M,1628,A008 - M — GARNET MAIN LABLE - M,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A008 - L,1629,A008 - L — GARNET MAIN LABLE - L,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A008 - XL,1630,A008 - XL — GARNET MAIN LABLE - XL,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A008 - 2XL,1631,A008 - 2XL — GARNET MAIN LABLE - 2XL,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A008 - 3XL,1632,A008 - 3XL — GARNET MAIN LABLE - 3XL,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A009 - M,1633,A009 - M — GARNET MAIN LABLE - M,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A009 - L,1634,A009 - L — GARNET MAIN LABLE - L,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A009 - XL,1635,A009 - XL — GARNET MAIN LABLE - XL,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A009 - 3XL,1636,A009 - 3XL — GARNET MAIN LABLE - 3XL,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A009 - 4XL,1637,A009 - 4XL — GARNET MAIN LABLE - 4XL,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A010 - 9,1638,A010 - 9 — GARNET MAIN LABLE - 9,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A010 - 10,1639,A010 - 10 — GARNET MAIN LABLE - 10,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A010 - 11,1640,A010 - 11 — GARNET MAIN LABLE - 11,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A010 - 12,1641,A010 - 12 — GARNET MAIN LABLE - 12,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A010 - 13,1642,A010 - 13 — GARNET MAIN LABLE - 13,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A010 - 14,1643,A010 - 14 — GARNET MAIN LABLE - 14,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A010 - 15,1644,A010 - 15 — GARNET MAIN LABLE - 15,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A011 - S,1645,A011 - S — GARNET MAIN LABLE - S,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A011 - M,1646,A011 - M — GARNET MAIN LABLE - M,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A011 - L,1647,A011 - L — GARNET MAIN LABLE - L,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A011 - XL,1648,A011 - XL — GARNET MAIN LABLE - XL,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A011 - 2XL,1649,A011 - 2XL — GARNET MAIN LABLE - 2XL,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A011 - 3XL,1650,A011 - 3XL — GARNET MAIN LABLE - 3XL,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A011 - 4XL,1651,A011 - 4XL — GARNET MAIN LABLE - 4XL,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A011 - 5XL,1652,A011 - 5XL — GARNET MAIN LABLE - 5XL,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A012 - 8,1653,A012 - 8 — GARNET MAIN LABEL - 8,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A012 - 9,1654,A012 - 9 — GARNET MAIN LABEL - 9,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A012 - 10,1655,A012 - 10 — GARNET MAIN LABEL - 10,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A012 - 11,1656,A012 - 11 — GARNET MAIN LABEL - 11,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A012 - 12,1657,A012 - 12 — GARNET MAIN LABEL - 12,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A012 - 13,1658,A012 - 13 — GARNET MAIN LABEL - 13,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A012 - 14,1659,A012 - 14 — GARNET MAIN LABEL - 14,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A012 - 15,1660,A012 - 15 — GARNET MAIN LABEL - 15,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A013 - S,1661,A013 - S — SCOPIO MAIN LABEL - S,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A013 - L,1662,A013 - L — SCOPIO MAIN LABEL - L,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A013 - XL,1663,A013 - XL — SCOPIO MAIN LABEL - XL,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A013 - 2XL,1664,A013 - 2XL — SCOPIO MAIN LABEL - 2XL,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A013 - 3XL,1665,A013 - 3XL — SCOPIO MAIN LABEL - 3XL,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A013 - 4XL,1666,A013 - 4XL — SCOPIO MAIN LABEL - 4XL,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A014 - S,1667,A014 - S — SCOPIO MAIN LABEL - S,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A014 - M,1668,A014 - M — SCOPIO MAIN LABEL - M,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A014 - L,1669,A014 - L — SCOPIO MAIN LABEL - L,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A014 - XL,1670,A014 - XL — SCOPIO MAIN LABEL - XL,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A014 - 2XL,1671,A014 - 2XL — SCOPIO MAIN LABEL - 2XL,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A014 - 3XL,1672,A014 - 3XL — SCOPIO MAIN LABEL - 3XL,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A014 - 4XL,1673,A014 - 4XL — SCOPIO MAIN LABEL - 4XL,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A014 - 5XL,1674,A014 - 5XL — SCOPIO MAIN LABEL - 5XL,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A015 - S,1675,A015 - S — SCOPIO COLLAR TAG - S,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A015 - M,1676,A015 - M — SCOPIO COLLAR TAG - M,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A015 - L,1677,A015 - L — SCOPIO COLLAR TAG - L,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A015 - XL,1678,A015 - XL — SCOPIO COLLAR TAG - XL,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A015 - 2XL,1679,A015 - 2XL — SCOPIO COLLAR TAG - 2XL,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A015 - 3XL,1680,A015 - 3XL — SCOPIO COLLAR TAG - 3XL,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A015 - 4XL,1681,A015 - 4XL — SCOPIO COLLAR TAG - 4XL,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A015 - 5XL,1682,A015 - 5XL — SCOPIO COLLAR TAG - 5XL,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A016,1683,A016 — SCOPIO HANG TAG - CASUAL,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A017 - M,1684,A017 - M — GARNET MAIN LABEL  - M,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A017 - L,1685,A017 - L — GARNET MAIN LABEL  - L,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A017 - XL,1686,A017 - XL — GARNET MAIN LABEL  - XL,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A017 - 2XL,1687,A017 - 2XL — GARNET MAIN LABEL  - 2XL,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A017 - 3XL,1688,A017 - 3XL — GARNET MAIN LABEL  - 3XL,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A017 - 4XL,1689,A017 - 4XL — GARNET MAIN LABEL  - 4XL,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A017 - 5XL,1690,A017 - 5XL — GARNET MAIN LABEL  - 5XL,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A017 - 6XL,1691,A017 - 6XL — GARNET MAIN LABEL  - 6XL,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A018,1692,A018 — GARNET CARE LABLE - 50% COTTON / 50% LINEN,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A019,1693,A019 — GARNET CARE LABLE (SHIRT) 100% COTTON,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A020,1694,A020 — GARNET CARE LABLE - LINEN,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A021,1695,A021 — GARNET SPECIAL LABEL - SIDE OPEN,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A022,1696,A022 — BACK BOARD,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A023,1697,A023 — NECK BOARD,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A024,1698,A024 — TROUSER LOOP PIN,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A025,1699,A025 — TAPE ROLL,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A026,1700,A026 — GARNET SMALL LABLE,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A027 - SO,1701,A027 - SO — GARNET SPECIAL TAG - SIDE OPEN,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A027 - RF,1702,A027 - RF — GARNET SPECIAL TAG - REGULAR FIT,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A027 - SF,1703,A027 - SF — GARNET SPECIAL TAG - SLIM FIT,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A028 - 28,1704,A028 - 28 — SPECIAL TAG  - ULTRA SLIM FIT - 28,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A028 - 30,1705,A028 - 30 — SPECIAL TAG  - ULTRA SLIM FIT - 30,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A028 - 32,1706,A028 - 32 — SPECIAL TAG  - ULTRA SLIM FIT - 32,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A028 - 34,1707,A028 - 34 — SPECIAL TAG  - ULTRA SLIM FIT - 34,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A028 - 36,1708,A028 - 36 — SPECIAL TAG  - ULTRA SLIM FIT - 36,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A028 - 38,1709,A028 - 38 — SPECIAL TAG  - ULTRA SLIM FIT - 38,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A028 - 40,1710,A028 - 40 — SPECIAL TAG  - ULTRA SLIM FIT - 40,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A028 - 42,1711,A028 - 42 — SPECIAL TAG  - ULTRA SLIM FIT - 42,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A028 - 44,1712,A028 - 44 — SPECIAL TAG  - ULTRA SLIM FIT - 44,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A029,1713,A029 — GARNET CARE LABLE SHIRT - 80% POLYSTER / 20% COTTON,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A030,1714,A030 — GARNET CARE LABLE SHIRT - 65% COTTON / 35% POLYSTER,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A031,1715,A031 — GARNET CARE LABLE SHIRT - 100% LINEN,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A032,1716,A032 — GARNET CARE LABLE SHIRT - 70% COTTON / 30% POLYSTER,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A033 - 44,1717,A033 - 44 — TROUSER SIZE LABLE - 44 INCH,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A033 - 40,1718,A033 - 40 — TROUSER SIZE LABLE - 40 INCH,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A033 - 28,1719,A033 - 28 — TROUSER SIZE LABLE - 28 INCH,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A034 - SFW,1720,A034 - SFW — SPECIAL LABLE - SLIM FIT (WHITE),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A034 - SFB,1721,A034 - SFB — SPECIAL LABLE - SLIM FIT (BLUE ),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A034 - SFM,1722,A034 - SFM — SPECIAL LABLE - SLIM FIT (MAROON),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A034 - SFP,1723,A034 - SFP — SPECIAL LABLE - SLIM FIT (PLAIN),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A035,1724,A035 — GARNET POLLY TWILL TAPE,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,hdfg,1725,hdfg — GARNET POLLY TWILL TAPE BLACK - BUNDLE,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,hgtjhgf,1726,hgtjhgf — GARNET POLLY TWILL TAPE - BAG,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,sdasf,1727,sdasf — GARNET POLLY TWILL TAPE BLUE - BUNDLE,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,rfgrg,1728,rfgrg — GARNET POLLY TWILL TAPE MAROON - BUNDLE,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,jhtrgf,1729,jhtrgf — GARNET POLLY TWILL TAPE (WHITE),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,sdf,1730,sdf — GARNET SIDE LABLE - SHIRT,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,rtyer,1731,rtyer — GARNET STRING,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A039 - 16,1732,A039 - 16 — SCOPIO HANG TAG - 16,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A039 - 18,1733,A039 - 18 — SCOPIO HANG TAG - 18,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A039 - 20,1734,A039 - 20 — SCOPIO HANG TAG - 20,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A039 - 22,1735,A039 - 22 — SCOPIO HANG TAG -22,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A039 - 23,1736,A039 - 23 — SCOPIO HANG TAG -23,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A039 - 24,1737,A039 - 24 — SCOPIO HANG TAG - 24,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A039 - 25,1738,A039 - 25 — SCOPIO HANG TAG - 25,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A039 - 26,1739,A039 - 26 — SCOPIO HANG TAG -26,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A039 - 27,1740,A039 - 27 — SCOPIO HANG TAG - 27,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A039 - 28,1741,A039 - 28 — SCOPIO HANG TAG - 28,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A039 - 30,1742,A039 - 30 — SCOPIO HANG TAG -30,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A039 - 32,1743,A039 - 32 — SCOPIO HANG TAG -32,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A039 - 34,1744,A039 - 34 — SCOPIO HANG TAG - 34,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A039 - 36,1745,A039 - 36 — SCOPIO HANG TAG - 36,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A039 - 38,1746,A039 - 38 — SCOPIO HANG TAG - 38,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A040,1747,A040 — SCOPIO SMALL HANG TAG,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A041,1748,A041 — SCOPIO HANG TAG - SHIRT PLASTIC,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A042,1749,A042 — SCOPIO SPECIAL LABLE - WHITE,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A043,1750,A043 — H.DAIZ HANG TAG (SHIRT),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A044,1751,A044 — H.DAIZ STRING,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,afe,1752,afe — H.DAIZ STRING - RED,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,hyt,1753,hyt — H.DAIZ STRING - BLUE,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A045,1754,A045 — H.DAIZ HANG TAG TROUSER,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A046,1755,A046 — H.DAIZ WAIST BAND TAG CASUAL TROUSER,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A047,1756,A047 — H.DAIZ WAIST BAND TAG BIG,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A048 - 28,1757,A048 - 28 — H.DAIZ HANG TAG -  28,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A048 - 30,1758,A048 - 30 — H.DAIZ HANG TAG - 30,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A048 - 32,1759,A048 - 32 — H.DAIZ HANG TAG - 32,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A048 - 34,1760,A048 - 34 — H.DAIZ HANG TAG - 34,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A048 - 36,1761,A048 - 36 — H.DAIZ HANG TAG - 36,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A048 - 38,1762,A048 - 38 — H.DAIZ HANG TAG - 38,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A048 - 40,1763,A048 - 40 — H.DAIZ HANG TAG - 40,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A048 - 42,1764,A048 - 42 — H.DAIZ HANG TAG - 42,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,",jh,gh",1765,",jh,gh — H.DAIZ WAIST BAND TAG (SIZEWISE)",Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A049 - 28,1766,A049 - 28 — H.DAIZ WAIST BAND TAG - 28,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A049 - 30,1767,A049 - 30 — H.DAIZ WAIST BAND TAG - 30,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A049 - 32,1768,A049 - 32 — H.DAIZ WAIST BAND TAG - 32,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A049 - 34,1769,A049 - 34 — H.DAIZ WAIST BAND TAG - 34,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A049 - 36,1770,A049 - 36 — H.DAIZ WAIST BAND TAG - 36,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A049 - 38,1771,A049 - 38 — H.DAIZ WAIST BAND TAG - 38,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A049 - 40,1772,A049 - 40 — H.DAIZ WAIST BAND TAG - 40,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A050,1773,A050 — H.DAIZ POLY TWILL TAPE (WHITE),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A051,1774,A051 — H.DAIZ POLY TWILL TAPE (BLACK),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A052,1775,A052 — MAGMA HANG TAG PLASTIC - SHIRT,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A053,1776,A053 — MAGMA STRING,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,fgfg,1777,fgfg — MAGMA COLLAR TAG (SIZEWISE),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A054 - S,1778,A054 - S — MAGMA COLLAR TAG - S,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A054 - M,1779,A054 - M — MAGMA COLLAR TAG - M,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A054 - L,1780,A054 - L — MAGMA COLLAR TAG - L,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A054 - XL,1781,A054 - XL — MAGMA COLLAR TAG - XL,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A054 - 2XL,1782,A054 - 2XL — MAGMA COLLAR TAG - 2XL,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A054 - 3XL,1783,A054 - 3XL — MAGMA COLLAR TAG - 3XL,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A054 - 4XL,1784,A054 - 4XL — MAGMA COLLAR TAG - 4XL,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A054 - 5XL,1785,A054 - 5XL — MAGMA COLLAR TAG - 5XL,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A055,1786,A055 — MAGMA POLY TWILL TAPE,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,sthfg,1787,sthfg — MAGMA  MAIN LABLE SHIRT - WHITE (SIZEWISE),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A056 - S,1788,A056 - S — MAGMA  MAIN LABLE SHIRT - WHITE - S,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A056 - M,1789,A056 - M — MAGMA  MAIN LABLE SHIRT - WHITE - M,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A056 - L,1790,A056 - L — MAGMA  MAIN LABLE SHIRT - WHITE - L,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A056 - XL,1791,A056 - XL — MAGMA  MAIN LABLE SHIRT - WHITE - XL,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A056 - 2XL,1792,A056 - 2XL — MAGMA  MAIN LABLE SHIRT - WHITE - 2XL,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A056 - 3XL,1793,A056 - 3XL — MAGMA  MAIN LABLE SHIRT - WHITE - 3XL,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A056 - 4XL,1794,A056 - 4XL — MAGMA  MAIN LABLE SHIRT - WHITE - 4XL,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,sthsdfg,1795,sthsdfg — MAGMA HANG TAG  (SIZEWISE),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A057 - 16,1796,A057 - 16 — MAGMA HANG TAG - 16,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A057 - 18,1797,A057 - 18 — MAGMA HANG TAG - 18,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A057 - 20,1798,A057 - 20 — MAGMA HANG TAG - 20,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A057 - 22,1799,A057 - 22 — MAGMA HANG TAG - 22,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A057 - 23,1800,A057 - 23 — MAGMA HANG TAG - 23,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A057 - 24,1801,A057 - 24 — MAGMA HANG TAG - 24,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A057 - 25,1802,A057 - 25 — MAGMA HANG TAG - 25,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A057 - 26,1803,A057 - 26 — MAGMA HANG TAG - 26,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A057 - 27,1804,A057 - 27 — MAGMA HANG TAG -27,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A057 - 28,1805,A057 - 28 — MAGMA HANG TAG - 28,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A057 - 30,1806,A057 - 30 — MAGMA HANG TAG - 30,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A057 - 32,1807,A057 - 32 — MAGMA HANG TAG - 32,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A057 - 34,1808,A057 - 34 — MAGMA HANG TAG - 34,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A057 - 36,1809,A057 - 36 — MAGMA HANG TAG - 36,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A057 - 38,1810,A057 - 38 — MAGMA HANG TAG - 38,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A058,1811,A058 — MAGMA WAIST BAND TAG,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A059,1812,A059 — BOSS HANG TAG,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A060,1813,A060 — BOSS STRING,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A061,1814,A061 — BOSS HAND TAG,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,srg,1815,srg — BOSS SIZE LABLE (SIZEWISE),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A062 - 38,1816,A062 - 38 — BOSS SIZE LABLE - 38,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A062 - 40,1817,A062 - 40 — BOSS SIZE LABLE - 40,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A062 - 42,1818,A062 - 42 — BOSS SIZE LABLE - 42,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A062 - 44,1819,A062 - 44 — BOSS SIZE LABLE - 44,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A062 - 46,1820,A062 - 46 — BOSS SIZE LABLE - 46,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A062 - 48,1821,A062 - 48 — BOSS SIZE LABLE - 48,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,yjt,1822,yjt — BOSS WASIT BAND TAG (SIZEWISE),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A063 - 28,1823,A063 - 28 — BOSS WASIT BAND TAG - 28,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A063 - 30,1824,A063 - 30 — BOSS WASIT BAND TAG - 30,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A063 - 32,1825,A063 - 32 — BOSS WASIT BAND TAG - 32,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A063 - 34,1826,A063 - 34 — BOSS WASIT BAND TAG - 34,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A063 - 36,1827,A063 - 36 — BOSS WASIT BAND TAG - 36,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A063 - 38,1828,A063 - 38 — BOSS WASIT BAND TAG - 38,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A063 - 40,1829,A063 - 40 — BOSS WASIT BAND TAG - 40,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A063 - 42,1830,A063 - 42 — BOSS WASIT BAND TAG - 42,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A063 - 44,1831,A063 - 44 — BOSS WASIT BAND TAG - 44,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,awe,1832,awe — HUGO BOSS WAIST BAND TAG (SIZEWISE),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A064 - 30,1833,A064 - 30 — HUGO BOSS WAIST BAND TAG - 30,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A064 - 32,1834,A064 - 32 — HUGO BOSS WAIST BAND TAG - 32,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A064 - 34,1835,A064 - 34 — HUGO BOSS WAIST BAND TAG - 34,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A064 - 36,1836,A064 - 36 — HUGO BOSS WAIST BAND TAG - 36,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A064 - 38,1837,A064 - 38 — HUGO BOSS WAIST BAND TAG - 38,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A064 - 40,1838,A064 - 40 — HUGO BOSS WAIST BAND TAG - 40,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A064 - 42,1839,A064 - 42 — HUGO BOSS WAIST BAND TAG - 42,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A064 - 44,1840,A064 - 44 — HUGO BOSS WAIST BAND TAG - 44,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A064 - 46,1841,A064 - 46 — HUGO BOSS WAIST BAND TAG - 46,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A064 - 48,1842,A064 - 48 — HUGO BOSS WAIST BAND TAG - 48,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A065,1843,A065 — HUGO BOSS STICKER,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A066,1844,A066 — GARNET SHIRT BUTTON (BOYS),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A067,1845,A067 — GARNET SHIRT BUTTON,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A068,1846,A068 — GARNET CUFF BUTTON,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A069,1847,A069 — SCOPIO BUTTON (BLACK),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A070,1848,A070 — H. DAIZ BUTTON,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A071,1849,A071 — MAGMA BUTTON (WHITE),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A072,1850,A072 — BOSS BUTTON,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,jujt,1851,jujt — ZIPPER - SIZEWISE,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,"A073 - 5.5""DB",1852,"A073 - 5.5""DB — ZIPPER 5.5"" - DARK BLUE",Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,"A073 - 5.5""LB",1853,"A073 - 5.5""LB — ZIPPER 5.5"" - LIGHT BLUE",Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,"A073 - 5""DB",1854,"A073 - 5""DB — ZIPPER 5"" - DARK BLUE",Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,"A073 - 5"" LB",1855,"A073 - 5"" LB — ZIPPER 5"" - LIGHT BLUE",Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,"A073 -5"" B",1856,"A073 -5"" B — ZIPPER 5"" - BLACK",Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,"A073 - 5""",1857,"A073 - 5"" — ZIPPER - 5""",Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,"A073 - 4.5""DB",1858,"A073 - 4.5""DB — ZIPPER 4.5"" - DARK BLUE",Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,"A073 - 4.5""MB",1859,"A073 - 4.5""MB — ZIPPER 4.5"" - MID BLUE",Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,"A073 - 4.5""LB",1860,"A073 - 4.5""LB — ZIPPER 4.5"" - LIGHT BLUE",Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,"A073 - 4.5""B",1861,"A073 - 4.5""B — ZIPPER 4.5"" - BLACK",Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,"A073 - 4""DB",1862,"A073 - 4""DB — ZIPPER 4"" - DARK BLUE",Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,"A073 - 4""LB",1863,"A073 - 4""LB — ZIPPER 4"" - LIGHT BLUE",Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,"A073 - 4""B",1864,"A073 - 4""B — ZIPPER 4"" - BLACK",Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,"A073 - 3.5""DB",1865,"A073 - 3.5""DB — ZIPPER 3.5"" - DARK BLUE",Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,"A073 - 3.5""LB",1866,"A073 - 3.5""LB — ZIPPER 3.5"" LIGHT BLUE",Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,"A073 - 3.5""B",1867,"A073 - 3.5""B — ZIPPER 3.5"" - BLACK",Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,"A073 - 3""DB",1868,"A073 - 3""DB — ZIPPER 3"" - DARK BLUE",Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,"A073 - 3""LB",1869,"A073 - 3""LB — ZIPPER 3"" - LIGHT BLUE",Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,"A073 - 2.5""DB",1870,"A073 - 2.5""DB — ZIPPER 2.5"" - DARK BLUE",Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,"A073 - 2.5""LB",1871,"A073 - 2.5""LB — ZIPPER 2.5"" - LIGHT BLUE",Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,"A073 - 2""DB",1872,"A073 - 2""DB — ZIPPER 2"" - DARK BLUE",Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,"A073 - 2""MB",1873,"A073 - 2""MB — ZIPPER 2"" - MID BLUE",Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,"A073 - 2""LB",1874,"A073 - 2""LB — ZIPPER 2"" - LIGHT BLUE",Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A073 - 2'B,1875,"A073 - 2'B — ZIPPER 2"" - BLACK",Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A074,1876,A074 — H.DAIZ WAIST BAND TAG - (SMLL),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A075,1877,A075 — BOX CLIP (PLASTIC),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A076,1878,A076 — J CLIP (PLASTIC),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A077,1879,A077 — H.DAIZ CUFF BUTTON,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,wre,1880,wre — MAGMA MAIN LABLE - PINK (SIZEWISE),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A078 - 16,1881,A078 - 16 — MAGMA MAIN LABLE - PINK - 16,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A078 - 17,1882,A078 - 17 — MAGMA MAIN LABLE - PINK - 17,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A078 - 18,1883,A078 - 18 — MAGMA MAIN LABLE - PINK - 18,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A078 - 19,1884,A078 - 19 — MAGMA MAIN LABLE - PINK - 19,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A078 - 20,1885,A078 - 20 — MAGMA MAIN LABLE - PINK - 20,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A078 - 21,1886,A078 - 21 — MAGMA MAIN LABLE - PINK - 21,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A078 - 22,1887,A078 - 22 — MAGMA MAIN LABLE - PINK - 22,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A078 - 23,1888,A078 - 23 — MAGMA MAIN LABLE - PINK - 23,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A078 - 24,1889,A078 - 24 — MAGMA MAIN LABLE - PINK - 24,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A078 - 25,1890,A078 - 25 — MAGMA MAIN LABLE - PINK - 25,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A078 - 26,1891,A078 - 26 — MAGMA MAIN LABLE - PINK - 26,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A078 - 27,1892,A078 - 27 — MAGMA MAIN LABLE - PINK - 27,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A078 - 28,1893,A078 - 28 — MAGMA MAIN LABLE - PINK - 28,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A078 - 30,1894,A078 - 30 — MAGMA MAIN LABLE - PINK - 30,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A078 - 32,1895,A078 - 32 — MAGMA MAIN LABLE - PINK - 32,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A078 - 34,1896,A078 - 34 — MAGMA MAIN LABLE - PINK - 34,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A078 - 36,1897,A078 - 36 — MAGMA MAIN LABLE - PINK - 36,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A078 - 38,1898,A078 - 38 — MAGMA MAIN LABLE - PINK - 38,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,lkui,1899,lkui — MAGMA MAIN LABLE - BLACK (SIZEWISE),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A079 - S,1900,A079 - S — MAGMA MAIN LABLE - BLACK - S,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A079 - M,1901,A079 - M — MAGMA MAIN LABLE - BLACK - M,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A079 - L,1902,A079 - L — MAGMA MAIN LABLE - BLACK - L,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A079 - XL,1903,A079 - XL — MAGMA MAIN LABLE - BLACK - XL,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A079 - 2XL,1904,A079 - 2XL — MAGMA MAIN LABLE - BLACK - 2XL,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A079 - 3XL,1905,A079 - 3XL — MAGMA MAIN LABLE - BLACK - 3XL,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A079 - 4XL,1906,A079 - 4XL — MAGMA MAIN LABLE - BLACK - 4XL,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,wefd,1907,wefd — MAGMA COMPOSITION LABLE (SIZEWISE),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A080 - S,1908,A080 - S — MAGMA COMPOSITION LABLE - S,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A080 - M,1909,A080 - M — MAGMA COMPOSITION LABLE - M,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A080 - L,1910,A080 - L — MAGMA COMPOSITION LABLE  - L,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A080 - XL,1911,A080 - XL — MAGMA COMPOSITION LABLE  - XL,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A080 - 2XL,1912,A080 - 2XL — MAGMA COMPOSITION LABLE  - 2XL,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A080 - 3XL,1913,A080 - 3XL — MAGMA COMPOSITION LABLE  - 3XL,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A080 - 4XL,1914,A080 - 4XL — MAGMA COMPOSITION LABLE  - 4XL,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,brh,1915,brh — MAGMA COMPOSITION LABLE (SIZEWISE),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A081 - 16,1916,A081 - 16 — MAGMA COMPOSITION LABLE - 16,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A081 - 18,1917,A081 - 18 — MAGMA COMPOSITION LABLE - 18,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A081 - 20,1918,A081 - 20 — MAGMA COMPOSITION LABLE - 20,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A081 - 22,1919,A081 - 22 — MAGMA COMPOSITION LABLE - 22,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A081 - 23,1920,A081 - 23 — MAGMA COMPOSITION LABLE - 23,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A081 - 24,1921,A081 - 24 — MAGMA COMPOSITION LABLE - 24,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A081 - 25,1922,A081 - 25 — MAGMA COMPOSITION LABLE - 25,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A081 - 26,1923,A081 - 26 — MAGMA COMPOSITION LABLE - 26,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A081 - 27,1924,A081 - 27 — MAGMA COMPOSITION LABLE - 27,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A081 - 28,1925,A081 - 28 — MAGMA COMPOSITION LABLE - 28,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A081 - 30,1926,A081 - 30 — MAGMA COMPOSITION LABLE - 30,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A081 - 32,1927,A081 - 32 — MAGMA COMPOSITION LABLE - 32,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A081 - 34,1928,A081 - 34 — MAGMA COMPOSITION LABLE - 34,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A081 - 36,1929,A081 - 36 — MAGMA COMPOSITION LABLE - 36,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A081 - 38,1930,A081 - 38 — MAGMA COMPOSITION LABLE - 38,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,jkyt,1931,jkyt — H.DAIZ MAIN LABLE TROUSER,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A082 - 28 BK,1932,A082 - 28 BK — H.DAIZ MAIN LABLE TROUSER - 28 - BLACK,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A082 - 30 BK,1933,A082 - 30 BK — H.DAIZ MAIN LABLE TROUSER - 30 - BLACK,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A082 - 32 BK,1934,A082 - 32 BK — H.DAIZ MAIN LABLE TROUSER - 32 - BLACK,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A082 - 34 BK,1935,A082 - 34 BK — H.DAIZ MAIN LABLE TROUSER - 34 - BLACK,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A082 - 36 BK,1936,A082 - 36 BK — H.DAIZ MAIN LABLE TROUSER - 36 - BLACK,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A082 - 38 BK,1937,A082 - 38 BK — H.DAIZ MAIN LABLE TROUSER - 38 - BLACK,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A082 - 40 BK,1938,A082 - 40 BK — H.DAIZ MAIN LABLE TROUSER - 40 - BLACK,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A082 - 42 BK,1939,A082 - 42 BK — H.DAIZ MAIN LABLE TROUSER - 42 - BLACK,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A082 - 28 BE,1940,A082 - 28 BE — H.DAIZ MAIN LABLE TROUSER - 28 - BLUE,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A082 - 30 BE,1941,A082 - 30 BE — H.DAIZ MAIN LABLE TROUSER - 30 - BLUE,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A082 - 32 BE,1942,A082 - 32 BE — H.DAIZ MAIN LABLE TROUSER -32 - BLUE,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A082 - 34 BE,1943,A082 - 34 BE — H.DAIZ MAIN LABLE TROUSER - 34 - BLUE,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A082 - 36 BE,1944,A082 - 36 BE — H.DAIZ MAIN LABLE TROUSER -36 - BLUE,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,wefwe,1945,wefwe — ELASTIC,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A083 - 52Y B,1946,"A083 - 52Y B — ELASTIC (BLACK) 52 YARDS - 1.5""",Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A083 - 52Y W,1947,"A083 - 52Y W — ELASTIC (WHITE) 52 YARDS - 1.5""",Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A083 - 36Y,1948,"A083 - 36Y — ELASTIC (WHITE) 36 YARDS - 1.5""",Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A083 - 720Y,1949,"A083 - 720Y — ELASTIC (WHITE) 144 YARDS - 0.5""",Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,",liyuk",1950,",liyuk — CARE LABLE - H.DAIZ (SIDEWISE)",Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A084 - 28,1951,A084 - 28 — MAGMA CARE LABLE - 28,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A084 - 30,1952,A084 - 30 — MAGMA CARE LABLE - 30,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A084 - 32,1953,A084 - 32 — MAGMA CARE LABLE - 32,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A084 - 34,1954,A084 - 34 — MAGMA CARE LABLE - 34,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A084 - 36,1955,A084 - 36 — MAGMA CARE LABLE - 36,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A084 - 38,1956,A084 - 38 — MAGMA CARE LABLE - 38,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A084 - 40,1957,A084 - 40 — MAGMA CARE LABLE - 40,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A084 - 42,1958,A084 - 42 — MAGMA CARE LABLE - 42,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A085,1959,A085 — METAL BUTTON,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,fsdf,1960,fsdf — SCOPIO MAIN LABLE (SIZEWISE),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A086 - 16,1961,A086 - 16 — SCOPIO MAIN LABLE - 16,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A086 - 18,1962,A086 - 18 — SCOPIO MAIN LABLE - 18,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A086 - 20,1963,A086 - 20 — SCOPIO MAIN LABLE - 20,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A086 - 22,1964,A086 - 22 — SCOPIO MAIN LABLE - 22,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A086 - 23,1965,A086 - 23 — SCOPIO MAIN LABLE - 23,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A086 - 24,1966,A086 - 24 — SCOPIO MAIN LABLE - 24,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A086 - 25,1967,A086 - 25 — SCOPIO MAIN LABLE - 25,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A086 - 26,1968,A086 - 26 — SCOPIO MAIN LABLE - 26,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A086 - 27,1969,A086 - 27 — SCOPIO MAIN LABLE - 27,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A086 - 28,1970,A086 - 28 — SCOPIO MAIN LABLE - 28,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A086 - 30,1971,A086 - 30 — SCOPIO MAIN LABLE - 30,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A086 - 32,1972,A086 - 32 — SCOPIO MAIN LABLE - 32,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A086 - 34,1973,A086 - 34 — SCOPIO MAIN LABLE - 34,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A086 - 36,1974,A086 - 36 — SCOPIO MAIN LABLE - 36,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A086 - 38,1975,A086 - 38 — SCOPIO MAIN LABLE - 38,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A086 - 40,1976,A086 - 40 — SCOPIO MAIN LABLE - 40,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A086 - 42,1977,A086 - 42 — SCOPIO MAIN LABLE - 42,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A086 - 48,1978,A086 - 48 — SCOPIO MAIN LABLE - 48,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,bfdb,1979,bfdb — SCOPIO  CARE LABLE - TROUSER (SIZEWISE),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A087 - 16,1980,A087 - 16 — SCOPIO  CARE LABLE - TROUSER - 16,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A087 - 18,1981,A087 - 18 — SCOPIO  CARE LABLE - TROUSER - 18,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A087 - 20,1982,A087 - 20 — SCOPIO  CARE LABLE - TROUSER - 20,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A087 - 22,1983,A087 - 22 — SCOPIO  CARE LABLE - TROUSER - 22,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A087 - 23,1984,A087 - 23 — SCOPIO  CARE LABLE - TROUSER - 23,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A087 - 24,1985,A087 - 24 — SCOPIO  CARE LABLE - TROUSER - 24,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A087 - 25,1986,A087 - 25 — SCOPIO  CARE LABLE - TROUSER - 25,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A087 - 26,1987,A087 - 26 — SCOPIO  CARE LABLE - TROUSER - 26,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A087 - 27,1988,A087 - 27 — SCOPIO  CARE LABLE - TROUSER - 27,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A087 - 28,1989,A087 - 28 — SCOPIO  CARE LABLE - TROUSER - 28,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A087 - 30,1990,A087 - 30 — SCOPIO  CARE LABLE - TROUSER - 30,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A087 - 32,1991,A087 - 32 — SCOPIO  CARE LABLE - TROUSER - 32,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A087 - 34,1992,A087 - 34 — SCOPIO  CARE LABLE - TROUSER - 34,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A087 - 36,1993,A087 - 36 — SCOPIO  CARE LABLE - TROUSER - 36,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A087 - 38,1994,A087 - 38 — SCOPIO  CARE LABLE - TROUSER - 38,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A087 - 40,1995,A087 - 40 — SCOPIO  CARE LABLE - TROUSER - 40,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A087 - 42,1996,A087 - 42 — SCOPIO  CARE LABLE - TROUSER - 42,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A087 - 44,1997,A087 - 44 — SCOPIO  CARE LABLE - TROUSER - 44,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A087 - 46,1998,A087 - 46 — SCOPIO  CARE LABLE - TROUSER - 46,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A087 - 48,1999,A087 - 48 — SCOPIO  CARE LABLE - TROUSER - 48,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A088,2000,A088 — GARNET HANG TAG,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,rytjrt,2001,rytjrt — MAGMA MAIN LABLE SHIRT MAROON (SIZEWISE),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A089 - S,2002,A089 - S — MAGMA MAIN LABLE SHIRT (MAROON)  - S,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A089 - M,2003,A089 - M — MAGMA MAIN LABLE SHIRT (MAROON)  - M,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A089 - L,2004,A089 - L — MAGMA MAIN LABLE SHIRT (MAROON)  - L,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A089 - XL,2005,A089 - XL — MAGMA MAIN LABLE SHIRT (MAROON) - XL,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A089 - 2XL,2006,A089 - 2XL — MAGMA MAIN LABLE SHIRT (MAROON)  - 2XL,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A089 - 3XL,2007,A089 - 3XL — MAGMA MAIN LABLE SHIRT (MAROON) - 3XL,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A089 - 4XL,2008,A089 - 4XL — MAGMA MAIN LABLE SHIRT (MAROON)  - 4XL,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,vbcv,2009,vbcv — SCOPIO LEATHER LABLE,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A090 - B,2010,A090 - B — SCOPIO - BIG,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A090 - S,2011,A090 - S — SCOPIO - SMALL,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A091,2012,A091 — MAGMA LEATHER LABLE,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A092,2013,A092 — COMMON BLACK STRING,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A093,2014,A093 — SCOPIO WAIST BAND TAG,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,okyuik,2015,okyuik — MAGMA CARE LABLE (SIDEWISE),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A094 - M,2016,A094 - M — MAGMA CARE LABLE - M,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A094 - L,2017,A094 - L — MAGMA CARE LABLE - L,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A094 - XL,2018,A094 - XL — MAGMA CARE LABLE - XL,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A094 - 2XL,2019,A094 - 2XL — MAGMA CARE LABLE - 2XL,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A095,2020,A095 — COPPER BUTTON,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A096,2021,A096 — BLACK SILVER BUTTON,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A097,2022,A097 — MATEL BLACK BUTTON,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A098,2023,A098 — SILVER BUTTON,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,ert,2024,ert — CARE LABLE COMMON (SIZEWISE),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A099 - 16,2025,A099 - 16 — CARE LABLE COMMON - 16,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A099 - 18,2026,A099 - 18 — CARE LABLE COMMON - 18,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A099 - 20,2027,A099 - 20 — CARE LABLE COMMON - 20,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A099 - 22,2028,A099 - 22 — CARE LABLE COMMON - 22,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A099 - 23,2029,A099 - 23 — CARE LABLE COMMON - 23,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A099 - 24,2030,A099 - 24 — CARE LABLE COMMON - 24,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A099 - 25,2031,A099 - 25 — CARE LABLE COMMON - 25,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A099 - 26,2032,A099 - 26 — CARE LABLE COMMON - 26,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A099 - 27,2033,A099 - 27 — CARE LABLE COMMON - 27,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A099 - 28,2034,A099 - 28 — CARE LABLE COMMON - 28,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A099 - 30,2035,A099 - 30 — CARE LABLE COMMON - 30,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A099 - 32,2036,A099 - 32 — CARE LABLE COMMON - 32,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A099 - 34,2037,A099 - 34 — CARE LABLE COMMON - 34,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A099 - 36,2038,A099 - 36 — CARE LABLE COMMON - 36,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A099 - 38,2039,A099 - 38 — CARE LABLE COMMON - 38,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,gvc,2040,gvc — POLY BAG,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A100 - 16X22,2041,A100 - 16X22 — POLY BAG - 16X22 (1 KG - 55 PCS),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A100 - 20X27,2042,A100 - 20X27 — POLY BAG - 20X27 (1KG - 40 PCS),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A100 - 22X28,2043,A100 - 22X28 — POLY BAG - 22-28,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,wer,2044,wer — SIZE STICKER,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A101 - 23,2045,A101 - 23 — SIZE STICKER - 23,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A101 - 24,2046,A101 - 24 — SIZE STICKER - 24,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A101 - 25,2047,A101 - 25 — SIZE STICKER - 25,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A101 - 26,2048,A101 - 26 — SIZE STICKER - 26,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A101 - 27,2049,A101 - 27 — SIZE STICKER - 27,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A101 - 28,2050,A101 - 28 — SIZE STICKER - 28,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A101 - 48,2051,A101 - 48 — SIZE STICKER - 48,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,gds,2052,gds — CELLO TAPE CLEAR,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A102 - 1 IN,2053,A102 - 1 IN — CELLO TAPE CLEAR - 1 INCH,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A102 - 2 IN,2054,A102 - 2 IN — CELLO TAPE CLEAR - 2 INCH,Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A103,2055,A103 — BUCKLE (LAMP),Exact SKU match,Optional explicit match; Code remains SKU in template.
+Stock,A104,2056,A104 — SCOPIO SPECIAL LABLE,Exact SKU match,Optional explicit match; Code remains SKU in template.

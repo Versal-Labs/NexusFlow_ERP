@@ -1,0 +1,319 @@
+{
+  "Database": "NexusERPLocal",
+  "Server": "SAKEELPC",
+  "ProjectId": 4,
+  "CommittedAtUtc": "2026-10-13T18:22:11.6964095Z",
+  "Status": "Committed",
+  "StockMappings": 33,
+  "AccessoriesTarget": 53,
+  "Added": [
+    {
+      "Type": "Stock",
+      "Code": "HDFG",
+      "TargetId": 1725
+    },
+    {
+      "Type": "Stock",
+      "Code": "HGTJHGF",
+      "TargetId": 1726
+    },
+    {
+      "Type": "Stock",
+      "Code": "SDASF",
+      "TargetId": 1727
+    },
+    {
+      "Type": "Stock",
+      "Code": "RFGRG",
+      "TargetId": 1728
+    },
+    {
+      "Type": "Stock",
+      "Code": "JHTRGF",
+      "TargetId": 1729
+    },
+    {
+      "Type": "Stock",
+      "Code": "SDF",
+      "TargetId": 1730
+    },
+    {
+      "Type": "Stock",
+      "Code": "RTYER",
+      "TargetId": 1731
+    },
+    {
+      "Type": "Stock",
+      "Code": "AFE",
+      "TargetId": 1752
+    },
+    {
+      "Type": "Stock",
+      "Code": "HYT",
+      "TargetId": 1753
+    },
+    {
+      "Type": "Stock",
+      "Code": ",JH,GH",
+      "TargetId": 1765
+    },
+    {
+      "Type": "Stock",
+      "Code": "FGFG",
+      "TargetId": 1777
+    },
+    {
+      "Type": "Stock",
+      "Code": "STHFG",
+      "TargetId": 1787
+    },
+    {
+      "Type": "Stock",
+      "Code": "STHSDFG",
+      "TargetId": 1795
+    },
+    {
+      "Type": "Stock",
+      "Code": "SRG",
+      "TargetId": 1815
+    },
+    {
+      "Type": "Stock",
+      "Code": "YJT",
+      "TargetId": 1822
+    },
+    {
+      "Type": "Stock",
+      "Code": "AWE",
+      "TargetId": 1832
+    },
+    {
+      "Type": "Stock",
+      "Code": "JUJT",
+      "TargetId": 1851
+    },
+    {
+      "Type": "Stock",
+      "Code": "WRE",
+      "TargetId": 1880
+    },
+    {
+      "Type": "Stock",
+      "Code": "LKUI",
+      "TargetId": 1899
+    },
+    {
+      "Type": "Stock",
+      "Code": "WEFD",
+      "TargetId": 1907
+    },
+    {
+      "Type": "Stock",
+      "Code": "BRH",
+      "TargetId": 1915
+    },
+    {
+      "Type": "Stock",
+      "Code": "JKYT",
+      "TargetId": 1931
+    },
+    {
+      "Type": "Stock",
+      "Code": "WEFWE",
+      "TargetId": 1945
+    },
+    {
+      "Type": "Stock",
+      "Code": ",LIYUK",
+      "TargetId": 1950
+    },
+    {
+      "Type": "Stock",
+      "Code": "FSDF",
+      "TargetId": 1960
+    },
+    {
+      "Type": "Stock",
+      "Code": "BFDB",
+      "TargetId": 1979
+    },
+    {
+      "Type": "Stock",
+      "Code": "RYTJRT",
+      "TargetId": 2001
+    },
+    {
+      "Type": "Stock",
+      "Code": "VBCV",
+      "TargetId": 2009
+    },
+    {
+      "Type": "Stock",
+      "Code": "OKYUIK",
+      "TargetId": 2015
+    },
+    {
+      "Type": "Stock",
+      "Code": "ERT",
+      "TargetId": 2024
+    },
+    {
+      "Type": "Stock",
+      "Code": "GVC",
+      "TargetId": 2040
+    },
+    {
+      "Type": "Stock",
+      "Code": "WER",
+      "TargetId": 2044
+    },
+    {
+      "Type": "Stock",
+      "Code": "GDS",
+      "TargetId": 2052
+    },
+    {
+      "Type": "Category",
+      "Code": "ACCESSORIES",
+      "TargetId": 53
+    }
+  ],
+  "VersionBefore": 13,
+  "VersionAfter": 14,
+  "PriorApprovalCleared": true,
+  "ExistingMappingsAndSettingsPreserved": true,
+  "PreservedTables": [
+    {
+      "Table": "Config.SystemLookups",
+      "Rows": 24,
+      "SHA256": "FBAF9CE7004312A1B714ABB546D9B3BE38064A40DB67461C6521C827C54A5293"
+    },
+    {
+      "Table": "Finance.Accounts",
+      "Rows": 55,
+      "SHA256": "507F4CF1920692F9A351DFA590164A86BD6F68220274F0104C44FB5977ADD80E"
+    },
+    {
+      "Table": "Finance.BankBranches",
+      "Rows": 400,
+      "SHA256": "2A811F72A753E256A7DD183B68C2C229DD1E54BA8374BA9C609A560AE6320EBD"
+    },
+    {
+      "Table": "Finance.Banks",
+      "Rows": 26,
+      "SHA256": "145AAB9D433E7E9EA47642AE65123FE6946704B6FEA99F3483FF6A878E3B1C4D"
+    },
+    {
+      "Table": "Finance.ChequeRegister",
+      "Rows": 49,
+      "SHA256": "29D2C4CEB7A51A425EF08265F7B55499ECD18FD687632F2787BCE2517F2998D9"
+    },
+    {
+      "Table": "Finance.JournalEntries",
+      "Rows": 394,
+      "SHA256": "25B7937B1A5AEAA832EB73E0DEF59399F69B3D1941877E765C68FB31C4A29162"
+    },
+    {
+      "Table": "Finance.JournalLines",
+      "Rows": 788,
+      "SHA256": "5C74409850A0B0BF6AE60A5E89D22CE70DB7E0A9CFD3DB27F06F20D77A9CDEFC"
+    },
+    {
+      "Table": "Finance.OpeningBankItems",
+      "Rows": 1,
+      "SHA256": "D84D44B112B522D1F86C63E431109F2CB909F124DE61A7EE348532F112EBB88E"
+    },
+    {
+      "Table": "Inventory.StockLayers",
+      "Rows": 0,
+      "SHA256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+    },
+    {
+      "Table": "Inventory.StockTransactions",
+      "Rows": 0,
+      "SHA256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+    },
+    {
+      "Table": "Master.Brands",
+      "Rows": 5,
+      "SHA256": "B1F62DE2AECF6285C6D6979BC314615752002BE104B9290D2EAF766C18341028"
+    },
+    {
+      "Table": "Master.Categories",
+      "Rows": 44,
+      "SHA256": "622E82102B5C479A9FE199A754E31750C4FD79A961D20855FC97AE132FE168C7"
+    },
+    {
+      "Table": "Master.Products",
+      "Rows": 795,
+      "SHA256": "35C5BDAC2B4DAD4A103E6D056B36ECC615BA63CA8880FB8DDEECB78589A04753"
+    },
+    {
+      "Table": "Master.ProductVariants",
+      "Rows": 1055,
+      "SHA256": "34CB0C39331AAAF700244DF3FA85C144ABE8AF71D18F406831872E6E694D00F2"
+    },
+    {
+      "Table": "Master.UnitOfMeasures",
+      "Rows": 33,
+      "SHA256": "C7AB02CC0E6329A8F34C331838800B43586D93A0AA48C69C2767E0C3E93439E6"
+    },
+    {
+      "Table": "Master.Warehouses",
+      "Rows": 3,
+      "SHA256": "B330494E424CE8030DA88A27D940FB3AAC08EBB8B4DC78C3CF9D5B600B0CAF6B"
+    },
+    {
+      "Table": "Migration.MigrationDatasets",
+      "Rows": 11,
+      "SHA256": "5D05D6A05BC7CC0CFC409E04244F7F888A640405273EFB49A525E2063531E31E"
+    },
+    {
+      "Table": "Migration.MigrationOrigins",
+      "Rows": 7742,
+      "SHA256": "9B05A18BD74C1D08BC4EAC1B2D70FCEF12D0D4E1BA2FE59CBF6FE6184D508F21"
+    },
+    {
+      "Table": "Migration.MigrationRuns",
+      "Rows": 4,
+      "SHA256": "F73CE8F61F1F5E8CD616871EE96BE52F2FBAAC29B9686BF7564C6231F4B4CA56"
+    },
+    {
+      "Table": "Migration.MigrationScopes",
+      "Rows": 2050,
+      "SHA256": "758D550DBC5C238CF06C2BE11192C52B3A7F7EEEC14C342EB15FC205F81AD002"
+    },
+    {
+      "Table": "Migration.MigrationUnits",
+      "Rows": 1514,
+      "SHA256": "47F824AEB08106362F4258BFE382647333F6379F1381815F30D407B47209643B"
+    },
+    {
+      "Table": "Purchasing.SupplierOpeningItems",
+      "Rows": 180,
+      "SHA256": "A028C0C5575AE83737D6C529E95DBF8F3E720F258EFA7B78A86A2D1208E7EC1C"
+    },
+    {
+      "Table": "Purchasing.Suppliers",
+      "Rows": 219,
+      "SHA256": "5C3B8A9285F627D6667B0D59FCBE63D02E99BFF8AACABC5C177987878069A046"
+    },
+    {
+      "Table": "Sales.CustomerOpeningItems",
+      "Rows": 1150,
+      "SHA256": "D032C4E1B5BA5CE08B8C07306BECDA08E42145EAB43D41E64592E4F1253354B1"
+    },
+    {
+      "Table": "Sales.Customers",
+      "Rows": 898,
+      "SHA256": "6E907A3C09F1D4D0B8CEE5E5780E8A4602E19A0BA70ED8242EBFAC4EDADE7038"
+    }
+  ],
+  "PreservedTableCount": 25,
+  "StockRowsChecked": 938,
+  "RemainingMappingErrors": 0,
+  "ScopeRefreshDelta": 0,
+  "ImportExecuted": false,
+  "BackupFile": "F:\\source\\NexusFlow_ERP\\docs\\migration\\stock_validation_20261013\\.work\\project4-before-mappings-20261013-182208.json",
+  "BackupSHA256": "CA58835ACCEB5B9690648F88E17C8ADFF94F2CBB7E9B1E30F13AB851DD93B298"
+}

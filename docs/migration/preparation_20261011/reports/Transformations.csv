@@ -1,0 +1,87 @@
+Module,Source column or rule,Template column,Transformation,Status
+CustomerMaster,debcode,Code,Trim surrounding whitespace only; preserve identifiers as text.,Applied
+CustomerMaster,debname,Name,Trim surrounding whitespace only; preserve identifiers as text.,Applied
+CustomerMaster,debcper,Contact,Trim surrounding whitespace only; preserve identifiers as text.,Applied
+CustomerMaster,debmail,Email,Trim surrounding whitespace only; preserve identifiers as text. BA366 email is blank by explicit user confirmation.,Applied
+CustomerMaster,debtel1,Phone,Trim surrounding whitespace only; preserve identifiers as text.,Applied
+CustomerMaster,debtel2,Mobile,Trim surrounding whitespace only; preserve identifiers as text.,Applied
+CustomerMaster,debadd1,Address1,Trim surrounding whitespace only; preserve identifiers as text.,Applied
+CustomerMaster,debadd2 + debadd3,Address2,Join nonblank original address lines with semicolon and space; no truncation or inferred contact number.,Applied
+CustomerMaster,User confirmation / current configuration,GroupCode,"TRADE; actual master code, never database ID.",Applied
+CustomerMaster,User confirmation / current configuration,PaymentTermCode,"NET30; actual master code, never database ID.",Applied
+CustomerMaster,User confirmation / current configuration,PriceLevelCode,"STANDARD TIER; actual master code, never database ID.",Applied
+CustomerMaster,User confirmation / current configuration,ReceivableAccountCode,"1120; actual master code, never database ID.",Applied
+CustomerMaster,User confirmation / current configuration,RevenueAccountCode,"4110; actual master code, never database ID.",Applied
+SupplierMaster,supcode,Code,Trim outer whitespace only. Preserve original codes/internal spaces; A/B/C/G/S explicitly map to DOM.,Applied
+SupplierMaster,supname,Name,Trim outer whitespace only. Preserve original codes/internal spaces; A/B/C/G/S explicitly map to DOM.,Applied
+SupplierMaster,supcontact,Contact,Trim outer whitespace only. Preserve original codes/internal spaces; A/B/C/G/S explicitly map to DOM.,Applied
+SupplierMaster,supemail,Email,Trim outer whitespace only. Preserve original codes/internal spaces; A/B/C/G/S explicitly map to DOM.,Applied
+SupplierMaster,suptele,Phone,Trim outer whitespace only. Preserve original codes/internal spaces; A/B/C/G/S explicitly map to DOM.,Applied
+SupplierMaster,supadd1,Address1,Trim outer whitespace only. Preserve original codes/internal spaces; A/B/C/G/S explicitly map to DOM.,Applied
+SupplierMaster,tinno,TaxNumber,Trim outer whitespace only. Preserve original codes/internal spaces; A/B/C/G/S explicitly map to DOM.,Applied
+SupplierMaster,supgroup,GroupCode,Trim outer whitespace only. Preserve original codes/internal spaces; A/B/C/G/S explicitly map to DOM.,Applied
+SupplierMaster,supacc,PayableAccountCode,Trim outer whitespace only. Preserve original codes/internal spaces; A/B/C/G/S explicitly map to DOM.,Applied
+SupplierMaster,supadd2 + supadd3 + supadd4,Address2,Join nonblank lines with semicolon and space.,Applied
+SupplierMaster,User confirmed 30 days,PaymentTermCode,NET30; explicitly map to 30 Days.,Applied
+SupplierMaster,No source / unresolved accounting assignment,ExpenseAccountCode,"6210 for RE187/RS149 (explicit rent suppliers), 6220 for EL264 (explicit electricity supplier), others blank. Active Expense posting accounts selected for clear source purposes.",Needs business confirmation
+CustomerOpenings,debcode,Code,Preserve actual value/sign; ISO date or numeric LKR amount. No original-minus-paid calculation.,Applied
+CustomerOpenings,ref,Reference,Preserve actual value/sign; ISO date or numeric LKR amount. No original-minus-paid calculation.,Applied
+CustomerOpenings,tdate,DocumentDate,Preserve actual value/sign; ISO date or numeric LKR amount. No original-minus-paid calculation.,Applied
+CustomerOpenings,creamt,Amount,Preserve actual value/sign; ISO date or numeric LKR amount. No original-minus-paid calculation.,Applied
+CustomerOpenings,tdate + 30 days,DueDate,Confirmed calendar-day terms. Original customer document date retained.,Applied
+CustomerOpenings,creamt sign,Kind,Invoice / ReturnCredit for customers; Bill / Credit for suppliers. Negative amount preserved.,Applied
+SupplierOpenings,supcode,Code,Preserve actual value/sign; ISO date or numeric LKR amount. No original-minus-paid calculation.,Applied
+SupplierOpenings,dtfref,Reference,Preserve actual value/sign; ISO date or numeric LKR amount. No original-minus-paid calculation.,Applied
+SupplierOpenings,dtfdate,DocumentDate,Preserve actual value/sign; ISO date or numeric LKR amount. No original-minus-paid calculation.,Applied
+SupplierOpenings,dtfbal,Amount,Preserve actual value/sign; ISO date or numeric LKR amount. No original-minus-paid calculation.,Applied
+SupplierOpenings,dtfdate + 30 days,DueDate,Confirmed calendar-day terms. Original supplier paydate/crdays retained and discrepancies reported.,Applied
+SupplierOpenings,dtfbal sign,Kind,Invoice / ReturnCredit for customers; Bill / Credit for suppliers. Negative amount preserved.,Applied
+ReceivedCheques,E / Customer Code,Code,Only instrument detail rows recognized by CH receipt reference; retain text references/leading zeros.,Applied
+ReceivedCheques,C / Ref No,Reference,Only instrument detail rows recognized by CH receipt reference; retain text references/leading zeros.,Applied
+ReceivedCheques,D / Inv No,DocumentReferences,Only instrument detail rows recognized by CH receipt reference; retain text references/leading zeros.,Applied
+ReceivedCheques,H / Cheque Number,ChequeNumber,Only instrument detail rows recognized by CH receipt reference; retain text references/leading zeros.,Applied
+ReceivedCheques,B / Received Date,ReceivedDate,Only instrument detail rows recognized by CH receipt reference; retain text references/leading zeros.,Applied
+ReceivedCheques,G / Bank Code,BankBranchCode,Only instrument detail rows recognized by CH receipt reference; retain text references/leading zeros.,Applied
+ReceivedCheques,I / Amount,Amount,Only instrument detail rows recognized by CH receipt reference; retain text references/leading zeros.,Applied
+ReceivedCheques,"A / To be Dep Date, within report group",ChequeDate,Carry forward only until Total for subtotal; user confirmed it is cheque face date.,Applied
+ReceivedCheques,User confirmation / current configuration,Status,InSafe,Applied
+ReceivedCheques,User confirmation / current configuration,PartyReflected,true,Applied
+ReceivedCheques,User confirmation / current configuration,BankReflected,false,Applied
+ReceivedCheques,User confirmation / current configuration,SafeAccountCode,1151,Applied
+Stock,itemcode / SKU,Code,Finished goods / raw materials respectively. Preserve source code meanings; new product classifications need mapping.,Applied
+Stock,itemname / ProductName,Name,Finished goods / raw materials respectively. Preserve source code meanings; new product classifications need mapping.,Applied
+Stock,type / Category,CategoryCode,Finished goods / raw materials respectively. Preserve source code meanings; new product classifications need mapping.,Applied
+Stock,brand / Brand,BrandCode,Finished goods / raw materials respectively. Preserve source code meanings; new product classifications need mapping.,Applied
+Stock,lotno / absent,Batch,Finished goods / raw materials respectively. Preserve source code meanings; new product classifications need mapping.,Applied
+Stock,selprice / absent,SellingPrice,Finished goods / raw materials respectively. Preserve source code meanings; new product classifications need mapping.,Applied
+Stock,size / absent,Size,Finished goods / raw materials respectively. Preserve source code meanings; new product classifications need mapping.,Applied
+Stock,color / absent,Color,Finished goods / raw materials respectively. Preserve source code meanings; new product classifications need mapping.,Applied
+Stock,Source file,ProductType,FinishedGood for stock.xls; RawMaterial for Raw Material Stcok.xlsx.,Applied
+Stock,loc1..loc8 / Quantity,Quantity,Sum FG locations per SKU in one approved WH_MAIN layer; use raw Quantity unchanged. Do not also add totqty.,Applied
+Stock,avar / UnitCost,UnitCost,User-approved FG avar; raw supplied cost unchanged. Six decimal places. costval is retained only for reconciliation.,Applied
+Stock,Existing exact SKU base unit / Unit,UnitCode,FG exact-match base unit Symbol where available; new FG blank. Raw Unit retained; explicit Pcs mapping required.,Applied
+Stock,User-approved common warehouse,WarehouseCode,"WH_MAIN on all rows, replacing FG loc1/loc3 and raw WH-MAIN. Original locations retained in archive.",Applied
+Stock,Existing exact SKU category posting account,InventoryAccountCode,Actual current account code where available; verify RM Asset 1131 / FG Asset 1132.,Applied
+Stock,Original FIFO dates absent,LayerDate,Blank. Approved summarized layer; never use 13 September snapshot as an invented receipt date.,Applied
+Stock,Source units not proven to differ,ConversionFactor,"Blank, which validator treats as 1. Any actual unit difference blocks validation until a verified source-to-base factor is supplied.",Applied
+TrialBalance,acccod,Code,"Preserve actual closing balances, all zero rows and internal code spaces. cfamt checked independently against Debit-Credit.",Applied
+TrialBalance,cfamtdr,Debit,"Preserve actual closing balances, all zero rows and internal code spaces. cfamt checked independently against Debit-Credit.",Applied
+TrialBalance,cfamtcr,Credit,"Preserve actual closing balances, all zero rows and internal code spaces. cfamt checked independently against Debit-Credit.",Applied
+CustomerMaster,No permanent transaction ID field present,LegacyRecordId,Blank. Use importer-supported code/composite identity; exact duplicate check included. Excel row number is provenance only.,Applied
+CustomerMaster,Snapshot evidence,ClosingDate,2026-09-30 project metadata only; master files contain no opening amounts.,Applied
+CustomerMaster,Not supplied / not applicable,TaxNumber,"Blank, preserved as missing. Do not fabricate a value.",Applied
+SupplierMaster,No permanent transaction ID field present,LegacyRecordId,Blank. Use importer-supported code/composite identity; exact duplicate check included. Excel row number is provenance only.,Applied
+SupplierMaster,Snapshot evidence,ClosingDate,2026-09-30 project metadata only; master files contain no opening amounts.,Applied
+SupplierMaster,Not supplied / not applicable,Mobile,"Blank, preserved as missing. Do not fabricate a value.",Applied
+CustomerOpenings,No permanent transaction ID field present,LegacyRecordId,Blank. Use importer-supported code/composite identity; exact duplicate check included. Excel row number is provenance only.,Applied
+CustomerOpenings,Snapshot evidence,ClosingDate,"2026-09-28, actual report date. HOLD: importer rejects it for 30 September project.",Applied
+SupplierOpenings,No permanent transaction ID field present,LegacyRecordId,Blank. Use importer-supported code/composite identity; exact duplicate check included. Excel row number is provenance only.,Applied
+SupplierOpenings,Snapshot evidence,ClosingDate,Blank because uncertified/unknown. Supplier ageing separately infers 2026-10-07. HOLD; do not select 30 September in UI to disguise it.,Applied
+ReceivedCheques,No permanent transaction ID field present,LegacyRecordId,Blank. Use importer-supported code/composite identity; exact duplicate check included. Excel row number is provenance only.,Applied
+ReceivedCheques,Snapshot evidence,ClosingDate,"2026-09-28, actual report date. HOLD: importer rejects it for 30 September project.",Applied
+ReceivedCheques,Not supplied / not applicable,BankAccountCode,"Blank, preserved as missing. Do not fabricate a value.",Applied
+ReceivedCheques,Not supplied / not applicable,SupplierCode,"Blank, preserved as missing. Do not fabricate a value.",Applied
+Stock,No permanent transaction ID field present,LegacyRecordId,Blank. Use importer-supported code/composite identity; exact duplicate check included. Excel row number is provenance only.,Applied
+Stock,Snapshot evidence,ClosingDate,Raw rows 2026-09-13 from OpeningDate; FG blank because unknown. HOLD complete combined file.,Applied
+TrialBalance,No permanent transaction ID field present,LegacyRecordId,Blank. Use importer-supported code/composite identity; exact duplicate check included. Excel row number is provenance only.,Applied
+TrialBalance,Snapshot evidence,ClosingDate,Blank because the trial-balance snapshot date is uncertified. HOLD; obtain a certified 30 September export.,Applied

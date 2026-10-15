@@ -80,7 +80,14 @@ public sealed partial class MigrationCentreService
                 using var tx = await db.BeginTransactionAsync(IsolationLevel.Serializable, ct);
                 await db.LockMigrationProjectAsync(p.Id, ct);
                 using var permission = db.EnterMigrationPosting(p.Id);
-                var fresh = await ValidateAsync(p.Id, payload.Selection, ct);
+                // Revalidate only this atomic group. The original approved unit hashes still
+                // guard its data/mappings, and validation reloads its current masters/activity.
+                var groupSelection = new MigrationSelection { Modules = group.Select(x => x.Module).Distinct().ToList() };
+                var kind = MigrationCatalog.ScopeKind(group.First().Module);
+                var code = group.First().Scope;
+                switch (kind) { case "Customer": groupSelection.Customers.Add(code); break; case "Supplier": groupSelection.Suppliers.Add(code); break; case "Stock": groupSelection.Skus.Add(code); break; case "Bank": groupSelection.Banks.Add(code); break; }
+                var fresh = await ValidateAsync(p.Id, groupSelection, ct);
+                if (fresh.Errors.Count != 0) throw new InvalidOperationException(string.Join("; ", fresh.Errors.Select(x => x.Message)));
                 foreach (var expected in group)
                 {
                     var checkedUnit = fresh.Units.SingleOrDefault(x => x.Module == expected.Module && x.Scope == expected.Scope);

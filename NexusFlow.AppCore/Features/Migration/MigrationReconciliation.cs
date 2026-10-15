@@ -69,17 +69,18 @@ public sealed partial class MigrationCentreService
         var scope = await db.MigrationScopes.SingleAsync(x => x.ProjectId == id && x.Kind == kind && x.Code == code, ct);
         if (scope.Status is "Released" or "NoLegacyOpening") throw new InvalidOperationException("Scope is already released.");
         var settings = MigrationJson.Read<MigrationSettings>(p.SettingsJson);
-        var datasets = await db.MigrationDatasets.Where(x => x.ProjectId == id && x.IsCurrent).ToListAsync(ct);
-        foreach (var module in MigrationJson.Read<List<string>>(scope.RequiredModulesJson))
+        var requiredModules = MigrationJson.Read<List<string>>(scope.RequiredModulesJson);
+        var datasets = await db.MigrationDatasets.AsNoTracking().Where(x => x.ProjectId == id && x.IsCurrent && requiredModules.Contains(x.Module)).ToListAsync(ct);
+        foreach (var module in requiredModules)
         {
             var state = settings.DatasetStates.GetValueOrDefault(module);
             if (state == "AwaitingData") throw new InvalidOperationException($"{module} is still awaiting data.");
             if (state == "NotApplicable") { if (string.IsNullOrWhiteSpace(settings.ZeroEvidence.GetValueOrDefault(module))) throw new InvalidOperationException("Zero evidence is missing."); continue; }
             var d = datasets.SingleOrDefault(x => x.Module == module) ?? throw new InvalidOperationException("Required dataset is missing.");
             var sourceRows = StagedRows(d, settings).Where(x => x.Get("Code") == code).ToList();
-            var postedUnit = await db.MigrationUnits.SingleOrDefaultAsync(x => x.ProjectId == id && x.Module == module && x.ScopeKey == code && x.Status == "Posted", ct);
-            if (sourceRows.Count != 0 && postedUnit == null) throw new InvalidOperationException($"{module} has unposted rows for this scope.");
-            if (postedUnit != null)
+            var isPosted = await db.MigrationUnits.AnyAsync(x => x.ProjectId == id && x.Module == module && x.ScopeKey == code && x.Status == "Posted", ct);
+            if (sourceRows.Count != 0 && !isPosted) throw new InvalidOperationException($"{module} has unposted rows for this scope.");
+            if (isPosted)
             {
                 var selection = new MigrationSelection { Modules = [module] }; switch (kind) { case "Customer": selection.Customers.Add(code); break; case "Supplier": selection.Suppliers.Add(code); break; case "Stock": selection.Skus.Add(code); break; case "Bank": selection.Banks.Add(code); break; }
                 var preview = await ValidateAsync(id, selection, ct); if (preview.Errors.Count != 0 || preview.Units.Any(x => x.Errors.Count != 0 || x.Status != "Already imported")) throw new InvalidOperationException("Current source differs from the posted scope. Resolve the conflict before release.");

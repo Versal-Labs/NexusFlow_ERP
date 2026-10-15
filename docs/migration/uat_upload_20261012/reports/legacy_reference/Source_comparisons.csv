@@ -1,0 +1,3 @@
+Excel file,CSV file,Rows compared,Differing cells after type/whitespace normalization,Treatment
+stock.xls,stock.csv,494,0,"Excel primary; CSV compared, not appended"
+Raw Material Stcok.xlsx,Raw Material Stcok.csv,444,0,"Excel primary; CSV compared, not appended"

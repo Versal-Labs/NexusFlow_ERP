@@ -1,0 +1,17 @@
+UI field,Selection,Reason
+Opening equity account,3200 — Retained Earnings,Verified local Equity posting account; project 3 currently selects it.
+Default customer control,1120 — Accounts Receivable (AR),Configured Asset posting account.
+Default customer revenue,4110 — Sales Revenue - FG,Configured Revenue posting account.
+Default supplier control,2110 — Accounts Payable (AP),Configured Liability posting account; map B450    -001 to it.
+Default supplier expense,Leave unresolved,"5000 is a folder. 5110 Raw Material Consumption and 5120 Outsourced Job Work Costs are active Expense accounts, but supplier applicability is not established."
+Undeposited cheque account,1151 — Cheques In Hand,"Configured Asset posting account; current SalaryAdvancesReceivable also uses 1151, so confirm GL coverage."
+Default customer group,Trade (TRADE),"Confirmed, but also add explicit CustomerGroup mapping."
+Default supplier group,Domestic Suppliers (DOM),Confirmed; add explicit A/B/C/G/S mappings because source fields are nonblank.
+Default price level,Standard Tier (STANDARD TIER),Confirmed; add explicit PriceLevel mapping.
+Default customer payment term,30 Days (NET30),Confirmed; explicit NET30 mapping to ID 27. Do not use COD.
+Default supplier payment term,30 Days (NET30),Confirmed; explicit NET30 mapping to ID 27.
+Approved base unit when source unit is missing,Leave unresolved for new FG SKUs,Source lacks unit for 81 unmatched finished goods. Existing matched base unit is retained.
+Approved warehouse when source location is missing,Main Garnet (WH_MAIN),Confirmed; populated on every Stock row with explicit mapping.
+Approved supplier terms in days (optional),30,Confirmed. Canonical DueDate is already document+30 on every supplier row.
+Summarized stock layer approval,User approval recorded 11 October 2026,Missing LayerDate deliberately left blank. The validator assigns closing only after approved summarized-layer evidence.
+Legacy finished goods valuation,Average cost (avar × warehouse quantity),"User confirmed avar. Candidate discrepancy = 3,173,818.42 less than costval; retain signed financial review evidence."

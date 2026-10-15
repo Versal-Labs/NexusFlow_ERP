@@ -1,0 +1,13 @@
+{
+  "package": "F:\\source\\NexusFlow_ERP\\docs\\migration\\uat_upload_20261012\\NexusFlow_UAT_Upload_Package_20261012.zip",
+  "files": 69,
+  "bytes": 1291543,
+  "sha256": "23d4aaf2b180724b074626f99ae01aaa0e7bd1492927f7b6f6cfef0442fffa3b",
+  "workbooks": 13,
+  "csv_uploads": 12,
+  "staging_packages": 3,
+  "guides": 7,
+  "preserved_sources": 10,
+  "source_field_mappings": 123,
+  "zip_integrity": "Pass"
+}

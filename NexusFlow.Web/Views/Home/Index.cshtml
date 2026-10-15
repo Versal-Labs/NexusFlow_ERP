@@ -1,4 +1,4 @@
-﻿@model NexusFlow.AppCore.Features.Dashboard.Queries.DashboardMetricsDto
+@model NexusFlow.AppCore.Features.Dashboard.Queries.DashboardMetricsDto
 @{
     ViewData["Title"] = "Executive Dashboard";
 }
@@ -34,6 +34,11 @@
         <div><i class="fa-solid fa-triangle-exclamation me-2"></i>Required number sequences are missing: @string.Join(", ", Model.MissingNumberSequences)</div>
         <a href="/Config#sequences-pane" class="btn btn-sm btn-outline-warning text-dark text-nowrap">Review Configuration</a>
     </div>
+}
+
+@if (Model.CashAndBankWarning != null)
+{
+    <div class="alert alert-warning" role="alert">@Model.CashAndBankWarning</div>
 }
 
 <div class="row g-3 mb-4">
@@ -109,7 +114,7 @@
                 <div class="row text-center">
                     <div class="col-md-4 border-end border-secondary">
                         <p class="text-uppercase fs-12 fw-bold text-muted mb-1">Total Cash & Bank Balance</p>
-                        <h5 class="mb-0 fw-bold text-success"><i class="fa-solid fa-building-columns me-2"></i>@Model.CashOnHand.ToString("N2")</h5>
+                        <h5 class="mb-0 fw-bold text-success"><i class="fa-solid fa-building-columns me-2"></i>@(Model.CashAndBankWarning == null ? Model.CashOnHand.ToString("N2") : "Unavailable")</h5>
                     </div>
                     <div class="col-md-4 border-end border-secondary">
                         <p class="text-uppercase fs-12 fw-bold text-muted mb-1">Overdue Receivables (Risk)</p>

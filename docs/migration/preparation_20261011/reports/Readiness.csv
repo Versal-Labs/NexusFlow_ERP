@@ -1,0 +1,8 @@
+Module,Output rows,Ready to upload,Ready to post,CSV folder
+CustomerMaster,892,"Yes, staging only",No: mapping validation not executed,staging_csv
+SupplierMaster,213,"Yes, staging only",No: supplier expense assignment unresolved,staging_csv
+CustomerOpenings,1150,No: HOLD for refreshed closing export,No: stale/uncertified closing balances and unreconciled controls,held_csv
+SupplierOpenings,180,No: HOLD for refreshed closing export,No: stale/uncertified closing balances and unreconciled controls,held_csv
+ReceivedCheques,49,No: HOLD for refreshed closing export,No: stale/uncertified closing balances and unreconciled controls,held_csv
+Stock,938,No: HOLD for refreshed closing export,No: stale/uncertified closing balances and unreconciled controls,held_csv
+TrialBalance,188,No: HOLD for refreshed closing export,No: stale/uncertified closing balances and unreconciled controls,held_csv

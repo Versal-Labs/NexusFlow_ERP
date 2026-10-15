@@ -39,9 +39,10 @@ namespace NexusFlow.AppCore.Features.Reporting.Queries
             var suppliers = await _context.Suppliers.Where(x => !request.SupplierId.HasValue || x.Id == request.SupplierId).ToListAsync(cancellationToken);
             var agingData = new List<ApAgingDto>();
             var balances = new NexusFlow.AppCore.Services.SupplierBalanceService(_context);
+            var snapshots = await balances.GetManyAsync(suppliers.Select(x => x.Id), today, cancellationToken);
             foreach (var supplier in suppliers)
             {
-                var snapshot = await balances.GetAsync(supplier.Id, today, cancellationToken);
+                var snapshot = snapshots[supplier.Id];
                 var dto = new ApAgingDto { SupplierId = supplier.Id, SupplierName = supplier.Name, Phone = supplier.Phone, TotalOutstanding = snapshot.NetBalance, UnappliedCredit = snapshot.Debts.Sum(x => x.Balance) - snapshot.NetBalance };
                 foreach (var debt in snapshot.Debts.Where(x => x.Balance > 0))
                 {

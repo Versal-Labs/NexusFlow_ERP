@@ -1,0 +1,137 @@
+{
+  "opening_date": "2026-10-01",
+  "closing_date": "2026-09-30",
+  "amount_totals": {
+    "CustomerOpenings": {
+      "positive": "162436582.24",
+      "negative": "-321597.10",
+      "net": "162114985.14",
+      "positive_rows": 1130,
+      "negative_rows": 20,
+      "zero_rows": 0
+    },
+    "SupplierOpenings": {
+      "positive": "96073265.55",
+      "negative": "-1883015.00",
+      "net": "94190250.55",
+      "positive_rows": 173,
+      "negative_rows": 7,
+      "zero_rows": 0
+    },
+    "ReceivedCheques": {
+      "positive": "5328628.00",
+      "negative": "0.00",
+      "net": "5328628.00",
+      "positive_rows": 49,
+      "negative_rows": 0,
+      "zero_rows": 0
+    }
+  },
+  "tb_debit": "686897710.78",
+  "tb_credit": "687510830.78",
+  "tb_difference": "-613120.00",
+  "fg_quantity": "68986.0000",
+  "rm_quantity": "6306283.0000",
+  "fg_value": "84689502.04",
+  "fg_source_costval": "87863320.46",
+  "rm_value": "29727743.70",
+  "combined_stock_value": "114417245.74",
+  "source_location_totals": {
+    "loc1": "68206.0000",
+    "loc2": "0.0000",
+    "loc3": "780.0000",
+    "loc4": "0.0000",
+    "loc5": "0.0000",
+    "loc6": "0.0000",
+    "loc7": "0.0000",
+    "loc8": "0.0000"
+  },
+  "duplicate_groups": 0,
+  "status": [
+    [
+      "CustomerMaster",
+      892,
+      "Yes, staging only",
+      "No: mapping validation not executed",
+      "staging_csv"
+    ],
+    [
+      "SupplierMaster",
+      213,
+      "Yes, staging only",
+      "No: supplier expense assignment unresolved",
+      "staging_csv"
+    ],
+    [
+      "CustomerOpenings",
+      1150,
+      "No: HOLD for refreshed closing export",
+      "No: stale/uncertified closing balances and unreconciled controls",
+      "held_csv"
+    ],
+    [
+      "SupplierOpenings",
+      180,
+      "No: HOLD for refreshed closing export",
+      "No: stale/uncertified closing balances and unreconciled controls",
+      "held_csv"
+    ],
+    [
+      "ReceivedCheques",
+      49,
+      "No: HOLD for refreshed closing export",
+      "No: stale/uncertified closing balances and unreconciled controls",
+      "held_csv"
+    ],
+    [
+      "Stock",
+      938,
+      "No: HOLD for refreshed closing export",
+      "No: stale/uncertified closing balances and unreconciled controls",
+      "held_csv"
+    ],
+    [
+      "TrialBalance",
+      188,
+      "No: HOLD for refreshed closing export",
+      "No: stale/uncertified closing balances and unreconciled controls",
+      "held_csv"
+    ]
+  ],
+  "postcutover_supplier_rows": 4,
+  "postcutover_supplier_amount": "3563629.09",
+  "zero_net_customers": [
+    "DC969",
+    "FA111",
+    "JY308",
+    "SA280",
+    "VI852"
+  ],
+  "stock_unmatched": 81,
+  "local_project": [
+    {
+      "Id": 3,
+      "Name": "test",
+      "OpeningDate": "2026-10-01T00:00:00",
+      "ClosingDate": "2026-09-30T00:00:00",
+      "Status": "Preparing",
+      "SettingsJson": "{\"OpeningEquityAccountId\":3002,\"Mappings\":{\"CustomerGroup\":{\"TRADE\":13},\"PaymentTerm\":{\"TRADECASH ON DELIVERY (COD)\":7,\"CASH ON DELIVERY (COD)\":7},\"PriceLevel\":{\"STANDARD TIER\":10}},\"Columns\":{},\"DatasetStates\":{\"Accounts\":\"AwaitingData\",\"CustomerMaster\":\"Provided\",\"SupplierMaster\":\"AwaitingData\",\"CustomerOpenings\":\"Provided\",\"SupplierOpenings\":\"AwaitingData\",\"ReceivedCheques\":\"AwaitingData\",\"IssuedCheques\":\"AwaitingData\",\"Stock\":\"AwaitingData\",\"BankOpening\":\"AwaitingData\",\"BankRecon\":\"AwaitingData\",\"TrialBalance\":\"AwaitingData\",\"ControlTotals\":\"AwaitingData\"},\"ZeroEvidence\":{\"Accounts\":\"\",\"CustomerMaster\":\"\",\"SupplierMaster\":\"\",\"CustomerOpenings\":\"\",\"SupplierOpenings\":\"\",\"ReceivedCheques\":\"\",\"IssuedCheques\":\"\",\"Stock\":\"\",\"BankOpening\":\"\",\"BankRecon\":\"\",\"TrialBalance\":\"\",\"ControlTotals\":\"\"},\"SummarizedStockEvidence\":\"\",\"FinishedGoodsValuation\":\"\",\"FinishedGoodsValuationEvidence\":\"\",\"SupplierTermDays\":null,\"Defaults\":{\"ReceivableAccount\":0,\"RevenueAccount\":0,\"PayableAccount\":0,\"ExpenseAccount\":0,\"SafeAccount\":0,\"CustomerGroup\":0,\"SupplierGroup\":0,\"PriceLevel\":0,\"CustomerPaymentTerm\":0,\"SupplierPaymentTerm\":0,\"StockUnit\":0,\"StockWarehouse\":0}}"
+    }
+  ],
+  "source_comparisons": [
+    [
+      "stock.xls",
+      "stock.csv",
+      494,
+      0,
+      "Excel primary; CSV compared, not appended"
+    ],
+    [
+      "Raw Material Stcok.xlsx",
+      "Raw Material Stcok.csv",
+      444,
+      0,
+      "Excel primary; CSV compared, not appended"
+    ]
+  ]
+}

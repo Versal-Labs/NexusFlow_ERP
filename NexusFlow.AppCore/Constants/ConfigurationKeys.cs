@@ -7,6 +7,8 @@ namespace NexusFlow.AppCore.Constants
         public const string CompanyCanonicalUrl = "Company.CanonicalUrl";
         public const string CompanyTimeZone = "Company.TimeZone";
         public const string FinanceBaseCurrency = "Finance.BaseCurrency";
+        // Optional dashboard group code; the standard installed chart uses 1110.
+        public const string DashboardCashBankAccountRoot = "Dashboard.CashBankAccountRoot";
         public const string InventoryAllowNegativeStock = "Inventory.AllowNegativeStock";
         public const string StorageLocalPath = "Storage.LocalPath";
         public const string ProductionOverproductionTolerancePercent = "Production.OverproductionTolerancePercent";

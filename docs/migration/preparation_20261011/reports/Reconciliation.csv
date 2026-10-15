@@ -1,0 +1,6 @@
+Comparison,Detail or Debit (LKR),GL or Credit (LKR),Difference (LKR),Interpretation
+Customer AR signed net,162114985.14,154029322.14,8085663.00,Different snapshots; not an approved opening
+Supplier AP signed net,94190250.55,78068405.85,16121844.70,Different snapshots; supplier signs confirmed
+Cheques in hand,5328628.00,14323736.00,-8995108.00,"GL less schedule = 8,995,108.00"
+Combined stock approved avar + raw,114417245.74,97626087.76,16791157.98,Legacy closing-stock account coverage/split requires confirmation
+TB debit less credit,686897710.78,687510830.78,-613120.00,Unbalanced source; no plug added

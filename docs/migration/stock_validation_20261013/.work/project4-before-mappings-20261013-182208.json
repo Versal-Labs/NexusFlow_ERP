@@ -1,0 +1,20 @@
+{
+  "Id": 4,
+  "Name": "NexusFlow UAT 2026-10-12",
+  "SourceSystem": "TESTTTT",
+  "OpeningDate": "2026-10-01T00:00:00",
+  "ClosingDate": "2026-09-30T00:00:00",
+  "Currency": "LKR",
+  "Status": "Preparing",
+  "SettingsJson": "{\"OpeningEquityAccountId\":3002,\"Mappings\":{\"CustomerGroup\":{\"TRADE\":13},\"SupplierGroup\":{\"DOM\":15},\"PaymentTerm\":{\"NET30\":9},\"PriceLevel\":{\"STANDARD TIER\":10},\"Warehouse\":{\"WH_MAIN\":3},\"Unit\":{\"PCS\":1},\"Category\":{\"MSH\":1},\"Brand\":{\"UNBRANDED\":5},\"BankBranch\":{\"7010-058\":1,\"7010-501\":1,\"7056-006\":84,\"7056-152\":79,\"7083-064\":109,\"7083-094\":109,\"7135-040\":41,\"7135-123\":41,\"7135-200\":41,\"7135-329\":41,\"7162-012\":224,\"7278-929\":159,\"7287-085\":189,\"7311-085\":287,\"7454-026\":272,\"7463-008\":319,\"7463-021\":312}},\"Columns\":{},\"DatasetStates\":{\"Accounts\":\"Provided\",\"CustomerMaster\":\"Provided\",\"SupplierMaster\":\"Provided\",\"CustomerOpenings\":\"Provided\",\"SupplierOpenings\":\"Provided\",\"ReceivedCheques\":\"Provided\",\"IssuedCheques\":\"Provided\",\"Stock\":\"Provided\",\"BankOpening\":\"Provided\",\"BankRecon\":\"Provided\",\"TrialBalance\":\"AwaitingData\",\"ControlTotals\":\"Provided\"},\"ZeroEvidence\":{\"Accounts\":\"\",\"CustomerMaster\":\"\",\"SupplierMaster\":\"\",\"CustomerOpenings\":\"\",\"SupplierOpenings\":\"\",\"ReceivedCheques\":\"\",\"IssuedCheques\":\"\",\"Stock\":\"\",\"BankOpening\":\"\",\"BankRecon\":\"\",\"TrialBalance\":\"\",\"ControlTotals\":\"\"},\"SummarizedStockEvidence\":\"UAT fixture: approved summarized layer per SKU in WH_MAIN at 2026-09-30; original FIFO dates not claimed.\",\"FinishedGoodsValuation\":\"AverageCost\",\"FinishedGoodsValuationEvidence\":\"UAT uses approved avar; original costval difference -3173818.42 LKR retained in archive; not production sign-off.\",\"SupplierTermDays\":30,\"Defaults\":{\"ReceivableAccount\":1001,\"RevenueAccount\":9,\"PayableAccount\":2001,\"ExpenseAccount\":5001,\"SafeAccount\":5006,\"CustomerGroup\":13,\"SupplierGroup\":15,\"PriceLevel\":10,\"CustomerPaymentTerm\":9,\"SupplierPaymentTerm\":9,\"StockUnit\":1,\"StockWarehouse\":3}}",
+  "Version": 13,
+  "ApprovedHash": "F562975780FDBFC05E0250B3F009FD01AFCFFC7CA1C64B749ED3A9A7B71402AF",
+  "ApprovedBy": "71c3ec6e-879b-4858-98ad-82fe296412f9",
+  "ApprovedAt": "2026-10-13T17:02:58.827296",
+  "FinalizedAt": null,
+  "FinalEvidence": null,
+  "CreatedAt": "2026-10-13T14:22:20.974477",
+  "CreatedBy": "71c3ec6e-879b-4858-98ad-82fe296412f9",
+  "LastModifiedAt": "2026-10-13T17:02:58.827396",
+  "LastModifiedBy": "71c3ec6e-879b-4858-98ad-82fe296412f9"
+}

@@ -1,0 +1,63 @@
+{
+  "date": "2026-10-12",
+  "opening": "2026-10-01",
+  "closing": "2026-09-30",
+  "source_system": "TESTTTT",
+  "project_id": 3,
+  "rows": {
+    "Accounts": 39,
+    "CustomerMaster": 896,
+    "SupplierMaster": 215,
+    "CustomerOpenings": 1150,
+    "SupplierOpenings": 180,
+    "ReceivedCheques": 49,
+    "IssuedCheques": 1,
+    "Stock": 938,
+    "BankOpening": 1,
+    "BankRecon": 1,
+    "ControlTotals": 5212,
+    "TrialBalance": 39
+  },
+  "totals": {
+    "CustomerOpenings": {
+      "positive": "162436582.24",
+      "negative": "-321597.10",
+      "net": "162114985.14"
+    },
+    "SupplierOpenings": {
+      "positive": "96073265.55",
+      "negative": "-1883015.00",
+      "net": "94190250.55"
+    },
+    "ReceivedCheques": {
+      "positive": "5328628.00",
+      "negative": "0.00",
+      "net": "5328628.00"
+    },
+    "IssuedCheques": {
+      "positive": "15000.00",
+      "negative": "0.00",
+      "net": "15000.00"
+    }
+  },
+  "stock_value": "114417245.74",
+  "fg_quantity": "68986.0000",
+  "rm_quantity": "6306283.0000",
+  "tb_debit": "282960858.88",
+  "tb_credit": "282960858.88",
+  "scopes": 2050,
+  "new_skus": 81,
+  "branch_substitutions": 14,
+  "changes": 6899,
+  "read_at_utc": "2026-10-12T15:52:41",
+  "activity": {
+    "MigrationUnits": 0,
+    "LiveStockLayers": 0,
+    "MigrationOrigins": 0,
+    "SupplierBills": 0,
+    "SalesInvoices": 0,
+    "StockTransactions": 0,
+    "StockLayers": 0,
+    "PaymentTransactions": 0
+  }
+}

@@ -1,0 +1,10 @@
+Check,Result,Detail
+Workbook and CSV equality,Pass,"13 workbooks / 12 UTF-8 CSVs; exact current template headers, typed cells, final values and no formulas."
+Original and previous deliverable preservation,Pass,"All 10 original hashes, original archive ZIP and all previous package manifest members unchanged."
+Stable identities and closing metadata,Pass,No duplicate supported identities or row-number identities; all closing metadata is explicitly UAT 2026-09-30.
+Masters and account types,Pass,"Master field lengths, email format, supplier tax uniqueness; AR Asset, AP Liability, revenue Revenue, expense Expense, equity Equity; NET30 differs from COD."
+Legacy balances and signs,Pass,"All 1,150 AR, 180 AP, 49 received cheques and 938 stock rows retained with unchanged amounts/quantities/costs. Five offsetting zero-net customer cases retained. Unmatched fixture master codes: zero."
+Explicit mappings and Stock,Pass,Every required lookup resolves against the read-only local snapshot; 857 existing SKUs agree with current masters; 81 new FG fixtures have complete valid UAT category/brand/unit/account selections.
+Scope reconciliation controls,Pass,"All 5,212 controls independently recalculated from CSV; 2,050 scopes covered, including every prior staged scope and zero-opening masters. Bank statement bridge equals book."
+Expected posting and Trial Balance,Pass,"39 current posting accounts; TB debit = credit 282,960,858.88; managed-account residuals zero; residual rent debit / revenue credit 1,000,000 each. No duplicate cheque ledger movement."
+Staged ZIP packages,Pass,"Three valid manifests; exact byte-equal CSV members, unique modules, correct source TESTTTT and closing; ZIP integrity passed."

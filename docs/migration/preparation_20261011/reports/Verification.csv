@@ -1,0 +1,10 @@
+Workbook,Rows,Headers,CSV comparison,Formulas,Dates,Numbers,Content
+CustomerMaster,892,Exact,Equal,None,Verified,Verified,Values only
+SupplierMaster,213,Exact,Equal,None,Verified,Verified,Values only
+CustomerOpenings,1150,Exact,Equal,None,Verified,Verified,Values only
+SupplierOpenings,180,Exact,Equal,None,Verified,Verified,Values only
+ReceivedCheques,49,Exact,Equal,None,Verified,Verified,Values only
+Stock,938,Exact,Equal,None,Verified,Verified,Values only
+TrialBalance,188,Exact,Equal,None,Verified,Verified,Values only
+Migration_Review,11616,Report/archive,Compared to generated matrices,None,As applicable,As applicable,Values only
+Legacy_Archive,4609,Report/archive,Compared to generated matrices,None,As applicable,As applicable,Values only

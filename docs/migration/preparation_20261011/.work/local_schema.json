@@ -1,0 +1,1334 @@
+{
+  "Tables": {
+    "Schema": [
+      {
+        "TABLE_NAME": "Accounts",
+        "COLUMN_NAME": "Id",
+        "DATA_TYPE": "int"
+      },
+      {
+        "TABLE_NAME": "Accounts",
+        "COLUMN_NAME": "Code",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "Accounts",
+        "COLUMN_NAME": "Name",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "Accounts",
+        "COLUMN_NAME": "Type",
+        "DATA_TYPE": "int"
+      },
+      {
+        "TABLE_NAME": "Accounts",
+        "COLUMN_NAME": "IsTransactionAccount",
+        "DATA_TYPE": "bit"
+      },
+      {
+        "TABLE_NAME": "Accounts",
+        "COLUMN_NAME": "ParentAccountId",
+        "DATA_TYPE": "int"
+      },
+      {
+        "TABLE_NAME": "Accounts",
+        "COLUMN_NAME": "Balance",
+        "DATA_TYPE": "decimal"
+      },
+      {
+        "TABLE_NAME": "Accounts",
+        "COLUMN_NAME": "CreatedAt",
+        "DATA_TYPE": "datetime2"
+      },
+      {
+        "TABLE_NAME": "Accounts",
+        "COLUMN_NAME": "CreatedBy",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "Accounts",
+        "COLUMN_NAME": "LastModifiedAt",
+        "DATA_TYPE": "datetime2"
+      },
+      {
+        "TABLE_NAME": "Accounts",
+        "COLUMN_NAME": "LastModifiedBy",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "Accounts",
+        "COLUMN_NAME": "IsActive",
+        "DATA_TYPE": "bit"
+      },
+      {
+        "TABLE_NAME": "Accounts",
+        "COLUMN_NAME": "IsSystemAccount",
+        "DATA_TYPE": "bit"
+      },
+      {
+        "TABLE_NAME": "Accounts",
+        "COLUMN_NAME": "RequiresReconciliation",
+        "DATA_TYPE": "bit"
+      },
+      {
+        "TABLE_NAME": "Accounts",
+        "COLUMN_NAME": "ValidFrom",
+        "DATA_TYPE": "datetime2"
+      },
+      {
+        "TABLE_NAME": "Accounts",
+        "COLUMN_NAME": "ValidTo",
+        "DATA_TYPE": "datetime2"
+      },
+      {
+        "TABLE_NAME": "BankBranches",
+        "COLUMN_NAME": "Id",
+        "DATA_TYPE": "int"
+      },
+      {
+        "TABLE_NAME": "BankBranches",
+        "COLUMN_NAME": "BankId",
+        "DATA_TYPE": "int"
+      },
+      {
+        "TABLE_NAME": "BankBranches",
+        "COLUMN_NAME": "BranchCode",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "BankBranches",
+        "COLUMN_NAME": "BranchName",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "BankBranches",
+        "COLUMN_NAME": "IsActive",
+        "DATA_TYPE": "bit"
+      },
+      {
+        "TABLE_NAME": "BankBranches",
+        "COLUMN_NAME": "CreatedAt",
+        "DATA_TYPE": "datetime2"
+      },
+      {
+        "TABLE_NAME": "BankBranches",
+        "COLUMN_NAME": "CreatedBy",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "BankBranches",
+        "COLUMN_NAME": "LastModifiedAt",
+        "DATA_TYPE": "datetime2"
+      },
+      {
+        "TABLE_NAME": "BankBranches",
+        "COLUMN_NAME": "LastModifiedBy",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "BankBranches",
+        "COLUMN_NAME": "ValidFrom",
+        "DATA_TYPE": "datetime2"
+      },
+      {
+        "TABLE_NAME": "BankBranches",
+        "COLUMN_NAME": "ValidTo",
+        "DATA_TYPE": "datetime2"
+      },
+      {
+        "TABLE_NAME": "Brands",
+        "COLUMN_NAME": "Id",
+        "DATA_TYPE": "int"
+      },
+      {
+        "TABLE_NAME": "Brands",
+        "COLUMN_NAME": "Name",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "Brands",
+        "COLUMN_NAME": "Description",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "Brands",
+        "COLUMN_NAME": "CreatedAt",
+        "DATA_TYPE": "datetime2"
+      },
+      {
+        "TABLE_NAME": "Brands",
+        "COLUMN_NAME": "CreatedBy",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "Brands",
+        "COLUMN_NAME": "LastModifiedAt",
+        "DATA_TYPE": "datetime2"
+      },
+      {
+        "TABLE_NAME": "Brands",
+        "COLUMN_NAME": "LastModifiedBy",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "Brands",
+        "COLUMN_NAME": "ValidFrom",
+        "DATA_TYPE": "datetime2"
+      },
+      {
+        "TABLE_NAME": "Brands",
+        "COLUMN_NAME": "ValidTo",
+        "DATA_TYPE": "datetime2"
+      },
+      {
+        "TABLE_NAME": "Categories",
+        "COLUMN_NAME": "Id",
+        "DATA_TYPE": "int"
+      },
+      {
+        "TABLE_NAME": "Categories",
+        "COLUMN_NAME": "Name",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "Categories",
+        "COLUMN_NAME": "Code",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "Categories",
+        "COLUMN_NAME": "CreatedAt",
+        "DATA_TYPE": "datetime2"
+      },
+      {
+        "TABLE_NAME": "Categories",
+        "COLUMN_NAME": "CreatedBy",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "Categories",
+        "COLUMN_NAME": "LastModifiedAt",
+        "DATA_TYPE": "datetime2"
+      },
+      {
+        "TABLE_NAME": "Categories",
+        "COLUMN_NAME": "LastModifiedBy",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "Categories",
+        "COLUMN_NAME": "CogsAccountId",
+        "DATA_TYPE": "int"
+      },
+      {
+        "TABLE_NAME": "Categories",
+        "COLUMN_NAME": "InventoryAccountId",
+        "DATA_TYPE": "int"
+      },
+      {
+        "TABLE_NAME": "Categories",
+        "COLUMN_NAME": "ParentCategoryId",
+        "DATA_TYPE": "int"
+      },
+      {
+        "TABLE_NAME": "Categories",
+        "COLUMN_NAME": "SalesAccountId",
+        "DATA_TYPE": "int"
+      },
+      {
+        "TABLE_NAME": "Categories",
+        "COLUMN_NAME": "ValidFrom",
+        "DATA_TYPE": "datetime2"
+      },
+      {
+        "TABLE_NAME": "Categories",
+        "COLUMN_NAME": "ValidTo",
+        "DATA_TYPE": "datetime2"
+      },
+      {
+        "TABLE_NAME": "Customers",
+        "COLUMN_NAME": "Id",
+        "DATA_TYPE": "int"
+      },
+      {
+        "TABLE_NAME": "Customers",
+        "COLUMN_NAME": "Name",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "Customers",
+        "COLUMN_NAME": "Email",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "Customers",
+        "COLUMN_NAME": "Phone",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "Customers",
+        "COLUMN_NAME": "TaxRegNo",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "Customers",
+        "COLUMN_NAME": "CreditLimit",
+        "DATA_TYPE": "decimal"
+      },
+      {
+        "TABLE_NAME": "Customers",
+        "COLUMN_NAME": "CreatedAt",
+        "DATA_TYPE": "datetime2"
+      },
+      {
+        "TABLE_NAME": "Customers",
+        "COLUMN_NAME": "CreatedBy",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "Customers",
+        "COLUMN_NAME": "LastModifiedAt",
+        "DATA_TYPE": "datetime2"
+      },
+      {
+        "TABLE_NAME": "Customers",
+        "COLUMN_NAME": "LastModifiedBy",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "Customers",
+        "COLUMN_NAME": "AddressLine1",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "Customers",
+        "COLUMN_NAME": "AddressLine2",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "Customers",
+        "COLUMN_NAME": "BankAccountNumber",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "Customers",
+        "COLUMN_NAME": "Province",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "Customers",
+        "COLUMN_NAME": "City",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "Customers",
+        "COLUMN_NAME": "ContactPerson",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "Customers",
+        "COLUMN_NAME": "Country",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "Customers",
+        "COLUMN_NAME": "CreditPeriodDays",
+        "DATA_TYPE": "int"
+      },
+      {
+        "TABLE_NAME": "Customers",
+        "COLUMN_NAME": "CurrencyCode",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "Customers",
+        "COLUMN_NAME": "CustomerGroupId",
+        "DATA_TYPE": "int"
+      },
+      {
+        "TABLE_NAME": "Customers",
+        "COLUMN_NAME": "DefaultReceivableAccountId",
+        "DATA_TYPE": "int"
+      },
+      {
+        "TABLE_NAME": "Customers",
+        "COLUMN_NAME": "DefaultRevenueAccountId",
+        "DATA_TYPE": "int"
+      },
+      {
+        "TABLE_NAME": "Customers",
+        "COLUMN_NAME": "InternalNotes",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "Customers",
+        "COLUMN_NAME": "IsActive",
+        "DATA_TYPE": "bit"
+      },
+      {
+        "TABLE_NAME": "Customers",
+        "COLUMN_NAME": "Mobile",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "Customers",
+        "COLUMN_NAME": "PaymentTermId",
+        "DATA_TYPE": "int"
+      },
+      {
+        "TABLE_NAME": "Customers",
+        "COLUMN_NAME": "PriceLevelId",
+        "DATA_TYPE": "int"
+      },
+      {
+        "TABLE_NAME": "Customers",
+        "COLUMN_NAME": "SalesRepId",
+        "DATA_TYPE": "int"
+      },
+      {
+        "TABLE_NAME": "Customers",
+        "COLUMN_NAME": "TradeName",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "Customers",
+        "COLUMN_NAME": "BankBranchId",
+        "DATA_TYPE": "int"
+      },
+      {
+        "TABLE_NAME": "Customers",
+        "COLUMN_NAME": "BankId",
+        "DATA_TYPE": "int"
+      },
+      {
+        "TABLE_NAME": "Customers",
+        "COLUMN_NAME": "District",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "Customers",
+        "COLUMN_NAME": "ValidFrom",
+        "DATA_TYPE": "datetime2"
+      },
+      {
+        "TABLE_NAME": "Customers",
+        "COLUMN_NAME": "ValidTo",
+        "DATA_TYPE": "datetime2"
+      },
+      {
+        "TABLE_NAME": "Customers",
+        "COLUMN_NAME": "LegacyCustomerCode",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "Customers",
+        "COLUMN_NAME": "DetailsIncomplete",
+        "DATA_TYPE": "bit"
+      },
+      {
+        "TABLE_NAME": "FinancialPeriods",
+        "COLUMN_NAME": "Id",
+        "DATA_TYPE": "int"
+      },
+      {
+        "TABLE_NAME": "FinancialPeriods",
+        "COLUMN_NAME": "Name",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "FinancialPeriods",
+        "COLUMN_NAME": "StartDate",
+        "DATA_TYPE": "datetime2"
+      },
+      {
+        "TABLE_NAME": "FinancialPeriods",
+        "COLUMN_NAME": "EndDate",
+        "DATA_TYPE": "datetime2"
+      },
+      {
+        "TABLE_NAME": "FinancialPeriods",
+        "COLUMN_NAME": "IsClosed",
+        "DATA_TYPE": "bit"
+      },
+      {
+        "TABLE_NAME": "FinancialPeriods",
+        "COLUMN_NAME": "CreatedAt",
+        "DATA_TYPE": "datetime2"
+      },
+      {
+        "TABLE_NAME": "FinancialPeriods",
+        "COLUMN_NAME": "CreatedBy",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "FinancialPeriods",
+        "COLUMN_NAME": "LastModifiedAt",
+        "DATA_TYPE": "datetime2"
+      },
+      {
+        "TABLE_NAME": "FinancialPeriods",
+        "COLUMN_NAME": "LastModifiedBy",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "FinancialPeriods",
+        "COLUMN_NAME": "Month",
+        "DATA_TYPE": "int"
+      },
+      {
+        "TABLE_NAME": "FinancialPeriods",
+        "COLUMN_NAME": "Year",
+        "DATA_TYPE": "int"
+      },
+      {
+        "TABLE_NAME": "FinancialPeriods",
+        "COLUMN_NAME": "ValidFrom",
+        "DATA_TYPE": "datetime2"
+      },
+      {
+        "TABLE_NAME": "FinancialPeriods",
+        "COLUMN_NAME": "ValidTo",
+        "DATA_TYPE": "datetime2"
+      },
+      {
+        "TABLE_NAME": "JournalEntries",
+        "COLUMN_NAME": "Id",
+        "DATA_TYPE": "int"
+      },
+      {
+        "TABLE_NAME": "JournalEntries",
+        "COLUMN_NAME": "Date",
+        "DATA_TYPE": "datetime2"
+      },
+      {
+        "TABLE_NAME": "JournalEntries",
+        "COLUMN_NAME": "Description",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "JournalEntries",
+        "COLUMN_NAME": "Module",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "JournalEntries",
+        "COLUMN_NAME": "ReferenceNo",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "JournalEntries",
+        "COLUMN_NAME": "TotalAmount",
+        "DATA_TYPE": "decimal"
+      },
+      {
+        "TABLE_NAME": "JournalEntries",
+        "COLUMN_NAME": "CreatedAt",
+        "DATA_TYPE": "datetime2"
+      },
+      {
+        "TABLE_NAME": "JournalEntries",
+        "COLUMN_NAME": "CreatedBy",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "JournalEntries",
+        "COLUMN_NAME": "LastModifiedAt",
+        "DATA_TYPE": "datetime2"
+      },
+      {
+        "TABLE_NAME": "JournalEntries",
+        "COLUMN_NAME": "LastModifiedBy",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "JournalEntries",
+        "COLUMN_NAME": "ValidFrom",
+        "DATA_TYPE": "datetime2"
+      },
+      {
+        "TABLE_NAME": "JournalEntries",
+        "COLUMN_NAME": "ValidTo",
+        "DATA_TYPE": "datetime2"
+      },
+      {
+        "TABLE_NAME": "MigrationProjects",
+        "COLUMN_NAME": "Id",
+        "DATA_TYPE": "int"
+      },
+      {
+        "TABLE_NAME": "MigrationProjects",
+        "COLUMN_NAME": "Name",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "MigrationProjects",
+        "COLUMN_NAME": "SourceSystem",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "MigrationProjects",
+        "COLUMN_NAME": "OpeningDate",
+        "DATA_TYPE": "datetime2"
+      },
+      {
+        "TABLE_NAME": "MigrationProjects",
+        "COLUMN_NAME": "ClosingDate",
+        "DATA_TYPE": "datetime2"
+      },
+      {
+        "TABLE_NAME": "MigrationProjects",
+        "COLUMN_NAME": "Currency",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "MigrationProjects",
+        "COLUMN_NAME": "Status",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "MigrationProjects",
+        "COLUMN_NAME": "SettingsJson",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "MigrationProjects",
+        "COLUMN_NAME": "Version",
+        "DATA_TYPE": "int"
+      },
+      {
+        "TABLE_NAME": "MigrationProjects",
+        "COLUMN_NAME": "ApprovedHash",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "MigrationProjects",
+        "COLUMN_NAME": "ApprovedBy",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "MigrationProjects",
+        "COLUMN_NAME": "ApprovedAt",
+        "DATA_TYPE": "datetime2"
+      },
+      {
+        "TABLE_NAME": "MigrationProjects",
+        "COLUMN_NAME": "FinalizedAt",
+        "DATA_TYPE": "datetime2"
+      },
+      {
+        "TABLE_NAME": "MigrationProjects",
+        "COLUMN_NAME": "FinalEvidence",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "MigrationProjects",
+        "COLUMN_NAME": "ValidFrom",
+        "DATA_TYPE": "datetime2"
+      },
+      {
+        "TABLE_NAME": "MigrationProjects",
+        "COLUMN_NAME": "ValidTo",
+        "DATA_TYPE": "datetime2"
+      },
+      {
+        "TABLE_NAME": "MigrationProjects",
+        "COLUMN_NAME": "CreatedAt",
+        "DATA_TYPE": "datetime2"
+      },
+      {
+        "TABLE_NAME": "MigrationProjects",
+        "COLUMN_NAME": "CreatedBy",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "MigrationProjects",
+        "COLUMN_NAME": "LastModifiedAt",
+        "DATA_TYPE": "datetime2"
+      },
+      {
+        "TABLE_NAME": "MigrationProjects",
+        "COLUMN_NAME": "LastModifiedBy",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "MigrationScopes",
+        "COLUMN_NAME": "Id",
+        "DATA_TYPE": "int"
+      },
+      {
+        "TABLE_NAME": "MigrationScopes",
+        "COLUMN_NAME": "ProjectId",
+        "DATA_TYPE": "int"
+      },
+      {
+        "TABLE_NAME": "MigrationScopes",
+        "COLUMN_NAME": "Kind",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "MigrationScopes",
+        "COLUMN_NAME": "Code",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "MigrationScopes",
+        "COLUMN_NAME": "EntityId",
+        "DATA_TYPE": "int"
+      },
+      {
+        "TABLE_NAME": "MigrationScopes",
+        "COLUMN_NAME": "Status",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "MigrationScopes",
+        "COLUMN_NAME": "RequiredModulesJson",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "MigrationScopes",
+        "COLUMN_NAME": "Evidence",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "MigrationScopes",
+        "COLUMN_NAME": "ReleasedAt",
+        "DATA_TYPE": "datetime2"
+      },
+      {
+        "TABLE_NAME": "MigrationScopes",
+        "COLUMN_NAME": "ValidFrom",
+        "DATA_TYPE": "datetime2"
+      },
+      {
+        "TABLE_NAME": "MigrationScopes",
+        "COLUMN_NAME": "ValidTo",
+        "DATA_TYPE": "datetime2"
+      },
+      {
+        "TABLE_NAME": "MigrationScopes",
+        "COLUMN_NAME": "CreatedAt",
+        "DATA_TYPE": "datetime2"
+      },
+      {
+        "TABLE_NAME": "MigrationScopes",
+        "COLUMN_NAME": "CreatedBy",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "MigrationScopes",
+        "COLUMN_NAME": "LastModifiedAt",
+        "DATA_TYPE": "datetime2"
+      },
+      {
+        "TABLE_NAME": "MigrationScopes",
+        "COLUMN_NAME": "LastModifiedBy",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "Products",
+        "COLUMN_NAME": "Id",
+        "DATA_TYPE": "int"
+      },
+      {
+        "TABLE_NAME": "Products",
+        "COLUMN_NAME": "Name",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "Products",
+        "COLUMN_NAME": "Description",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "Products",
+        "COLUMN_NAME": "BrandId",
+        "DATA_TYPE": "int"
+      },
+      {
+        "TABLE_NAME": "Products",
+        "COLUMN_NAME": "CategoryId",
+        "DATA_TYPE": "int"
+      },
+      {
+        "TABLE_NAME": "Products",
+        "COLUMN_NAME": "UnitOfMeasureId",
+        "DATA_TYPE": "int"
+      },
+      {
+        "TABLE_NAME": "Products",
+        "COLUMN_NAME": "Type",
+        "DATA_TYPE": "int"
+      },
+      {
+        "TABLE_NAME": "Products",
+        "COLUMN_NAME": "CreatedAt",
+        "DATA_TYPE": "datetime2"
+      },
+      {
+        "TABLE_NAME": "Products",
+        "COLUMN_NAME": "CreatedBy",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "Products",
+        "COLUMN_NAME": "LastModifiedAt",
+        "DATA_TYPE": "datetime2"
+      },
+      {
+        "TABLE_NAME": "Products",
+        "COLUMN_NAME": "LastModifiedBy",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "Products",
+        "COLUMN_NAME": "ImageUrl",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "Products",
+        "COLUMN_NAME": "ValidFrom",
+        "DATA_TYPE": "datetime2"
+      },
+      {
+        "TABLE_NAME": "Products",
+        "COLUMN_NAME": "ValidTo",
+        "DATA_TYPE": "datetime2"
+      },
+      {
+        "TABLE_NAME": "ProductVariants",
+        "COLUMN_NAME": "Id",
+        "DATA_TYPE": "int"
+      },
+      {
+        "TABLE_NAME": "ProductVariants",
+        "COLUMN_NAME": "ProductId",
+        "DATA_TYPE": "int"
+      },
+      {
+        "TABLE_NAME": "ProductVariants",
+        "COLUMN_NAME": "Name",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "ProductVariants",
+        "COLUMN_NAME": "SKU",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "ProductVariants",
+        "COLUMN_NAME": "Size",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "ProductVariants",
+        "COLUMN_NAME": "Color",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "ProductVariants",
+        "COLUMN_NAME": "CostPrice",
+        "DATA_TYPE": "decimal"
+      },
+      {
+        "TABLE_NAME": "ProductVariants",
+        "COLUMN_NAME": "SellingPrice",
+        "DATA_TYPE": "decimal"
+      },
+      {
+        "TABLE_NAME": "ProductVariants",
+        "COLUMN_NAME": "ReorderLevel",
+        "DATA_TYPE": "decimal"
+      },
+      {
+        "TABLE_NAME": "ProductVariants",
+        "COLUMN_NAME": "CreatedAt",
+        "DATA_TYPE": "datetime2"
+      },
+      {
+        "TABLE_NAME": "ProductVariants",
+        "COLUMN_NAME": "CreatedBy",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "ProductVariants",
+        "COLUMN_NAME": "LastModifiedAt",
+        "DATA_TYPE": "datetime2"
+      },
+      {
+        "TABLE_NAME": "ProductVariants",
+        "COLUMN_NAME": "LastModifiedBy",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "ProductVariants",
+        "COLUMN_NAME": "Barcode",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "ProductVariants",
+        "COLUMN_NAME": "IsActive",
+        "DATA_TYPE": "bit"
+      },
+      {
+        "TABLE_NAME": "ProductVariants",
+        "COLUMN_NAME": "MinimumSellingPrice",
+        "DATA_TYPE": "decimal"
+      },
+      {
+        "TABLE_NAME": "ProductVariants",
+        "COLUMN_NAME": "MovingAverageCost",
+        "DATA_TYPE": "decimal"
+      },
+      {
+        "TABLE_NAME": "ProductVariants",
+        "COLUMN_NAME": "ValidFrom",
+        "DATA_TYPE": "datetime2"
+      },
+      {
+        "TABLE_NAME": "ProductVariants",
+        "COLUMN_NAME": "ValidTo",
+        "DATA_TYPE": "datetime2"
+      },
+      {
+        "TABLE_NAME": "Suppliers",
+        "COLUMN_NAME": "Id",
+        "DATA_TYPE": "int"
+      },
+      {
+        "TABLE_NAME": "Suppliers",
+        "COLUMN_NAME": "Name",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "Suppliers",
+        "COLUMN_NAME": "ContactPerson",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "Suppliers",
+        "COLUMN_NAME": "Email",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "Suppliers",
+        "COLUMN_NAME": "Phone",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "Suppliers",
+        "COLUMN_NAME": "TaxRegNo",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "Suppliers",
+        "COLUMN_NAME": "DefaultPayableAccountId",
+        "DATA_TYPE": "int"
+      },
+      {
+        "TABLE_NAME": "Suppliers",
+        "COLUMN_NAME": "SupplierGroupId",
+        "DATA_TYPE": "int"
+      },
+      {
+        "TABLE_NAME": "Suppliers",
+        "COLUMN_NAME": "CreatedAt",
+        "DATA_TYPE": "datetime2"
+      },
+      {
+        "TABLE_NAME": "Suppliers",
+        "COLUMN_NAME": "CreatedBy",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "Suppliers",
+        "COLUMN_NAME": "LastModifiedAt",
+        "DATA_TYPE": "datetime2"
+      },
+      {
+        "TABLE_NAME": "Suppliers",
+        "COLUMN_NAME": "LastModifiedBy",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "Suppliers",
+        "COLUMN_NAME": "AccountsEmail",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "Suppliers",
+        "COLUMN_NAME": "AddressLine1",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "Suppliers",
+        "COLUMN_NAME": "AddressLine2",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "Suppliers",
+        "COLUMN_NAME": "BankAccountNumber",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "Suppliers",
+        "COLUMN_NAME": "BankIBAN",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "Suppliers",
+        "COLUMN_NAME": "District",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "Suppliers",
+        "COLUMN_NAME": "BankSwiftCode",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "Suppliers",
+        "COLUMN_NAME": "BusinessRegNo",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "Suppliers",
+        "COLUMN_NAME": "City",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "Suppliers",
+        "COLUMN_NAME": "Country",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "Suppliers",
+        "COLUMN_NAME": "CreditLimit",
+        "DATA_TYPE": "decimal"
+      },
+      {
+        "TABLE_NAME": "Suppliers",
+        "COLUMN_NAME": "CurrencyCode",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "Suppliers",
+        "COLUMN_NAME": "DefaultExpenseAccountId",
+        "DATA_TYPE": "int"
+      },
+      {
+        "TABLE_NAME": "Suppliers",
+        "COLUMN_NAME": "InternalNotes",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "Suppliers",
+        "COLUMN_NAME": "IsActive",
+        "DATA_TYPE": "bit"
+      },
+      {
+        "TABLE_NAME": "Suppliers",
+        "COLUMN_NAME": "Mobile",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "Suppliers",
+        "COLUMN_NAME": "PaymentTermId",
+        "DATA_TYPE": "int"
+      },
+      {
+        "TABLE_NAME": "Suppliers",
+        "COLUMN_NAME": "RatingId",
+        "DATA_TYPE": "int"
+      },
+      {
+        "TABLE_NAME": "Suppliers",
+        "COLUMN_NAME": "Province",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "Suppliers",
+        "COLUMN_NAME": "TradeName",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "Suppliers",
+        "COLUMN_NAME": "Website",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "Suppliers",
+        "COLUMN_NAME": "ZipCode",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "Suppliers",
+        "COLUMN_NAME": "BankBranchId",
+        "DATA_TYPE": "int"
+      },
+      {
+        "TABLE_NAME": "Suppliers",
+        "COLUMN_NAME": "BankId",
+        "DATA_TYPE": "int"
+      },
+      {
+        "TABLE_NAME": "Suppliers",
+        "COLUMN_NAME": "ValidFrom",
+        "DATA_TYPE": "datetime2"
+      },
+      {
+        "TABLE_NAME": "Suppliers",
+        "COLUMN_NAME": "ValidTo",
+        "DATA_TYPE": "datetime2"
+      },
+      {
+        "TABLE_NAME": "Suppliers",
+        "COLUMN_NAME": "DetailsIncomplete",
+        "DATA_TYPE": "bit"
+      },
+      {
+        "TABLE_NAME": "Suppliers",
+        "COLUMN_NAME": "LegacySupplierCode",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "SystemConfigs",
+        "COLUMN_NAME": "Id",
+        "DATA_TYPE": "int"
+      },
+      {
+        "TABLE_NAME": "SystemConfigs",
+        "COLUMN_NAME": "Key",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "SystemConfigs",
+        "COLUMN_NAME": "Value",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "SystemConfigs",
+        "COLUMN_NAME": "DataType",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "SystemConfigs",
+        "COLUMN_NAME": "Description",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "SystemConfigs",
+        "COLUMN_NAME": "CreatedAt",
+        "DATA_TYPE": "datetime2"
+      },
+      {
+        "TABLE_NAME": "SystemConfigs",
+        "COLUMN_NAME": "CreatedBy",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "SystemConfigs",
+        "COLUMN_NAME": "LastModifiedAt",
+        "DATA_TYPE": "datetime2"
+      },
+      {
+        "TABLE_NAME": "SystemConfigs",
+        "COLUMN_NAME": "LastModifiedBy",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "SystemConfigs",
+        "COLUMN_NAME": "ValidFrom",
+        "DATA_TYPE": "datetime2"
+      },
+      {
+        "TABLE_NAME": "SystemConfigs",
+        "COLUMN_NAME": "ValidTo",
+        "DATA_TYPE": "datetime2"
+      },
+      {
+        "TABLE_NAME": "SystemLookups",
+        "COLUMN_NAME": "Id",
+        "DATA_TYPE": "int"
+      },
+      {
+        "TABLE_NAME": "SystemLookups",
+        "COLUMN_NAME": "Type",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "SystemLookups",
+        "COLUMN_NAME": "Code",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "SystemLookups",
+        "COLUMN_NAME": "Value",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "SystemLookups",
+        "COLUMN_NAME": "SortOrder",
+        "DATA_TYPE": "int"
+      },
+      {
+        "TABLE_NAME": "SystemLookups",
+        "COLUMN_NAME": "IsActive",
+        "DATA_TYPE": "bit"
+      },
+      {
+        "TABLE_NAME": "SystemLookups",
+        "COLUMN_NAME": "CreatedAt",
+        "DATA_TYPE": "datetime2"
+      },
+      {
+        "TABLE_NAME": "SystemLookups",
+        "COLUMN_NAME": "CreatedBy",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "SystemLookups",
+        "COLUMN_NAME": "LastModifiedAt",
+        "DATA_TYPE": "datetime2"
+      },
+      {
+        "TABLE_NAME": "SystemLookups",
+        "COLUMN_NAME": "LastModifiedBy",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "SystemLookups",
+        "COLUMN_NAME": "ValidFrom",
+        "DATA_TYPE": "datetime2"
+      },
+      {
+        "TABLE_NAME": "SystemLookups",
+        "COLUMN_NAME": "ValidTo",
+        "DATA_TYPE": "datetime2"
+      },
+      {
+        "TABLE_NAME": "UnitOfMeasures",
+        "COLUMN_NAME": "Id",
+        "DATA_TYPE": "int"
+      },
+      {
+        "TABLE_NAME": "UnitOfMeasures",
+        "COLUMN_NAME": "Name",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "UnitOfMeasures",
+        "COLUMN_NAME": "Symbol",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "UnitOfMeasures",
+        "COLUMN_NAME": "CreatedAt",
+        "DATA_TYPE": "datetime2"
+      },
+      {
+        "TABLE_NAME": "UnitOfMeasures",
+        "COLUMN_NAME": "CreatedBy",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "UnitOfMeasures",
+        "COLUMN_NAME": "LastModifiedAt",
+        "DATA_TYPE": "datetime2"
+      },
+      {
+        "TABLE_NAME": "UnitOfMeasures",
+        "COLUMN_NAME": "LastModifiedBy",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "UnitOfMeasures",
+        "COLUMN_NAME": "ValidFrom",
+        "DATA_TYPE": "datetime2"
+      },
+      {
+        "TABLE_NAME": "UnitOfMeasures",
+        "COLUMN_NAME": "ValidTo",
+        "DATA_TYPE": "datetime2"
+      },
+      {
+        "TABLE_NAME": "Warehouses",
+        "COLUMN_NAME": "Id",
+        "DATA_TYPE": "int"
+      },
+      {
+        "TABLE_NAME": "Warehouses",
+        "COLUMN_NAME": "Name",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "Warehouses",
+        "COLUMN_NAME": "Location",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "Warehouses",
+        "COLUMN_NAME": "IsActive",
+        "DATA_TYPE": "bit"
+      },
+      {
+        "TABLE_NAME": "Warehouses",
+        "COLUMN_NAME": "CreatedAt",
+        "DATA_TYPE": "datetime2"
+      },
+      {
+        "TABLE_NAME": "Warehouses",
+        "COLUMN_NAME": "CreatedBy",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "Warehouses",
+        "COLUMN_NAME": "LastModifiedAt",
+        "DATA_TYPE": "datetime2"
+      },
+      {
+        "TABLE_NAME": "Warehouses",
+        "COLUMN_NAME": "LastModifiedBy",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "Warehouses",
+        "COLUMN_NAME": "Code",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "Warehouses",
+        "COLUMN_NAME": "LinkedSupplierId",
+        "DATA_TYPE": "int"
+      },
+      {
+        "TABLE_NAME": "Warehouses",
+        "COLUMN_NAME": "ManagerName",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "TABLE_NAME": "Warehouses",
+        "COLUMN_NAME": "OverrideInventoryAccountId",
+        "DATA_TYPE": "int"
+      },
+      {
+        "TABLE_NAME": "Warehouses",
+        "COLUMN_NAME": "Type",
+        "DATA_TYPE": "int"
+      },
+      {
+        "TABLE_NAME": "Warehouses",
+        "COLUMN_NAME": "ValidFrom",
+        "DATA_TYPE": "datetime2"
+      },
+      {
+        "TABLE_NAME": "Warehouses",
+        "COLUMN_NAME": "ValidTo",
+        "DATA_TYPE": "datetime2"
+      }
+    ]
+  },
+  "Server": "SAKEELPC",
+  "Database": "NexusERPLocal",
+  "ReadAtUtc": "2026-10-11T06:56:10"
+}

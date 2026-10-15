@@ -1,0 +1,56 @@
+Code,Name,Type,Active,Posting account,Local ID,Balance
+1000,Assets,Asset,True,False,1,0.0
+2000,Liabilities,Liability,True,False,2,0.0
+3000,Equity,Equity,True,False,3,0.0
+4000,Revenue,Revenue,True,False,4,0.0
+6000,Operating Expenses,Expense,True,False,5,0.0
+1111,Cash in Hand,Asset,True,True,6,0.0
+1112,Bank - Sampath,Asset,True,True,7,0.0
+1130,Inventory Assets,Asset,True,False,8,0.0
+4110,Sales Revenue - FG,Revenue,True,True,9,0.0
+6210,Rent Expense,Expense,True,True,10,0.0
+6220,Electricity & Utilities,Expense,True,True,11,0.0
+6310,Advertising & Marketing,Expense,True,True,12,0.0
+2121,VAT Payable,Liability,True,True,13,0.0
+2122,SSCL Payable,Liability,True,True,14,0.0
+1100,Current Assets,Asset,True,False,101,0.0
+1110,Cash & Cash Equivalents,Asset,True,False,102,0.0
+2100,Current Liabilities,Liability,True,False,201,0.0
+2120,Tax Payable,Liability,True,False,202,0.0
+4100,Operating Revenue,Revenue,True,False,401,0.0
+5000,Cost of Goods Sold,Expense,True,False,500,0.0
+6200,Administrative Expenses,Expense,True,False,601,0.0
+6300,Sales & Marketing,Expense,True,False,602,0.0
+1120,Accounts Receivable (AR),Asset,True,True,1001,0.0
+1131,Raw Materials (RM) Inventory,Asset,True,True,1002,0.0
+1132,Finished Goods (FG) Inventory,Asset,True,True,1003,0.0
+2110,Accounts Payable (AP),Liability,True,True,2001,0.0
+3100,Share Capital,Equity,True,True,3001,0.0
+3200,Retained Earnings,Equity,True,True,3002,0.0
+5110,Raw Material Consumption,Expense,True,True,5001,0.0
+5120,Outsourced Job Work Costs,Expense,True,True,5002,0.0
+1140,VAT Recievable,Asset,True,False,5003,0.0
+1141,VAT Recievable,Asset,True,True,5004,0.0
+5130,Sales,Expense,True,True,5005,0.0
+1151,Cheques In Hand,Asset,True,True,5006,0.0
+5200,Inventory Adjustments - Loss,Expense,True,True,5007,0.0
+4200,Other Revenue,Revenue,True,False,5008,0.0
+4210,Inventory Adjustments - Gain,Revenue,True,True,5009,0.0
+1113,Undeposited Funds,Asset,True,True,5010,0.0
+1133,Work in Progress Inventory,Asset,True,True,5011,0.0
+1150,Employee Loans Receivable,Asset,True,True,5012,0.0
+2130,Service Accrual,Liability,True,True,5013,0.0
+2140,Unbilled Receipts,Liability,True,True,5014,0.0
+2150,EPF Payable,Liability,True,True,5015,0.0
+2151,ETF Payable,Liability,True,True,5016,0.0
+2152,Net Salaries Payable,Liability,True,True,5017,0.0
+4190,Inventory Surplus,Revenue,True,True,5018,0.0
+4191,Interest Income,Revenue,True,True,5019,0.0
+6100,Basic Salary Expense,Expense,True,True,5020,0.0
+6110,Employer EPF Expense,Expense,True,True,5021,0.0
+6120,Employer ETF Expense,Expense,True,True,5022,0.0
+6130,Commission Expense,Expense,True,True,5023,0.0
+6140,Allowance Expense,Expense,True,True,5024,0.0
+6211,Inventory Shrinkage,Expense,True,True,5025,0.0
+6212,Purchase Variance,Expense,True,True,5026,0.0
+6213,Bank Fees,Expense,True,True,5027,0.0

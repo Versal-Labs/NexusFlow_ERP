@@ -1,0 +1,13 @@
+Module,Source importable detail rows,Final UAT rows,Row count change,Source basis,Treatment,Duplicate identities,Unmatched required master codes
+Accounts,0,39,39,No legacy code mapping used for this fixture,39 current master accounts mirrored,0,0
+CustomerMaster,892,896,4,"Legacy importable detail rows, including zeros where supported",Added explicit missing-master UAT fixtures: 4,0,0
+SupplierMaster,213,215,2,"Legacy importable detail rows, including zeros where supported",Added explicit missing-master UAT fixtures: 2,0,0
+CustomerOpenings,1150,1150,0,"Legacy importable detail rows, including zeros where supported",Legacy documents/amounts retained,0,0
+SupplierOpenings,180,180,0,"Legacy importable detail rows, including zeros where supported",Legacy documents/amounts retained,0,0
+ReceivedCheques,49,49,0,"Legacy importable detail rows, including zeros where supported",Legacy documents/amounts retained,0,0
+IssuedCheques,0,1,1,No corresponding supplied legacy schedule,Explicit synthetic UAT fixture / expected controls,0,0
+Stock,938,938,0,"Legacy importable detail rows, including zeros where supported","494 FG +444 RM, one dataset; duplicate Excel/CSV representations compared, not appended",0,0
+BankOpening,0,1,1,No corresponding supplied legacy schedule,Explicit synthetic UAT fixture / expected controls,0,0
+BankRecon,0,1,1,No corresponding supplied legacy schedule,Explicit synthetic UAT fixture / expected controls,0,0
+ControlTotals,0,5212,5212,No corresponding supplied legacy schedule,Explicit synthetic UAT fixture / expected controls,0,0
+TrialBalance,188,39,-149,"Legacy importable detail rows, including zeros where supported",Original 188 rows archived; replaced by balanced complete current-account UAT fixture,0,0

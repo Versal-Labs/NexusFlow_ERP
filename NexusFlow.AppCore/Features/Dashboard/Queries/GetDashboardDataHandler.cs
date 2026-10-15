@@ -1,6 +1,8 @@
-﻿using MediatR;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using NexusFlow.AppCore.Interfaces;
+using NexusFlow.AppCore.Services;
+using NexusFlow.AppCore.Constants;
 using NexusFlow.Domain.Enums;
 using NexusFlow.Shared.Wrapper;
 using System;
@@ -18,6 +20,7 @@ namespace NexusFlow.AppCore.Features.Dashboard.Queries
         public decimal AccountsReceivable { get; set; }
         public decimal AccountsPayable { get; set; }
         public decimal CashOnHand { get; set; }
+        public string? CashAndBankWarning { get; set; }
         public decimal OverdueReceivables { get; set; }
         public decimal CommittedSpend { get; set; }
         public int BouncedCheques { get; set; }
@@ -76,14 +79,16 @@ namespace NexusFlow.AppCore.Features.Dashboard.Queries
                 .Where(i => i.IsPosted && i.InvoiceDate >= startOfMonth)
                 .SumAsync(i => i.GrandTotal, cancellationToken);
 
-            metrics.AccountsReceivable = await _context.SalesInvoices
-                .Where(i => i.IsPosted && i.PaymentStatus != InvoicePaymentStatus.Paid)
-                .SumAsync(i => i.GrandTotal - i.AmountPaid, cancellationToken);
+            // Use the same dated subledgers as aging/statements: migration openings,
+            // returns, settlements and reversals are part of the current party position.
+            var customerIds = await _context.Customers.AsNoTracking().Select(x => x.Id).ToListAsync(cancellationToken);
+            var customers = await new CustomerBalanceService(_context).GetManyAsync(customerIds, today, cancellationToken);
+            metrics.AccountsReceivable = customers.Values.Sum(x => x.NetBalance);
 
             // 3. PURCHASING & AP METRICS
-            metrics.AccountsPayable = await _context.SupplierBills
-                .Where(b => b.IsPosted && b.PaymentStatus != InvoicePaymentStatus.Paid)
-                .SumAsync(b => b.GrandTotal - b.AmountPaid, cancellationToken);
+            var supplierIds = await _context.Suppliers.AsNoTracking().Select(x => x.Id).ToListAsync(cancellationToken);
+            var suppliers = await new SupplierBalanceService(_context).GetManyAsync(supplierIds, today, cancellationToken);
+            metrics.AccountsPayable = suppliers.Values.Sum(x => x.NetBalance);
 
             // 4. 6-MONTH CHART DATA (Sales vs Purchases)
             var salesHistory = await _context.SalesInvoices
@@ -98,14 +103,12 @@ namespace NexusFlow.AppCore.Features.Dashboard.Queries
                 .Select(g => new { g.Key.Year, g.Key.Month, Total = g.Sum(b => b.GrandTotal) })
                 .ToListAsync(cancellationToken);
 
-            metrics.CashOnHand = await _context.Accounts
-        .Where(a => a.IsActive && (a.Type == NexusFlow.Domain.Enums.AccountType.Asset)) // Adjust AccountType enum as per your setup for Bank/Cash
-        .SumAsync(a => a.Balance, cancellationToken);
+            await PopulateCashAndBankAsync(metrics, cancellationToken);
 
-            // 2. Overdue Receivables (Invoices past due date)
-            metrics.OverdueReceivables = await _context.SalesInvoices
-                .Where(i => i.IsPosted && i.PaymentStatus != InvoicePaymentStatus.Paid && i.DueDate < today)
-                .SumAsync(i => i.GrandTotal - i.AmountPaid, cancellationToken);
+            // Aging treats amounts due today as current. Unapplied credits remain
+            // separate until applied to a debt, just as they do in the AR Aging report.
+            metrics.OverdueReceivables = customers.Values.SelectMany(x => x.Debits)
+                .Where(x => x.Balance > 0 && x.DueDate.Date < today.Date).Sum(x => x.Balance);
 
             // 3. Committed Spend (Approved POs waiting for delivery/billing)
             metrics.CommittedSpend = await _context.PurchaseOrders
@@ -130,6 +133,40 @@ namespace NexusFlow.AppCore.Features.Dashboard.Queries
             }
 
             return Result<DashboardMetricsDto>.Success(metrics);
+        }
+
+        private async Task PopulateCashAndBankAsync(DashboardMetricsDto metrics, CancellationToken ct)
+        {
+            // 1110 is the standard installed Cash and Cash Equivalents group. A custom
+            // chart can explicitly select another group; account names/prefixes are never inferred.
+            var rootCode = await _context.SystemConfigs.AsNoTracking().Where(x => x.Key == ConfigurationKeys.DashboardCashBankAccountRoot)
+                .Select(x => x.Value).SingleOrDefaultAsync(ct) ?? "1110";
+            var safeCode = await _context.SystemConfigs.AsNoTracking().Where(x => x.Key == AccountMappingKeys.UndepositedFunds)
+                .Select(x => x.Value).SingleOrDefaultAsync(ct);
+            var accounts = await _context.Accounts.AsNoTracking().Where(x => x.Type == AccountType.Asset)
+                .Select(x => new { x.Id, x.Code, x.ParentAccountId, x.IsTransactionAccount, x.IsActive, x.Balance }).ToListAsync(ct);
+            var root = accounts.SingleOrDefault(x => string.Equals(x.Code, rootCode.Trim(), StringComparison.OrdinalIgnoreCase));
+            if (root == null || !root.IsActive || root.IsTransactionAccount || string.IsNullOrWhiteSpace(safeCode)
+                || !accounts.Any(x => x.IsActive && x.IsTransactionAccount && string.Equals(x.Code, safeCode.Trim(), StringComparison.OrdinalIgnoreCase)))
+            {
+                metrics.CashAndBankWarning = "Cash and bank total is unavailable. Ask the finance administrator to review the cash and bank account group and undeposited funds mapping.";
+                return;
+            }
+            var children = accounts.Where(x => x.ParentAccountId.HasValue).ToLookup(x => x.ParentAccountId!.Value);
+            var pending = new Queue<int>();
+            var visited = new HashSet<int>();
+            pending.Enqueue(root.Id);
+            while (pending.TryDequeue(out var parent))
+            {
+                if (!visited.Add(parent)) continue;
+                foreach (var account in children[parent])
+                {
+                    if (!account.IsActive) continue;
+                    if (account.IsTransactionAccount && !string.Equals(account.Code, safeCode.Trim(), StringComparison.OrdinalIgnoreCase))
+                        metrics.CashOnHand += account.Balance;
+                    pending.Enqueue(account.Id);
+                }
+            }
         }
     }
 }

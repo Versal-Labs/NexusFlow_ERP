@@ -32,7 +32,9 @@ public sealed class CustomerBalanceService(IErpDbContext db)
         var receiptIds = allReceipts.Select(x => x.Id).ToArray();
         var allAllocations = await db.PaymentAllocations.Where(x => receiptIds.Contains(x.PaymentTransactionId)).ToListAsync(ct);
         var allNotes = await db.CreditNotes.Where(x => customerIds.Contains(x.CustomerId) && x.IsPosted && x.Date < end).ToListAsync(ct);
-        var allItems = await db.CustomerOpeningItems.Include(x => x.MigrationBatch).Where(x => customerIds.Contains(x.CustomerId) && x.PostingDate < end && x.MigrationBatch.PostedAt != null).ToListAsync(ct);
+        var allItems = await db.CustomerOpeningItems.AsNoTracking().Where(x => customerIds.Contains(x.CustomerId) && x.PostingDate < end && x.MigrationBatch.PostedAt != null)
+            .Select(x => new { x.Id, x.CustomerId, x.PostingDate, x.Kind, x.ReferenceNo, x.DocumentDate, x.Amount, x.DueDate, x.ReceivableAccountId,
+                x.MigrationBatch.ReversedDate, x.MigrationBatch.ReversalReason }).ToListAsync(ct);
         var allMemos = await db.CustomerDebitMemos.Where(x => customerIds.Contains(x.CustomerId) && x.Date < end).ToListAsync(ct);
         var allApplications = await db.CustomerCreditApplications.Include(x => x.CreditOpeningItem).Where(x => customerIds.Contains(x.CreditOpeningItem.CustomerId) && x.Date < end
             && (x.ReversedDate == null || x.ReversedDate >= end)).ToListAsync(ct);
@@ -67,9 +69,9 @@ public sealed class CustomerBalanceService(IErpDbContext db)
             foreach (var item in items)
             {
                 result.Events.Add(new(item.PostingDate, item.Kind, item.ReferenceNo, $"Opening item; original date {item.DocumentDate:yyyy-MM-dd}", item.Amount));
-                if (item.MigrationBatch.ReversedDate is { } reverse && reverse < end)
+                if (item.ReversedDate is { } reverse && reverse < end)
                 {
-                    result.Events.Add(new(reverse, "Opening reversal", item.ReferenceNo, item.MigrationBatch.ReversalReason ?? "Migration reversed", -item.Amount));
+                    result.Events.Add(new(reverse, "Opening reversal", item.ReferenceNo, item.ReversalReason ?? "Migration reversed", -item.Amount));
                     continue;
                 }
                 if (item.Amount > 0)

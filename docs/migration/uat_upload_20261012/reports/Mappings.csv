@@ -1,0 +1,26 @@
+Mapping type,Exact legacy code,Local target ID,Target label,Basis
+CustomerGroup,TRADE,13,TRADE — Trade,Required explicit mapping.
+SupplierGroup,DOM,15,DOM — Domestic Suppliers,Required explicit mapping.
+PaymentTerm,NET30,27,NET30 — 30 Days,Required explicit mapping.
+PriceLevel,STANDARD TIER,10,STANDARD TIER — Standard Tier,Required explicit mapping.
+Warehouse,WH_MAIN,3,WH_MAIN — Main Garnet,Required on stock rows and controls.
+Unit,PCS,1,pcs — Piece,PCS covers pcs and Pcs after code normalization.
+Category,MSH,1,MSH — Men's Shirts,Temporary new-FG UAT classification.
+Brand,UNBRANDED,5,UNBRANDED,Required for new FG fixture SKUs.
+BankBranch,7010-058,1,7010-001 — Bank of Ceylon / Head Office,UAT-only substitute branch; bank retained where available. Not physical-cheque verification.
+BankBranch,7010-501,1,7010-001 — Bank of Ceylon / Head Office,UAT-only substitute branch; bank retained where available. Not physical-cheque verification.
+BankBranch,7056-006,84,7056-006 — Commercial Bank of Ceylon / Kurunegala,Exact current bank/branch code.
+BankBranch,7056-152,79,7056-001 — Commercial Bank of Ceylon / Head Office,UAT-only substitute branch; bank retained where available. Not physical-cheque verification.
+BankBranch,7083-064,109,7083-001 — Hatton National Bank / Head Office,UAT-only substitute branch; bank retained where available. Not physical-cheque verification.
+BankBranch,7083-094,109,7083-001 — Hatton National Bank / Head Office,UAT-only substitute branch; bank retained where available. Not physical-cheque verification.
+BankBranch,7135-040,41,7135-001 — People's Bank / Head Office,UAT-only substitute branch; bank retained where available. Not physical-cheque verification.
+BankBranch,7135-123,41,7135-001 — People's Bank / Head Office,UAT-only substitute branch; bank retained where available. Not physical-cheque verification.
+BankBranch,7135-200,41,7135-001 — People's Bank / Head Office,UAT-only substitute branch; bank retained where available. Not physical-cheque verification.
+BankBranch,7135-329,41,7135-001 — People's Bank / Head Office,UAT-only substitute branch; bank retained where available. Not physical-cheque verification.
+BankBranch,7162-012,224,7162-012 — Nations Trust Bank / Kurunegala,Exact current bank/branch code.
+BankBranch,7278-929,159,7278-001 — Sampath Bank / Head Office,UAT-only substitute branch; bank retained where available. Not physical-cheque verification.
+BankBranch,7287-085,189,7287-001 — Seylan Bank / Head Office,UAT-only substitute branch; bank retained where available. Not physical-cheque verification.
+BankBranch,7311-085,287,7311-001 — Pan Asia Banking Corporation / Head Office,UAT-only substitute branch; bank retained where available. Not physical-cheque verification.
+BankBranch,7454-026,272,7454-001 — DFCC Bank / Head Office,UAT-only substitute branch; bank retained where available. Not physical-cheque verification.
+BankBranch,7463-008,319,7463-008 — Amana Bank / Kurunegala,Exact current bank/branch code.
+BankBranch,7463-021,312,7463-001 — Amana Bank / Head Office,UAT-only substitute branch; bank retained where available. Not physical-cheque verification.

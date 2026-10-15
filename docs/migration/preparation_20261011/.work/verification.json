@@ -1,0 +1,104 @@
+{
+  "checked_workbooks": 9,
+  "original_files_unchanged": 10,
+  "csv_workbook_equality": true,
+  "exact_template_headers": true,
+  "no_formulas": true,
+  "dates_iso_and_typed": true,
+  "amounts_numeric": true,
+  "legacy_codes_text": true,
+  "duplicates": 0,
+  "source_zip_identical": true,
+  "checks": [
+    [
+      "CustomerMaster",
+      892,
+      "Exact",
+      "Equal",
+      "None",
+      "Verified",
+      "Verified",
+      "Values only"
+    ],
+    [
+      "SupplierMaster",
+      213,
+      "Exact",
+      "Equal",
+      "None",
+      "Verified",
+      "Verified",
+      "Values only"
+    ],
+    [
+      "CustomerOpenings",
+      1150,
+      "Exact",
+      "Equal",
+      "None",
+      "Verified",
+      "Verified",
+      "Values only"
+    ],
+    [
+      "SupplierOpenings",
+      180,
+      "Exact",
+      "Equal",
+      "None",
+      "Verified",
+      "Verified",
+      "Values only"
+    ],
+    [
+      "ReceivedCheques",
+      49,
+      "Exact",
+      "Equal",
+      "None",
+      "Verified",
+      "Verified",
+      "Values only"
+    ],
+    [
+      "Stock",
+      938,
+      "Exact",
+      "Equal",
+      "None",
+      "Verified",
+      "Verified",
+      "Values only"
+    ],
+    [
+      "TrialBalance",
+      188,
+      "Exact",
+      "Equal",
+      "None",
+      "Verified",
+      "Verified",
+      "Values only"
+    ],
+    [
+      "Migration_Review",
+      11616,
+      "Report/archive",
+      "Compared to generated matrices",
+      "None",
+      "As applicable",
+      "As applicable",
+      "Values only"
+    ],
+    [
+      "Legacy_Archive",
+      4609,
+      "Report/archive",
+      "Compared to generated matrices",
+      "None",
+      "As applicable",
+      "As applicable",
+      "Values only"
+    ]
+  ]
+}
