@@ -2,6 +2,7 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using NexusFlow.AppCore.DTOs.Print;
 using NexusFlow.AppCore.Interfaces;
+using NexusFlow.AppCore.Features.Reporting.Queries;
 using NexusFlow.Domain.Entities.Master;
 using NexusFlow.Domain.Entities.Purchasing;
 using NexusFlow.Domain.Entities.Sales;
@@ -100,6 +101,7 @@ namespace NexusFlow.AppCore.Features.Print
 
             var invoice = await _context.SalesInvoices
                 .Include(x => x.Customer)
+                .Include(x => x.SalesRep)
                 .Include(x => x.Items).ThenInclude(x => x.ProductVariant)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
@@ -107,11 +109,45 @@ namespace NexusFlow.AppCore.Features.Print
             if (invoice == null)
                 return Result<PrintDocumentDto>.Failure("Sales invoice not found.");
 
+            VatInvoicePrintDto? vatInvoice = null;
+            if (invoice.ApplyVat)
+            {
+                var asOf = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.UtcNow, "Asia/Colombo").Date;
+                var agingResult = await new GetArAgingHandler(_context).Handle(new GetArAgingQuery
+                {
+                    CustomerId = invoice.CustomerId,
+                    AsOfDate = asOf
+                }, cancellationToken);
+                var aging = agingResult.Data?.SingleOrDefault();
+                var creditDays = (invoice.DueDate.Date - invoice.InvoiceDate.Date).Days;
+                vatInvoice = new VatInvoicePrintDto
+                {
+                    PurchaserTin = invoice.Customer?.TaxRegNo ?? string.Empty,
+                    PurchaserPhone = invoice.Customer?.Phone ?? string.Empty,
+                    CustomerPoNumber = invoice.CustomerPoNumber,
+                    SupplyDate = invoice.InvoiceDate,
+                    PaymentTerms = creditDays > 0 ? $"CREDIT {creditDays} Days" : string.Empty,
+                    SalesRepresentative = string.Join(" ", new[] { invoice.SalesRep?.FirstName, invoice.SalesRep?.LastName }
+                        .Where(x => !string.IsNullOrWhiteSpace(x))),
+                    AccountAging = new InvoiceAccountAgingDto
+                    {
+                        AsOfDate = asOf,
+                        Days0To30 = (aging?.Current ?? 0) + (aging?.Days1To30 ?? 0),
+                        Days31To60 = aging?.Days31To60 ?? 0,
+                        Days61To90 = aging?.Days61To90 ?? 0,
+                        Over90Days = aging?.Over90Days ?? 0,
+                        UnappliedCredit = aging?.UnappliedCredit ?? 0,
+                        TotalOutstanding = aging?.TotalOutstanding ?? 0
+                    }
+                };
+            }
+
             return Success(new PrintDocumentDto
             {
                 DocumentId = invoice.Id.ToString(),
                 DocumentType = DocumentType.SalesInvoice.ToString(),
                 DocumentNumber = invoice.InvoiceNumber,
+                VatInvoice = vatInvoice,
                 DocumentDate = invoice.InvoiceDate,
                 CustomerOrSupplierName = invoice.Customer?.Name ?? string.Empty,
                 BillingAddress = CustomerAddress(invoice.Customer),
@@ -121,7 +157,7 @@ namespace NexusFlow.AppCore.Features.Print
                 TaxTotal = invoice.TotalTax,
                 DiscountTotal = invoice.TotalDiscount,
                 GrandTotal = invoice.GrandTotal,
-                LineItems = invoice.Items.Select(x => Line(
+                LineItems = invoice.Items.OrderBy(x => x.Id).Select(x => Line(
                     x.ProductVariant,
                     x.Quantity,
                     x.UnitPrice,

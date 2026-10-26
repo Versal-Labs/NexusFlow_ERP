@@ -36,6 +36,15 @@ namespace NexusFlow.Infrastructure.Services
 
         public async Task<byte[]> RenderDocumentToPdfAsync(DocumentType documentType, PrintDocumentDto data, CancellationToken cancellationToken = default)
         {
+            // VAT invoices use the supplied statutory-style layout for preview, print and download.
+            // A generic Word template must not replace it with the normal invoice structure.
+            if (documentType == DocumentType.SalesInvoice && data.VatInvoice != null)
+            {
+                var profile = await _companyProfileService.GetProfileAsync(cancellationToken);
+                using var logo = await TryLoadCompanyLogoAsync(profile.LogoBlobUrl, cancellationToken);
+                return VatInvoicePdfRenderer.Render(data, profile, logo);
+            }
+
             var template = await _dbContext.DocumentTemplates
                 .Where(t => t.DocumentType == documentType && t.IsActive && t.IsDefault)
                 .OrderBy(t => t.TaxProfile == TaxProfile.All ? 0 : 1)

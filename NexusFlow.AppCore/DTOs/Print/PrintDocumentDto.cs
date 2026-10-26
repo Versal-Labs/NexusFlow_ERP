@@ -21,6 +21,9 @@ namespace NexusFlow.AppCore.DTOs.Print
         public decimal GrandTotal { get; set; }
         public string CurrencyCode { get; set; } = "USD";
 
+        // Populated from the saved ApplyVat flag only for VAT sales invoices.
+        public VatInvoicePrintDto? VatInvoice { get; set; }
+
         // Extra document-specific scalar fields, for example EmployeeCode or PayPeriod.
         public Dictionary<string, string> Fields { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 
@@ -29,6 +32,29 @@ namespace NexusFlow.AppCore.DTOs.Print
 
         // Named repeating sections used by document-specific Word templates.
         public Dictionary<string, List<PrintTableRowDto>> Tables { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+    }
+
+    public class VatInvoicePrintDto
+    {
+        public string PurchaserTin { get; set; } = string.Empty;
+        public string PurchaserPhone { get; set; } = string.Empty;
+        public string CustomerPoNumber { get; set; } = string.Empty;
+        public DateTime SupplyDate { get; set; }
+        public string PaymentTerms { get; set; } = string.Empty;
+        public string SalesRepresentative { get; set; } = string.Empty;
+        public InvoiceAccountAgingDto AccountAging { get; set; } = new();
+    }
+
+    public class InvoiceAccountAgingDto
+    {
+        public DateTime AsOfDate { get; set; }
+        // Same due-date basis as AR Aging; the first band includes not-yet-due balances.
+        public decimal Days0To30 { get; set; }
+        public decimal Days31To60 { get; set; }
+        public decimal Days61To90 { get; set; }
+        public decimal Over90Days { get; set; }
+        public decimal UnappliedCredit { get; set; }
+        public decimal TotalOutstanding { get; set; }
     }
 
     public class PrintLineItemDto
