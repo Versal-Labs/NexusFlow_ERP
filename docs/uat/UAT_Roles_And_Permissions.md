@@ -70,3 +70,18 @@ Cookie-authenticated writes require antiforgery validation. Backend pending-scop
 ## Post-finalization testing responsibilities
 
 Administrators rebuild/start the corrected application, verify configuration and the read-only finalized migration. Normal users run receipts/payments/stock/cheque tests with their existing Treasury, Inventory, Sales and Reporting permissions. Dashboard calculations grant no new roles or permissions. Reporting routes retain their existing ViewArAging, ViewApAging, ViewCustomerStatement, ViewSupplierStatement and ViewGeneralLedger policies; configuration remains restricted by Permissions.System.ManageConfigs. See [the administrator and normal-user checklists](../migration/Post_Finalization_Check_20261015.md).
+
+## Background operation permissions — 2026-10-21
+
+Existing roles remain `SuperAdmin`, `Admin`, `Accountant`, `StoreKeeper` and `SalesRep`; no new role is created. Actual hosted assignments are **Needs business confirmation**. Normal trading users continue through their existing operational pages after release.
+
+| Operation or read | Required permissions |
+|---|---|
+| Summary, progress, paginated outcomes, source details, history and audit | `Permissions.Migration.View` |
+| Start/resume Validate or LedgerCheck | View + `Permissions.Migration.Prepare` |
+| Start/resume Approve or Release | View + `Permissions.Migration.Approve` |
+| Start/resume Import or a legacy posting run | View + `Permissions.Migration.Execute` |
+| Start/resume Finalize | View + `Permissions.Migration.Finalize` |
+| Change files, mappings or pending-scope configuration | Existing Prepare policy; blocked while an operation/posting run is active |
+
+The new POST `/api/migration/projects/{id}/operations` checks its `kind`, and Resume checks the stored operation kind, preventing a caller from substituting a lower-privilege action. Background approval, posting and audit retain the initiating user's saved identity. Cookie writes continue to require antiforgery tokens. Navigation/read access remains available while work runs. Resume additionally requires confirmed job inactivity and an available worker lock; having permission alone cannot override these guards.

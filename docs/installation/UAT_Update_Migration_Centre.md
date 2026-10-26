@@ -1,5 +1,8 @@
 # Update hosted UAT for Migration Centre
 
+> Navigation, durable operations and recovery were updated on 2026-10-21. See [the additive operations upgrade](UAT_Update_Migration_Operations.md) for this release. Existing file formats and accounting controls below still apply.
+
+
 Prepared 6 October 2026 for `https://nexus.garnetnation.lk/`. This updates code/schema; it does not import legacy balances. The browser reached **Sign In** on the hosted site. Authenticated hosted acceptance remains **Needs business confirmation** after deployment.
 
 ## Release and recovery

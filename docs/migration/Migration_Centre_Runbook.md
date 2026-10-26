@@ -1,5 +1,8 @@
 # Migration Centre operating guide
 
+> Navigation, durable operations and recovery were updated on 2026-10-21. See [guided workspace and recovery](Migration_Centre_Background_Operations.md) for this release. Existing file formats and accounting controls below still apply.
+
+
 Implemented 6 October 2026. Entry: **Administration → Settings & Security → Migration Centre**, `/Migration`. This guide supersedes the separate opening-import page instructions for this release. Keep their original batch history for audit.
 
 ## Boundary and preparation

@@ -8,6 +8,7 @@ public sealed partial class MigrationCentreService
 {
     public async Task<MigrationBulkReleaseResult> ReleaseSelectedAsync(int id, MigrationBulkReleaseRequest request, CancellationToken ct)
     {
+        using var worker = await db.AcquireMigrationWorkerAsync(id, ct);
         await Project(id, true, ct);
         if (string.IsNullOrWhiteSpace(request.Evidence)) throw new InvalidOperationException("Signed complete-position and independent control schedule evidence is required.");
         var preview = await ValidateAsync(id, new() { Modules = ["ControlTotals"] }, ct);
@@ -26,7 +27,8 @@ public sealed partial class MigrationCentreService
             try
             {
                 using var releaseScope = scopeFactory.CreateScope();
-                await releaseScope.ServiceProvider.GetRequiredService<MigrationCentreService>().ReleaseAsync(id, scope.Kind, scope.Code, new(request.Evidence, rows.ToDictionary(r => r.Get("Component"), r => r.Decimal("Amount")), rows.ToDictionary(r => r.Get("Component"), r => int.Parse(r.Get("RowCount")))), ct); released++;
+                var service = releaseScope.ServiceProvider.GetRequiredService<MigrationCentreService>(); service.owningLegacyRelease = true;
+                await service.ReleaseAsync(id, scope.Kind, scope.Code, new(request.Evidence, rows.ToDictionary(r => r.Get("Component"), r => r.Decimal("Amount")), rows.ToDictionary(r => r.Get("Component"), r => int.Parse(r.Get("RowCount")))), ct); released++;
             }
             catch (InvalidOperationException ex) { pending.Add($"{scope.Kind}/{scope.Code}: {ex.Message}"); }
         }

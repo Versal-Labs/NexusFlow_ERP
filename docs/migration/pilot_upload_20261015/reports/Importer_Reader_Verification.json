@@ -1,0 +1,115 @@
+{
+  "CheckedOn": "2026-10-15",
+  "Method": "Current MigrationFileReader.Read, MigrationCatalog and Identity; files only; no database connection",
+  "DatasetResults": [
+    {
+      "module": "Accounts",
+      "rows": 39,
+      "csv": "Pass",
+      "xlsx": "Pass",
+      "headers": "Exact",
+      "values": "Match",
+      "identities": "Unique"
+    },
+    {
+      "module": "CustomerMaster",
+      "rows": 896,
+      "csv": "Pass",
+      "xlsx": "Pass",
+      "headers": "Exact",
+      "values": "Match",
+      "identities": "Unique"
+    },
+    {
+      "module": "SupplierMaster",
+      "rows": 215,
+      "csv": "Pass",
+      "xlsx": "Pass",
+      "headers": "Exact",
+      "values": "Match",
+      "identities": "Unique"
+    },
+    {
+      "module": "CustomerOpenings",
+      "rows": 1150,
+      "csv": "Pass",
+      "xlsx": "Pass",
+      "headers": "Exact",
+      "values": "Match",
+      "identities": "Unique"
+    },
+    {
+      "module": "SupplierOpenings",
+      "rows": 180,
+      "csv": "Pass",
+      "xlsx": "Pass",
+      "headers": "Exact",
+      "values": "Match",
+      "identities": "Unique"
+    },
+    {
+      "module": "ReceivedCheques",
+      "rows": 49,
+      "csv": "Pass",
+      "xlsx": "Pass",
+      "headers": "Exact",
+      "values": "Match",
+      "identities": "Unique"
+    },
+    {
+      "module": "IssuedCheques",
+      "rows": 1,
+      "csv": "Pass",
+      "xlsx": "Pass",
+      "headers": "Exact",
+      "values": "Match",
+      "identities": "Unique"
+    },
+    {
+      "module": "Stock",
+      "rows": 938,
+      "csv": "Pass",
+      "xlsx": "Pass",
+      "headers": "Exact",
+      "values": "Match",
+      "identities": "Unique"
+    },
+    {
+      "module": "BankOpening",
+      "rows": 1,
+      "csv": "Pass",
+      "xlsx": "Pass",
+      "headers": "Exact",
+      "values": "Match",
+      "identities": "Unique"
+    },
+    {
+      "module": "BankRecon",
+      "rows": 1,
+      "csv": "Pass",
+      "xlsx": "Pass",
+      "headers": "Exact",
+      "values": "Match",
+      "identities": "Unique"
+    },
+    {
+      "module": "TrialBalance",
+      "rows": 39,
+      "csv": "Pass",
+      "xlsx": "Pass",
+      "headers": "Exact",
+      "values": "Match",
+      "identities": "Unique"
+    },
+    {
+      "module": "ControlTotals",
+      "rows": 5212,
+      "csv": "Pass",
+      "xlsx": "Pass",
+      "headers": "Exact",
+      "values": "Match",
+      "identities": "Unique"
+    }
+  ],
+  "StageManifests": "7 pass"
+}

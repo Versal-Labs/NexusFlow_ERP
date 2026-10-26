@@ -65,3 +65,19 @@ Negative fixtures: duplicate source ID, altered source content under posted ID, 
 ## Finalized local UAT baseline — 15 October 2026
 
 Project 4 is Finalized with 2,050 Released scopes and 2,455 Posted units. Before new UAT trading: AR 162,114,985.14; AP 94,190,250.55; stock 114,417,245.74; Cash & Bank 100,000.00; received cheques 5,328,628.00 across 49 instruments. All amounts are LKR. The closing schedule remains a UAT fixture. See [the complete baseline and transaction test data](../migration/Post_Finalization_Check_20261015.md).
+
+## Background operation fixtures — 2026-10-21
+
+Use isolated synthetic projects; never use finalized hosted project 3 for write tests. Dates: closing 2026-09-30, opening 2026-10-01, currency LKR. Retain independent control schedules and signed synthetic zero declarations.
+
+| Fixture | Data and purpose |
+|---|---|
+| Two-customer import | C001 invoice 100; C002 invoice 200; required cheque components explicitly NotApplicable with evidence; independent debit/credit controls and row counts. Select C001 alone to prove operation totals do not report project completion. |
+| Partial release | Same data; independent C002 debit deliberately 199 instead of 200. C001 releases, C002 remains pending with a reason. |
+| Large recovery | Automated synthetic baseline: 2,050 customer scopes, complete zero-opening declarations, matching imported ControlTotals including 6,150 component rows. Interrupt exactly after 223 committed releases, reopen and resume 1,827 unfinished scopes. This tests recovery mechanics; it is not a certified business cutover. |
+| Pilot-shape UAT | 896 customers, 215 suppliers, 938 stock scopes and 1 bank scope = 2,050 scopes. Supply valid mapped masters, complete datasets, independent amounts/counts, and bank/stock controls. Business source certification is **Needs business confirmation**. |
+| Grouped warnings/details | 125 C001 source rows without LegacyRecordId; stable unique references. Composite-identity warning groups retain every affected source row. Detail/page sizes 25/50/100, with requests above 100 capped. |
+| Job service failures | Local fake job service: enqueue unavailable, Active, Unavailable, Missing and stopped states. Never simulate these failures by changing hosted job records. |
+| Upgrade | Disposable database on `20261008142956_latest`, finalized project, released scope, retained source/unit and legacy SelectionJson run. Exercise MigrationRuns temporal-on and temporal-off independently. |
+
+Opt-in seeded smoke host: set `NEXUSFLOW_RUN_LOCALDB_CUSTOMER_TESTS=1` and `NEXUSFLOW_MIGRATION_SMOKE_SEED=1`, then run `tools/MigrationCentreSmokeHost`. It binds loopback port 5191 and owns a GUID-named disposable LocalDB database. It stages 130 synthetic customer scopes (C001/C002 mapped; others deliberately missing) and independent C001/C002 controls. `/smoke-login?mode=viewonly` and `?mode=prepareonly` provide restricted test sessions. POST `/smoke-stop` shuts down and removes only the owned synthetic database.

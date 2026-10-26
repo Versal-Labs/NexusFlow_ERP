@@ -16,6 +16,42 @@ public sealed class MigrationProjectsController(MigrationCentreService service, 
 {
     [HttpGet] public Task<IActionResult> List(CancellationToken ct) => Run(async () => await service.ListAsync(ct));
     [HttpGet("{id:int}")] public Task<IActionResult> Get(int id, CancellationToken ct) => Run(async () => await service.GetAsync(id, ct));
+    [HttpGet("{id:int}/workspace")] public Task<IActionResult> Workspace(int id, CancellationToken ct) => Run(async () => await service.WorkspaceAsync(id, ct));
+    [HttpGet("{id:int}/summary")] public Task<IActionResult> Summary(int id, CancellationToken ct) => Run(async () => await service.SummaryAsync(id, ct));
+    [HttpGet("{id:int}/scopes")] public Task<IActionResult> Scopes(int id, [FromQuery] MigrationPageQuery query, CancellationToken ct) => Run(async () => await service.ScopesPageAsync(id, query, ct));
+    [HttpGet("{id:int}/lists/{list}")] public Task<IActionResult> History(int id, string list, [FromQuery] MigrationPageQuery query, CancellationToken ct) => Run(async () => await service.HistoryPageAsync(id, list, query, ct));
+    [HttpPost("{id:int}/operations")]
+    public async Task<IActionResult> StartOperation(int id, MigrationOperationRequest request, CancellationToken ct)
+    {
+        if (!await AllowedOperation(request.Kind)) return Forbid();
+        var result = await Run(async () => await service.StartOperationAsync(id, request, ct));
+        if (result is not OkObjectResult { Value: NexusFlow.Domain.Entities.Finance.MigrationOperation operation }) return result;
+        var statusUrl = Url.Action(nameof(Operation), new { id, operationId = operation.Id });
+        return Accepted(statusUrl, new { operationId = operation.Id, statusUrl, operation.Status });
+    }
+    [HttpGet("{id:int}/operations/{operationId:int}")]
+    public Task<IActionResult> Operation(int id, int operationId, DateTime? after, CancellationToken ct) => Run(async () => await service.OperationProgressAsync(id, operationId, after, ct));
+    [HttpGet("{id:int}/operations/{operationId:int}/items")]
+    public Task<IActionResult> OperationItems(int id, int operationId, [FromQuery] MigrationPageQuery query, CancellationToken ct) => Run(async () => await service.OperationItemsPageAsync(id, operationId, query, ct));
+    [HttpGet("{id:int}/operations/{operationId:int}/context")]
+    public Task<IActionResult> OperationContext(int id, int operationId, CancellationToken ct) => Run(async () => await service.OperationContextAsync(id, operationId, ct));
+    [HttpGet("{id:int}/operations/{operationId:int}/items/{itemId:int}")]
+    public Task<IActionResult> OperationItem(int id, int operationId, int itemId, [FromQuery] MigrationPageQuery query, CancellationToken ct) => Run(async () => await service.OperationItemDetailAsync(id, operationId, itemId, query, ct));
+    [HttpGet("{id:int}/operations/{operationId:int}/issues")]
+    public Task<IActionResult> OperationIssues(int id, int operationId, [FromQuery] MigrationPageQuery query, bool grouped, CancellationToken ct) => Run(async () => await service.IssuesPageAsync(id, operationId, query, grouped, ct));
+    [HttpPost("{id:int}/operations/{operationId:int}/resume")]
+    public async Task<IActionResult> ResumeOperation(int id, int operationId, CancellationToken ct)
+    {
+        var kind = await db.MigrationOperations.Where(x => x.Id == operationId && x.ProjectId == id).Select(x => x.Kind).SingleOrDefaultAsync(ct);
+        if (kind == null) return NotFound();
+        if (!await AllowedOperation(kind)) return Forbid();
+        return await Run(async () => { await service.ResumeOperationAsync(id, operationId, ct); return new { queued = true }; });
+    }
+    private async Task<bool> AllowedOperation(string kind)
+    {
+        var permission = kind switch { "Validate" or "LedgerCheck" => Permissions.Migration.Prepare, "Approve" or "Release" => Permissions.Migration.Approve, "Import" => Permissions.Migration.Execute, "Finalize" => Permissions.Migration.Finalize, _ => null };
+        return permission != null && (await authorization.AuthorizeAsync(User, permission)).Succeeded;
+    }
     [HttpPost, Authorize(Policy = Permissions.Migration.Prepare)]
     public Task<IActionResult> Create(MigrationCreateRequest request, CancellationToken ct) => Run(async () => await service.CreateAsync(request, ct));
     [HttpGet("templates")]
@@ -41,7 +77,7 @@ public sealed class MigrationProjectsController(MigrationCentreService service, 
         return Ok(data.ToDictionary(x => x.Module, x => MigrationJson.Read<List<MigrationRow>>(x.RowsJson).SelectMany(r => r.Raw.Keys).Distinct().OrderBy(k => k).ToList()));
     }
     [HttpPut("{id:int}/mappings"), Authorize(Policy = Permissions.Migration.Prepare)]
-    public Task<IActionResult> Settings(int id, MigrationSettings request, CancellationToken ct) => Run(async () => { await service.SaveSettingsAsync(id, request, ct); return await service.GetAsync(id, ct); });
+    public Task<IActionResult> Settings(int id, MigrationSettings request, CancellationToken ct, int? version = null) => Run(async () => { await service.SaveSettingsAsync(id, request, ct, version); return await service.GetAsync(id, ct); });
     [HttpPut("{id:int}/scope"), Authorize(Policy = Permissions.Migration.Prepare)]
     public async Task<IActionResult> Scope(int id, MigrationScopeRequest request, CancellationToken ct)
     {

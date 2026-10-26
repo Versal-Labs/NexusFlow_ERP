@@ -1,0 +1,86 @@
+Mapping type,Exact legacy code,Target master code,Target label,When required,Reason
+BankBranch,7010-058,7010-001,Bank of Ceylon / Head Office,Before validation,Pilot branch substitute retained from successful local test; not physical branch verification
+BankBranch,7010-501,7010-001,Bank of Ceylon / Head Office,Before validation,Pilot branch substitute retained from successful local test; not physical branch verification
+BankBranch,7056-006,7056-006,Commercial Bank of Ceylon / Kurunegala,Before validation,Required explicit mapping from finalized local project
+BankBranch,7056-152,7056-001,Commercial Bank of Ceylon / Head Office,Before validation,Pilot branch substitute retained from successful local test; not physical branch verification
+BankBranch,7083-064,7083-001,Hatton National Bank / Head Office,Before validation,Pilot branch substitute retained from successful local test; not physical branch verification
+BankBranch,7083-094,7083-001,Hatton National Bank / Head Office,Before validation,Pilot branch substitute retained from successful local test; not physical branch verification
+BankBranch,7135-040,7135-001,People's Bank / Head Office,Before validation,Pilot branch substitute retained from successful local test; not physical branch verification
+BankBranch,7135-123,7135-001,People's Bank / Head Office,Before validation,Pilot branch substitute retained from successful local test; not physical branch verification
+BankBranch,7135-200,7135-001,People's Bank / Head Office,Before validation,Pilot branch substitute retained from successful local test; not physical branch verification
+BankBranch,7135-329,7135-001,People's Bank / Head Office,Before validation,Pilot branch substitute retained from successful local test; not physical branch verification
+BankBranch,7162-012,7162-012,Nations Trust Bank / Kurunegala,Before validation,Required explicit mapping from finalized local project
+BankBranch,7278-929,7278-001,Sampath Bank / Head Office,Before validation,Pilot branch substitute retained from successful local test; not physical branch verification
+BankBranch,7287-085,7287-001,Seylan Bank / Head Office,Before validation,Pilot branch substitute retained from successful local test; not physical branch verification
+BankBranch,7311-085,7311-001,Pan Asia Banking Corporation / Head Office,Before validation,Pilot branch substitute retained from successful local test; not physical branch verification
+BankBranch,7454-026,7454-001,DFCC Bank / Head Office,Before validation,Pilot branch substitute retained from successful local test; not physical branch verification
+BankBranch,7463-008,7463-008,Amana Bank / Kurunegala,Before validation,Required explicit mapping from finalized local project
+BankBranch,7463-021,7463-001,Amana Bank / Head Office,Before validation,Pilot branch substitute retained from successful local test; not physical branch verification
+Brand,UNBRANDED,UNBRANDED,UNBRANDED,Before validation,Required explicit mapping from finalized local project
+Category,ACCESSORIES,Accessories,Accessories,Before validation,Required explicit mapping from finalized local project
+Category,BLOUSE,BLOUSE,BLOUSE,If creating a missing SKU; recommended for all categories,Complete file coverage; category inventory account must be 1132
+Category,CASUAL TROUSER,CASUAL TROUSER,CASUAL TROUSER,If creating a missing SKU; recommended for all categories,Complete file coverage; category inventory account must be 1132
+Category,COOL KHAKIES,COOL KHAKIES,COOL KHAKIES,If creating a missing SKU; recommended for all categories,Complete file coverage; category inventory account must be 1132
+Category,DENIM BOYS TROUSER,DENIM BOYS TROUSER,DENIM BOYS TROUSER,If creating a missing SKU; recommended for all categories,Complete file coverage; category inventory account must be 1132
+Category,DENIM FROCK,DENIM FROCK,DENIM FROCK,If creating a missing SKU; recommended for all categories,Complete file coverage; category inventory account must be 1132
+Category,DENIM GENTS TROUSER,DENIM GENTS TROUSER,DENIM GENTS TROUSER,If creating a missing SKU; recommended for all categories,Complete file coverage; category inventory account must be 1132
+Category,DENIM JACKET,DENIM JACKET,DENIM JACKET,If creating a missing SKU; recommended for all categories,Complete file coverage; category inventory account must be 1132
+Category,DENIM LADIES TROUSER,DENIM LADIES TROUSER,DENIM LADIES TROUSER,If creating a missing SKU; recommended for all categories,Complete file coverage; category inventory account must be 1132
+Category,DENIM SHORTS,DENIM SHORTS,DENIM SHORTS,If creating a missing SKU; recommended for all categories,Complete file coverage; category inventory account must be 1132
+Category,DENIM SKIRT,DENIM SKIRT,DENIM SKIRT,If creating a missing SKU; recommended for all categories,Complete file coverage; category inventory account must be 1132
+Category,FROCK,FROCK,FROCK,If creating a missing SKU; recommended for all categories,Complete file coverage; category inventory account must be 1132
+Category,GARNET CASUAL WEAR,GARNET CASUAL WEAR,GARNET CASUAL WEAR,If creating a missing SKU; recommended for all categories,Complete file coverage; category inventory account must be 1132
+Category,GLAMOUR,GLAMOUR,GLAMOUR,If creating a missing SKU; recommended for all categories,Complete file coverage; category inventory account must be 1132
+Category,H-DIAZ COTTON TROUSER,H-DIAZ COTTON TROUSER,H-DIAZ COTTON TROUSER,If creating a missing SKU; recommended for all categories,Complete file coverage; category inventory account must be 1132
+Category,JOGGER PANT,JOGGER PANT,JOGGER PANT,If creating a missing SKU; recommended for all categories,Complete file coverage; category inventory account must be 1132
+Category,MSH,MSH,Men's Shirts,Before validation,Required explicit mapping from finalized local project
+Category,OFFICE SHIRT REGULAR FIT,OFFICE SHIRT REGULAR FIT,OFFICE SHIRT REGULAR FIT,If creating a missing SKU; recommended for all categories,Complete file coverage; category inventory account must be 1132
+Category,OFFICE SHIRT SIDE OPEN,OFFICE SHIRT SIDE OPEN,OFFICE SHIRT SIDE OPEN,If creating a missing SKU; recommended for all categories,Complete file coverage; category inventory account must be 1132
+Category,OFFICE SHIRT SLIM FIT,OFFICE SHIRT SLIM FIT,OFFICE SHIRT SLIM FIT,If creating a missing SKU; recommended for all categories,Complete file coverage; category inventory account must be 1132
+Category,OFFICIAL SLIM FIT TROUSER,OFFICIAL SLIM FIT TROUSER,OFFICIAL SLIM FIT TROUSER,If creating a missing SKU; recommended for all categories,Complete file coverage; category inventory account must be 1132
+Category,PUTLAM CASUAL SHIRT,PUTLAM CASUAL SHIRT,PUTLAM CASUAL SHIRT,If creating a missing SKU; recommended for all categories,Complete file coverage; category inventory account must be 1132
+Category,SKIRT,SKIRT,SKIRT,If creating a missing SKU; recommended for all categories,Complete file coverage; category inventory account must be 1132
+Category,SLIM FIT,SLIM FIT,SLIM FIT,If creating a missing SKU; recommended for all categories,Complete file coverage; category inventory account must be 1132
+Category,T SHIRT,T SHIRT,T SHIRT,If creating a missing SKU; recommended for all categories,Complete file coverage; category inventory account must be 1132
+Category,TOMMY TROUSER,TOMMY TROUSER,TOMMY TROUSER,If creating a missing SKU; recommended for all categories,Complete file coverage; category inventory account must be 1132
+Category,TOP,TOP,TOP,If creating a missing SKU; recommended for all categories,Complete file coverage; category inventory account must be 1132
+Category,VESTI SET,VESTI SET,VESTI SET,If creating a missing SKU; recommended for all categories,Complete file coverage; category inventory account must be 1132
+CustomerGroup,TRADE,TRADE,Trade,Before validation,Required explicit mapping from finalized local project
+PaymentTerm,NET30,NET 30 DAYS,Net 30 Days,Before validation,Required explicit mapping from finalized local project
+PriceLevel,STANDARD TIER,STANDARD TIER,Standard Tier,Before validation,Required explicit mapping from finalized local project
+Stock,",JH,GH",",jh,gh",H.DAIZ WAIST BAND TAG (SIZEWISE),When this existing SKU is present,Existing SKU case alias; map to the existing SKU to avoid attempted duplicate creation
+Stock,",LIYUK",",liyuk",CARE LABLE - H.DAIZ (SIDEWISE),When this existing SKU is present,Existing SKU case alias; map to the existing SKU to avoid attempted duplicate creation
+Stock,AFE,afe,H.DAIZ STRING - RED,When this existing SKU is present,Existing SKU case alias; map to the existing SKU to avoid attempted duplicate creation
+Stock,AWE,awe,HUGO BOSS WAIST BAND TAG (SIZEWISE),When this existing SKU is present,Existing SKU case alias; map to the existing SKU to avoid attempted duplicate creation
+Stock,BFDB,bfdb,SCOPIO  CARE LABLE - TROUSER (SIZEWISE),When this existing SKU is present,Existing SKU case alias; map to the existing SKU to avoid attempted duplicate creation
+Stock,BRH,brh,MAGMA COMPOSITION LABLE (SIZEWISE),When this existing SKU is present,Existing SKU case alias; map to the existing SKU to avoid attempted duplicate creation
+Stock,ERT,ert,CARE LABLE COMMON (SIZEWISE),When this existing SKU is present,Existing SKU case alias; map to the existing SKU to avoid attempted duplicate creation
+Stock,FGFG,fgfg,MAGMA COLLAR TAG (SIZEWISE),When this existing SKU is present,Existing SKU case alias; map to the existing SKU to avoid attempted duplicate creation
+Stock,FSDF,fsdf,SCOPIO MAIN LABLE (SIZEWISE),When this existing SKU is present,Existing SKU case alias; map to the existing SKU to avoid attempted duplicate creation
+Stock,GDS,gds,CELLO TAPE CLEAR,When this existing SKU is present,Existing SKU case alias; map to the existing SKU to avoid attempted duplicate creation
+Stock,GVC,gvc,POLY BAG,When this existing SKU is present,Existing SKU case alias; map to the existing SKU to avoid attempted duplicate creation
+Stock,HDFG,hdfg,GARNET POLLY TWILL TAPE BLACK - BUNDLE,When this existing SKU is present,Existing SKU case alias; map to the existing SKU to avoid attempted duplicate creation
+Stock,HGTJHGF,hgtjhgf,GARNET POLLY TWILL TAPE - BAG,When this existing SKU is present,Existing SKU case alias; map to the existing SKU to avoid attempted duplicate creation
+Stock,HYT,hyt,H.DAIZ STRING - BLUE,When this existing SKU is present,Existing SKU case alias; map to the existing SKU to avoid attempted duplicate creation
+Stock,JHTRGF,jhtrgf,GARNET POLLY TWILL TAPE (WHITE),When this existing SKU is present,Existing SKU case alias; map to the existing SKU to avoid attempted duplicate creation
+Stock,JKYT,jkyt,H.DAIZ MAIN LABLE TROUSER,When this existing SKU is present,Existing SKU case alias; map to the existing SKU to avoid attempted duplicate creation
+Stock,JUJT,jujt,ZIPPER - SIZEWISE,When this existing SKU is present,Existing SKU case alias; map to the existing SKU to avoid attempted duplicate creation
+Stock,LKUI,lkui,MAGMA MAIN LABLE - BLACK (SIZEWISE),When this existing SKU is present,Existing SKU case alias; map to the existing SKU to avoid attempted duplicate creation
+Stock,OKYUIK,okyuik,MAGMA CARE LABLE (SIDEWISE),When this existing SKU is present,Existing SKU case alias; map to the existing SKU to avoid attempted duplicate creation
+Stock,RFGRG,rfgrg,GARNET POLLY TWILL TAPE MAROON - BUNDLE,When this existing SKU is present,Existing SKU case alias; map to the existing SKU to avoid attempted duplicate creation
+Stock,RTYER,rtyer,GARNET STRING,When this existing SKU is present,Existing SKU case alias; map to the existing SKU to avoid attempted duplicate creation
+Stock,RYTJRT,rytjrt,MAGMA MAIN LABLE SHIRT MAROON (SIZEWISE),When this existing SKU is present,Existing SKU case alias; map to the existing SKU to avoid attempted duplicate creation
+Stock,SDASF,sdasf,GARNET POLLY TWILL TAPE BLUE - BUNDLE,When this existing SKU is present,Existing SKU case alias; map to the existing SKU to avoid attempted duplicate creation
+Stock,SDF,sdf,GARNET SIDE LABLE - SHIRT,When this existing SKU is present,Existing SKU case alias; map to the existing SKU to avoid attempted duplicate creation
+Stock,SRG,srg,BOSS SIZE LABLE (SIZEWISE),When this existing SKU is present,Existing SKU case alias; map to the existing SKU to avoid attempted duplicate creation
+Stock,STHFG,sthfg,MAGMA  MAIN LABLE SHIRT - WHITE (SIZEWISE),When this existing SKU is present,Existing SKU case alias; map to the existing SKU to avoid attempted duplicate creation
+Stock,STHSDFG,sthsdfg,MAGMA HANG TAG  (SIZEWISE),When this existing SKU is present,Existing SKU case alias; map to the existing SKU to avoid attempted duplicate creation
+Stock,VBCV,vbcv,SCOPIO LEATHER LABLE,When this existing SKU is present,Existing SKU case alias; map to the existing SKU to avoid attempted duplicate creation
+Stock,WEFD,wefd,MAGMA COMPOSITION LABLE (SIZEWISE),When this existing SKU is present,Existing SKU case alias; map to the existing SKU to avoid attempted duplicate creation
+Stock,WEFWE,wefwe,ELASTIC,When this existing SKU is present,Existing SKU case alias; map to the existing SKU to avoid attempted duplicate creation
+Stock,WER,wer,SIZE STICKER,When this existing SKU is present,Existing SKU case alias; map to the existing SKU to avoid attempted duplicate creation
+Stock,WRE,wre,MAGMA MAIN LABLE - PINK (SIZEWISE),When this existing SKU is present,Existing SKU case alias; map to the existing SKU to avoid attempted duplicate creation
+Stock,YJT,yjt,BOSS WASIT BAND TAG (SIZEWISE),When this existing SKU is present,Existing SKU case alias; map to the existing SKU to avoid attempted duplicate creation
+SupplierGroup,DOM,DOM,Domestic Suppliers,Before validation,Required explicit mapping from finalized local project
+Unit,PCS,pcs,Piece,Before validation,Required explicit mapping from finalized local project
+Warehouse,WH_MAIN,WH_MAIN,Main Garnet,Before validation,Required explicit mapping from finalized local project

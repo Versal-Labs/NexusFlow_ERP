@@ -105,3 +105,30 @@ Full steps and formats: [Migration Centre operating guide](../migration/Migratio
 ## Why did the dashboard show zero AR/AP after successful migration?
 
 The earlier calculation counted new sales invoices and supplier bills while migration opening documents were stored separately. The corrected calculation includes those opening documents and follows the same dated balances as aging/statements. Rebuild/restart the updated application and refresh the dashboard; no re-import is needed. Cash & Bank also now follows its account hierarchy instead of summing every Asset account. See [verified figures and UAT next steps](../migration/Post_Finalization_Check_20261015.md).
+## Can we reuse the functional UAT upload package in production?
+
+No. The October UAT package includes synthetic bank/reconciliation/TB entries, UAT master names, substituted branches and test dates. Obtain certified production closing data and follow the [production migration guide](../migration/Production_Migration_Guide_20261015.md). Clearing staging tables alone does not clear operational journals or stock. A confirmed test-position cleanup is a separate backed-up database operation; it is not a Migration Centre button or permission to remove genuine trading history.
+
+## Client pilot replay — 15 October 2026
+
+The user has requested a replay of the finalized local test data for a client pilot, including its disclosed fixtures. Use the [updated pilot package and stages](../migration/pilot_upload_20261015/README_START_HERE.md). Its bank, issued cheque and TB assumptions are for functional testing; the real financial cutover guidance above still requires certified source balances. Preparing the package does not clear or import the hosted database.
+
+## Background progress questions — 2026-10-21
+
+**Can I refresh during release, validation or ledger checking?** Yes, after the operation is accepted and the page says **Running on the server. You can safely refresh or leave this page.** Reopen the saved project to recover its current operation. Keep upload pages open until the server confirms the file was staged.
+
+**Does “1 released; 0 unresolved” mean the whole project is finished?** Only if it is the project overview. **This operation** counts only its frozen selection. Check the separate project pending/released totals.
+
+**What does Completed With Issues mean?** The operation finished its targets, but some need attention. Successful releases stay committed. Select **View unresolved scopes** to inspect reasons; missing controls and mismatched totals leave scopes pending.
+
+**What if connectivity is lost?** The last confirmed progress remains visible with **Connection lost—checking progress**. This is not a job-failure message. Wait for reconnection or reopen the page. **Retry start request** reuses the original request ID if acceptance was uncertain.
+
+**Why is Resume unavailable?** The server must confirm the old job stopped and acquire its worker lock. An active worker or unavailable/uncertain job service blocks Resume. Changed files, mappings or scope requirements require fresh review and validation/approval. Completed validation/ledger checks with issues should be run afresh after correction.
+
+**Can I pause or stop work?** Pause/Stop controls are outside this version. Safe recovery uses saved progress and guarded Retry/Resume.
+
+**Does changing import modules change release selection?** No. Release uses its own Customer/Supplier/Stock/Bank view, selected pending scopes or all matching pending scopes. All matching includes other pages; the action displays the exact count.
+
+**Where are the long lists?** Search/filter each stage and choose 25, 50 or 100 rows. Open source/journal details and grouped-warning affected rows as needed. Operation history contains older activity; the live feed keeps the latest 20 items.
+
+**Does this reopen project 3?** No. The finalized hosted opening remains read-only. The additive upgrade preserves posted data, released scopes, datasets, legacy run payloads and actual temporal settings; it does not purge history.

@@ -1,0 +1,40 @@
+LegacyRecordId,Code,Name,AccountType,ParentCode,ClosingDate
+,1111,Cash in Hand,Asset,,2026-09-30
+,1112,Bank - Sampath,Asset,,2026-09-30
+,1113,Undeposited Funds,Asset,,2026-09-30
+,1120,Accounts Receivable (AR),Asset,,2026-09-30
+,1131,Raw Materials (RM) Inventory,Asset,,2026-09-30
+,1132,Finished Goods (FG) Inventory,Asset,,2026-09-30
+,1133,Work in Progress Inventory,Asset,,2026-09-30
+,1141,VAT Recievable,Asset,,2026-09-30
+,1150,Employee Loans Receivable,Asset,,2026-09-30
+,1151,Cheques In Hand,Asset,,2026-09-30
+,2110,Accounts Payable (AP),Liability,,2026-09-30
+,2121,VAT Payable,Liability,,2026-09-30
+,2122,SSCL Payable,Liability,,2026-09-30
+,2130,Service Accrual,Liability,,2026-09-30
+,2140,Unbilled Receipts,Liability,,2026-09-30
+,2150,EPF Payable,Liability,,2026-09-30
+,2151,ETF Payable,Liability,,2026-09-30
+,2152,Net Salaries Payable,Liability,,2026-09-30
+,3100,Share Capital,Equity,,2026-09-30
+,3200,Retained Earnings,Equity,,2026-09-30
+,4110,Sales Revenue - FG,Revenue,,2026-09-30
+,4190,Inventory Surplus,Revenue,,2026-09-30
+,4191,Interest Income,Revenue,,2026-09-30
+,4210,Inventory Adjustments - Gain,Revenue,,2026-09-30
+,5110,Raw Material Consumption,Expense,,2026-09-30
+,5120,Outsourced Job Work Costs,Expense,,2026-09-30
+,5130,Sales,Expense,,2026-09-30
+,5200,Inventory Adjustments - Loss,Expense,,2026-09-30
+,6100,Basic Salary Expense,Expense,,2026-09-30
+,6110,Employer EPF Expense,Expense,,2026-09-30
+,6120,Employer ETF Expense,Expense,,2026-09-30
+,6130,Commission Expense,Expense,,2026-09-30
+,6140,Allowance Expense,Expense,,2026-09-30
+,6210,Rent Expense,Expense,,2026-09-30
+,6211,Inventory Shrinkage,Expense,,2026-09-30
+,6212,Purchase Variance,Expense,,2026-09-30
+,6213,Bank Fees,Expense,,2026-09-30
+,6220,Electricity & Utilities,Expense,,2026-09-30
+,6310,Advertising & Marketing,Expense,,2026-09-30

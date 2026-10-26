@@ -1,0 +1,19 @@
+{
+  "TestCasesPassed": 10,
+  "ExecutionTarget": "Isolated disposable LocalDB fixture with actual temporal audit period behavior; no Azure connection",
+  "AzureExecutedByAssistant": false,
+  "Files": [
+    {
+      "Name": "Pilot_Save_Verified_Mappings_Project2_20261015.sql",
+      "SHA256": "5467EE797D55EFFA08DC4BAF04E7D678FDE76990F4062AE76D2B8D4338EB2E7D"
+    },
+    {
+      "Name": "Pilot_Resolve_Warehouse_And_Cheque_Account_20261015.sql",
+      "SHA256": "5B98484A99B9E3C9573CE6EADA1123E79F6CCBC72B55CBCFA4D7E22FB1540BCD"
+    },
+    {
+      "Name": "Pilot_Project2_Mapping_SQL_Guide_20261015.md",
+      "SHA256": "B60B71BCFE97639FF8A3E3496B0F7095011BD19303D5B31FB7095F5CF5F6AEFE"
+    }
+  ]
+}

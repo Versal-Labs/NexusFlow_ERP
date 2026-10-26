@@ -1,0 +1,9 @@
+ID,Classification,Finding,Disposition,Evidence
+PILOT-001,Pilot fixture,Synthetic bank/issued cheque/TB and disclosed date/master/classification assumptions,Accepted for requested pilot; replace for live cutover,Pilot_Assumptions.csv
+MAP-001,Destination check,33 existing-SKU aliases and ACCESSORIES mapping missing from old guide,Corrected reference; save on destination before stock validation,Required_SKU_Mappings_33.csv
+MAP-002,Destination check,WH_MAIN/category inventory-account agreement,Verify 1131 RM and 1132 FG; active Asset accounts,Category_Inventory_Setup.csv
+CONTACT-001,Completion later,Genuine missing contact/tax/address fields in 1111 party rows,Blanks retained and flagged; BA366 invalid email remains blank,Missing_Contact_Details.csv
+DATE-001,Live cutover blocker,Original reports have inconsistent/older snapshot dates,Pilot date retained transparently; refreshed exports required for real opening,Pilot_Assumptions.csv
+TARGET-001,Posting prerequisite,Azure master/account/period/build/current data state not certified by file preparation,Run read-only preflight and destination validation; confirm cleanup separately,Target_Readiness_ReadOnly.sql
+ARCHIVE-001,Live cutover blocker,Supplied original snapshots are not a full read-only transaction history,Archive unchanged; obtain full pre-cutover history,../source_archive/README.md
+XLSX-001,Corrected,Old typed date cells were rejected by current reader,Rebuilt 12 XLSX files using ISO text dates; all actual-reader comparisons passed,Importer_Reader_Verification.json

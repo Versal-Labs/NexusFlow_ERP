@@ -91,9 +91,14 @@ public sealed partial class MigrationCentreService
         foreach (var c in controls)
             if (c.Difference != 0 || !request.Controls.TryGetValue(c.Key, out var expected) || expected != c.Source || !request.RowCounts.TryGetValue(c.Key, out var count) || count != c.Rows) throw new InvalidOperationException($"{c.Key}: posted totals, independently entered control and row count must match before release.");
         scope.Status = "Released"; scope.ReleasedAt = DateTime.UtcNow; scope.Evidence = MigrationJson.Write(request);
+        if (owningOperationId is { } operationId)
+        {
+            var itemId = await db.MigrationOperationItems.Where(x => x.OperationId == operationId && x.ScopeId == scope.Id).Select(x => x.Id).SingleAsync(ct);
+            await CompleteOperationItemAsync(operationId, itemId, null, ct);
+        }
         Changed(p, "Released", $"{kind}/{code}: {request.Evidence}"); await db.SaveChangesAsync(ct); await tx.CommitAsync(ct);
     }
-    public async Task<List<MigrationControl>> ReconcileLedgerAsync(int id, CancellationToken ct)
+    public async Task<List<MigrationControl>> ReconcileLedgerAsync(int id, CancellationToken ct, Func<MigrationControl, Task>? report = null)
     {
         var p = await Project(id, false, ct); var d = await db.MigrationDatasets.SingleOrDefaultAsync(x => x.ProjectId == id && x.Module == "TrialBalance" && x.IsCurrent, ct) ?? throw new InvalidOperationException("Full legacy closing trial balance is required.");
         var settings = MigrationJson.Read<MigrationSettings>(p.SettingsJson);
@@ -106,6 +111,7 @@ public sealed partial class MigrationCentreService
             var rows = source.Where(r => r.Get("_AccountCodeId") == account.Id.ToString()).ToList();
             if (rows.Count == 0) throw new InvalidOperationException($"Closing trial balance is missing account {account.Code}, including its zero balance if appropriate.");
             result.Add(new(account.Code, rows.Sum(r => r.Decimal("Debit") - r.Decimal("Credit")), await db.JournalLines.Where(x => journalIds.Contains(x.JournalEntryId) && x.AccountId == account.Id).SumAsync(x => (decimal?)(x.Debit - x.Credit), ct) ?? 0, rows.Count));
+            if (report != null) await report(result[^1]);
         }
         return result;
     }
@@ -120,7 +126,7 @@ public sealed partial class MigrationCentreService
         var complete = await ValidateAsync(id, new() { Modules = MigrationCatalog.Modules.Keys.Where(m => settings.DatasetStates.GetValueOrDefault(m) == "Provided").ToList() }, ct);
         if (complete.Errors.Count != 0 || complete.Units.Any(x => x.Errors.Count != 0 || x.Status != "Already imported")) throw new InvalidOperationException("Every current source row must be validated and imported. Pending rows, changed posted snapshots or conflicting mappings prevent final sign-off.");
         var reconciliation = await ReconcileLedgerAsync(id, ct); if (reconciliation.Any(x => x.Difference != 0)) throw new InvalidOperationException("Migration opening journals do not match the source closing trial balance account by account.");
-        p.Status = "Finalized"; p.FinalizedAt = DateTime.UtcNow; p.FinalEvidence = evidence; Audit(id, "Finalized", evidence); await db.SaveChangesAsync(ct); await tx.CommitAsync(ct);
+        p.Status = "Finalized"; p.FinalizedAt = DateTime.UtcNow; p.FinalEvidence = evidence; Audit(id, "Finalized", evidence); await CompleteSimpleOperationAsync(ct); await db.SaveChangesAsync(ct); await tx.CommitAsync(ct);
     }
     public async Task ReverseUnitAsync(int id, int unitId, MigrationReversalRequest request, CancellationToken ct)
     {

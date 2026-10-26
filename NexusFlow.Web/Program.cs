@@ -158,6 +158,7 @@ if (shouldRunProductionServices)
         options.ServerName = $"{paths.InstanceId}:{Environment.MachineName}:{Environment.ProcessId}";
     });
     builder.Services.AddScoped<IBackgroundJobService, BackgroundJobService>();
+    builder.Services.AddHostedService<NexusFlow.Web.Services.MigrationOperationDispatcher>();
 }
 else
 {

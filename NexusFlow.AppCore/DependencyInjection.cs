@@ -27,6 +27,7 @@ namespace NexusFlow.AppCore
             services.AddScoped<IFinancialPeriodService, FinancialPeriodService>();
             services.AddScoped<NexusFlow.AppCore.Features.Migration.MigrationCentreService>();
             services.AddScoped<NexusFlow.AppCore.Features.Migration.MigrationExecutionJob>();
+            services.AddScoped<NexusFlow.AppCore.Features.Migration.MigrationOperationJob>();
             services.AddScoped<NexusFlow.AppCore.Features.Finance.CustomerMigration.CustomerMigrationService>();
             services.AddScoped<NexusFlow.AppCore.Features.Finance.CustomerMigration.CustomerMasterImportService>();
             services.AddScoped<NexusFlow.AppCore.Services.CustomerBalanceService>();

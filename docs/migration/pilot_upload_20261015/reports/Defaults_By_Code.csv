@@ -1,0 +1,18 @@
+UI field,Target code,Target label,Pilot note
+Opening equity account,3200,Retained Earnings,Active Equity posting account; do not select a folder
+Default customer control,1120,Accounts Receivable (AR),Saved successful local default; select the destination master by code/name
+Default customer revenue,4110,Sales Revenue - FG,Saved successful local default; select the destination master by code/name
+Default supplier control,2110,Accounts Payable (AP),Saved successful local default; select the destination master by code/name
+Default supplier expense,5110,Raw Material Consumption,Temporary pilot expense default; explicit supplier row accounts remain authoritative
+Undeposited cheque account,1151,Cheques In Hand,Saved successful local default; select the destination master by code/name
+Default customer group,TRADE,Trade,Saved successful local default; select the destination master by code/name
+Default supplier group,DOM,Domestic Suppliers,Saved successful local default; select the destination master by code/name
+Default price level,STANDARD TIER,Standard Tier,Saved successful local default; select the destination master by code/name
+Default customer payment term,NET 30 DAYS,Net 30 Days,30-day credit. NET30 and NET 30 DAYS are both 30-day masters locally; never choose COD
+Default supplier payment term,NET 30 DAYS,Net 30 Days,30-day credit. NET30 and NET 30 DAYS are both 30-day masters locally; never choose COD
+Approved base unit when source unit is missing,pcs,Piece,Saved successful local default; select the destination master by code/name
+Approved warehouse when source location is missing,WH_MAIN,Main Garnet,Saved successful local default; select the destination master by code/name
+Approved supplier terms in days,30,30 calendar days,Original document date plus 30
+Summarized stock layer approval,,UAT fixture: approved summarized layer per SKU in WH_MAIN at 2026-09-30; original FIFO dates not claimed.,Retained pilot fixture approval
+Legacy finished goods valuation,AverageCost,Average cost (avar x warehouse quantity),Prepared costs already populated
+Valuation discrepancy resolution evidence,,UAT uses approved avar; original costval difference -3173818.42 LKR retained in archive; not production sign-off.,No live financial sign-off implied

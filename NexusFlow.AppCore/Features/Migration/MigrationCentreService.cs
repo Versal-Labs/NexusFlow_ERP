@@ -21,7 +21,14 @@ public sealed partial class MigrationCentreService(IErpDbContext db, IMigrationF
     }
     private async Task Editable(MigrationProject p, CancellationToken ct)
     {
-        if (await db.MigrationRuns.AnyAsync(x => x.ProjectId == p.Id && (x.Status == "Queued" || x.Status == "Running"), ct)) throw new InvalidOperationException("A posting run is active. Resolve that run before changing this project.");
+        if (await db.MigrationOperations.AnyAsync(x => x.ProjectId == p.Id && x.Id != owningOperationId && (x.Status == "Queued" || x.Status == "Running"), ct)) throw new InvalidOperationException("A migration operation is active. Follow its progress before changing this project.");
+        if (await db.MigrationRuns.AnyAsync(x => x.ProjectId == p.Id && x.Id != owningRunId && (x.Status == "Queued" || x.Status == "Running"), ct)) throw new InvalidOperationException("A posting run is active. Resolve that run before changing this project.");
+        if (owningOperationId == null && owningRunId == null && !owningLegacyRelease)
+        {
+            // Legacy synchronous release has no operation row. The worker lease still blocks
+            // conflicting changes between its individual scope commits.
+            using var noLegacyWorker = await db.AcquireMigrationWorkerAsync(p.Id, ct);
+        }
     }
     private void Changed(MigrationProject p, string action, string detail)
     {
@@ -53,11 +60,12 @@ public sealed partial class MigrationCentreService(IErpDbContext db, IMigrationF
         var p = await Project(id, false, ct);
         return new { Project = p, Settings = MigrationJson.Read<MigrationSettings>(p.SettingsJson), Datasets = await db.MigrationDatasets.Where(x => x.ProjectId == id).OrderBy(x => x.Module).ThenByDescending(x => x.Revision).Select(x => new { x.Id, x.Module, x.Revision, x.IsCurrent, x.FileName, x.FileHash, x.ClosingDate }).ToListAsync(ct), Scopes = await db.MigrationScopes.Where(x => x.ProjectId == id).ToListAsync(ct), Units = await db.MigrationUnits.Where(x => x.ProjectId == id).Select(x => new { x.Id, x.Module, x.ScopeKey, x.Status, x.JournalEntryId, x.ReversalJournalEntryId }).ToListAsync(ct), Runs = await db.MigrationRuns.Where(x => x.ProjectId == id).OrderByDescending(x => x.Id).ToListAsync(ct), Audit = await db.MigrationAudits.Where(x => x.ProjectId == id).OrderByDescending(x => x.Id).Take(100).ToListAsync(ct) };
     }
-    public async Task SaveSettingsAsync(int id, MigrationSettings settings, CancellationToken ct)
+    public async Task SaveSettingsAsync(int id, MigrationSettings settings, CancellationToken ct, int? expectedVersion = null)
     {
         using var tx = await db.BeginTransactionAsync(IsolationLevel.Serializable, ct);
         await db.LockMigrationProjectAsync(id, ct);
         var p = await Project(id, true, ct); await Editable(p, ct);
+        if (expectedVersion != null && p.Version != expectedVersion) throw new InvalidOperationException("The project changed since these mappings were opened. Review the saved mappings before applying your changes.");
         foreach (var profile in settings.Columns)
             if (!MigrationCatalog.Modules.TryGetValue(profile.Key, out var fields) || profile.Value.Keys.Except(fields).Any()) throw new InvalidOperationException("Column profiles may map only known dataset fields.");
         foreach (var kind in new[] { "Customer", "Supplier", "Stock" })

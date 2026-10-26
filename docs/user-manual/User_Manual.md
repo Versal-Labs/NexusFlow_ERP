@@ -91,3 +91,13 @@ Administrator instructions: [Migration Centre operating guide](../migration/Migr
 After loading the dashboard correction, Executive Dashboard includes migrated customer/supplier opening balances, their credits and subsequent dated transactions. Compare A/R with AR Aging and A/P with AP Aging. Overdue receivables use unsettled debts that were due before today; unapplied credits remain separate until applied. Cash & Bank excludes inventory, receivables and cheques in hand. An Unavailable cash total means the finance administrator must review its account grouping/mapping.
 
 A finalized migration remains the read-only opening reference. Continue ordinary receipts, payments, stock and cheque workflows without importing those openings again. See [the verified UAT baseline and next-step checklist](../migration/Post_Finalization_Check_20261015.md). Revenue and the sales/purchases chart require new invoices/bills; opening documents do not recreate sales history.
+
+## Migration progress and ordinary work — 2026-10-21
+
+Opening data is managed by authorized migration administrators at **Administration → Settings & Security → Migration Centre** (`/Migration`). Ordinary users continue to use their existing Receipts, Payments, stock, cheque and reporting pages once the relevant scope is released.
+
+If an opening scope is still pending, give its exact customer, supplier, SKU or bank code to the migration administrator. The administrator can search **Reconcile and release**, inspect its controls and review the saved reason. Do not enter another opening position to work around the lock.
+
+Authorized viewers can choose the saved project, revisit any of seven stages, and inspect project counts and the current operation. **Running on the server. You can safely refresh or leave this page.** means work continues independently of that browser tab. **Connection lost—checking progress** retains the last confirmed values and does not mean the operation failed. Upload transfers are different: keep the page open until staging is confirmed.
+
+A finalized project remains the read-only opening reference. Do not create, reset or re-import the finalized position. See [administrator steps](Admin_User_Manual.md) and [progress/recovery guide](../migration/Migration_Centre_Background_Operations.md).

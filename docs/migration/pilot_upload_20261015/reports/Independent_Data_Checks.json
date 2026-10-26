@@ -1,0 +1,27 @@
+{
+  "CheckedOn": "2026-10-15",
+  "ControlsRecomputed": 5212,
+  "ControlMismatches": 0,
+  "DatesAndThirtyDayTerms": "Pass",
+  "PartyReferences": "All matched to included masters",
+  "StockRows": 938,
+  "StockValue": "114417245.74",
+  "BankBridge": "100000.00 = 112500.00 + 2500.00 - 15000.00",
+  "TrialBalanceEachSide": "282960858.88",
+  "ValuesOnlyWorkbooks": {
+    "Accounts": 1,
+    "BankOpening": 1,
+    "BankRecon": 1,
+    "ControlTotals": 1,
+    "CustomerMaster": 1,
+    "CustomerOpenings": 1,
+    "IssuedCheques": 1,
+    "Pilot_Review": 8,
+    "ReceivedCheques": 1,
+    "Stock": 1,
+    "SupplierMaster": 1,
+    "SupplierOpenings": 1,
+    "TrialBalance": 1
+  },
+  "FormulaMacroDateCellErrors": 0
+}

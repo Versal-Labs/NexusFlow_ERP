@@ -1,0 +1,86 @@
+{
+  "SourceSystem": "TESTTTT",
+  "OpeningDate": "2026-10-01",
+  "ClosingDate": "2026-09-30",
+  "LocalProjectId": 4,
+  "LocalProjectVersion": 2065,
+  "LocalStatus": "Finalized",
+  "PostedUnits": 2455,
+  "Scopes": 2050,
+  "Rows": {
+    "Accounts": 39,
+    "BankOpening": 1,
+    "BankRecon": 1,
+    "ControlTotals": 5212,
+    "CustomerMaster": 896,
+    "CustomerOpenings": 1150,
+    "IssuedCheques": 1,
+    "ReceivedCheques": 49,
+    "Stock": 938,
+    "SupplierMaster": 215,
+    "SupplierOpenings": 180,
+    "TrialBalance": 39
+  },
+  "RequiredSkuAliases": 33,
+  "StockCategories": 28,
+  "NetAR": "162114985.14",
+  "NetAP": "94190250.55",
+  "StockValue": "114417245.74",
+  "RawStockValue": "29727743.70",
+  "FinishedStockValue": "84689502.04",
+  "Safe": "5328628.00",
+  "CashBank": "100000.00",
+  "TrialBalanceDebit": "282960858.88",
+  "TrialBalanceCredit": "282960858.88",
+  "MissingContactRows": 1111,
+  "MappingRows": 85,
+  "UploadStages": [
+    [
+      "01_Masters.zip",
+      [
+        "Accounts",
+        "CustomerMaster",
+        "SupplierMaster"
+      ]
+    ],
+    [
+      "02_Party_Openings.zip",
+      [
+        "CustomerOpenings",
+        "SupplierOpenings"
+      ]
+    ],
+    [
+      "03_Cheques.zip",
+      [
+        "ReceivedCheques",
+        "IssuedCheques"
+      ]
+    ],
+    [
+      "04_Combined_Stock.zip",
+      [
+        "Stock"
+      ]
+    ],
+    [
+      "05_Banks.zip",
+      [
+        "BankOpening",
+        "BankRecon"
+      ]
+    ],
+    [
+      "06_Control_Totals.zip",
+      [
+        "ControlTotals"
+      ]
+    ],
+    [
+      "07_Trial_Balance.zip",
+      [
+        "TrialBalance"
+      ]
+    ]
+  ]
+}

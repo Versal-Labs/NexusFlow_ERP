@@ -30,6 +30,40 @@ namespace NexusFlow.Infrastructure
         public DbSet<MigrationOrigin> MigrationOrigins { get; set; }
         public DbSet<MigrationRun> MigrationRuns { get; set; }
         public DbSet<MigrationAudit> MigrationAudits { get; set; }
+        public DbSet<MigrationOperation> MigrationOperations { get; set; }
+        public DbSet<MigrationOperationPayload> MigrationOperationPayloads { get; set; }
+        public DbSet<MigrationOperationItem> MigrationOperationItems { get; set; }
+        public DbSet<MigrationOperationItemPayload> MigrationOperationItemPayloads { get; set; }
+        public DbSet<MigrationOperationIssue> MigrationOperationIssues { get; set; }
+        public DbSet<MigrationRunData> MigrationRunPayloads { get; set; }
+        private string? migrationActor;
+        public IDisposable EnterMigrationActor(string userId)
+        {
+            var previous = migrationActor; migrationActor = userId;
+            return new MigrationWriteLease(() => migrationActor = previous);
+        }
+        // A session lock survives individual scope transactions. Resume must acquire it too,
+        // so even a Deleted/expired Hangfire record cannot race a still-executing worker.
+        public async Task<IDisposable> AcquireMigrationWorkerAsync(int projectId, CancellationToken ct = default)
+        {
+            if (!Database.IsSqlServer()) return new MigrationWriteLease(() => { });
+            var connection = new Microsoft.Data.SqlClient.SqlConnection(Database.GetConnectionString());
+            try
+            {
+                await connection.OpenAsync(ct);
+                using var command = connection.CreateCommand();
+                command.CommandText = "DECLARE @r int; EXEC @r=sys.sp_getapplock @Resource=@resource, @LockMode='Exclusive', @LockOwner='Session', @LockTimeout=0; SELECT @r;";
+                command.Parameters.AddWithValue("@resource", "NexusFlow.Migration.Worker." + projectId);
+                if (Convert.ToInt32(await command.ExecuteScalarAsync(ct)) < 0) throw new InvalidOperationException("A migration worker is still active. Check progress before resuming.");
+                return new MigrationWriteLease(() =>
+                {
+                    // Do not return a session holding an application lock to the pool.
+                    try { using var release = connection.CreateCommand(); release.CommandText = "EXEC sys.sp_releaseapplock @Resource=@resource, @LockOwner='Session';"; release.Parameters.AddWithValue("@resource", "NexusFlow.Migration.Worker." + projectId); release.ExecuteNonQuery(); }
+                    finally { connection.Dispose(); }
+                });
+            }
+            catch { connection.Dispose(); throw; }
+        }
         public DbSet<SupplierOpeningItem> SupplierOpeningItems { get; set; }
         public DbSet<SupplierCreditApplication> SupplierCreditApplications { get; set; }
         public DbSet<OpeningBankItem> OpeningBankItems { get; set; }
@@ -39,7 +73,11 @@ namespace NexusFlow.Infrastructure
             if (migrationPostingProject != null) throw new InvalidOperationException("Nested migration posting is not permitted.");
             migrationPostingProject = projectId; return new MigrationWriteLease(() => migrationPostingProject = null);
         }
-        private sealed class MigrationWriteLease(Action dispose) : IDisposable { public void Dispose() => dispose(); }
+        private sealed class MigrationWriteLease(Action dispose) : IDisposable
+        {
+            private Action? release = dispose;
+            public void Dispose() => Interlocked.Exchange(ref release, null)?.Invoke();
+        }
         public async Task LockMigrationProjectAsync(int projectId, CancellationToken ct = default)
         {
             if (!Database.IsSqlServer()) return;
@@ -202,7 +240,13 @@ namespace NexusFlow.Infrastructure
                     typeof(AuditableEntity).IsAssignableFrom(entityType.ClrType))
                 {
                     if (entityType.ClrType == typeof(AuditLog) ||
-                        entityType.ClrType == typeof(NotificationItem))
+                        entityType.ClrType == typeof(NotificationItem) ||
+                        entityType.ClrType == typeof(MigrationOperation) ||
+                        entityType.ClrType == typeof(MigrationOperationPayload) ||
+                        entityType.ClrType == typeof(MigrationOperationItem) ||
+                        entityType.ClrType == typeof(MigrationOperationItemPayload) ||
+                        entityType.ClrType == typeof(MigrationOperationIssue) ||
+                        entityType.ClrType == typeof(MigrationRunData))
                         continue;
 
                     string tableName = entityType.GetTableName() ?? entityType.ClrType.Name;
@@ -224,7 +268,7 @@ namespace NexusFlow.Infrastructure
         {
             if (migrationPostingProject == null)
                 await NexusFlow.AppCore.Features.Migration.MigrationTradingGuard.CheckAsync(this, ChangeTracker.Entries().Where(x => x.State is EntityState.Added or EntityState.Modified).Select(x => x.Entity).ToList(), cancellationToken);
-            string currentUser = _currentUserService.UserId;
+            string currentUser = migrationActor ?? _currentUserService.UserId;
 
             foreach (var entry in ChangeTracker.Entries<AuditableEntity>())
             {

@@ -27,6 +27,18 @@ builder.Services.AddAuthentication(AuthConstants.IdentityScheme).AddCookie(AuthC
 builder.Services.AddAuthorization(options => options.AddPolicy(AuthConstants.HybridPolicy, p => p.AddAuthenticationSchemes(AuthConstants.IdentityScheme, AuthConstants.JwtScheme).RequireAuthenticatedUser()));
 builder.Services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>(); builder.Services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
 var app = builder.Build(); app.UseStaticFiles(); app.UseRouting(); app.UseAuthentication(); app.UseAuthorization();
+if (Environment.GetEnvironmentVariable("NEXUSFLOW_MIGRATION_SMOKE_SEED") == "1")
+{
+    using var scope = app.Services.CreateScope(); var service = scope.ServiceProvider.GetRequiredService<MigrationCentreService>(); var db = scope.ServiceProvider.GetRequiredService<IErpDbContext>();
+    var project = await service.CreateAsync(new("Background progress smoke test", "SYNTHETIC-SMOKE", new(2026, 10, 1)), default);
+    var settings = new MigrationSettings { OpeningEquityAccountId = await db.Accounts.Where(x => x.Code == "OBE").Select(x => x.Id).SingleAsync() };
+    foreach (var module in MigrationCatalog.Modules.Keys.Where(x => x is not ("CustomerOpenings" or "ControlTotals"))) { settings.DatasetStates[module] = "NotApplicable"; settings.ZeroEvidence[module] = "Synthetic smoke signed zero declaration"; }
+    await service.SaveSettingsAsync(project.Id, settings, default);
+    var lines = "LegacyRecordId,Code,Reference,Kind,DocumentDate,Amount\n" + string.Join("\n", Enumerable.Range(1, 130).Select(i => $"ROW{i},{(i <= 2 ? "C00" + i : "MISSING" + i)},INV{i},Invoice,2026-09-01,{i}"));
+    await service.UploadAsync(project.Id, "CustomerOpenings", "synthetic-openings.csv", System.Text.Encoding.UTF8.GetBytes(lines), new(2026, 9, 30), default);
+    var controls = "Kind,Code,Component,Amount,RowCount\nCustomer,C001,CustomerOpenings:Debit,1,1\nCustomer,C001,CustomerOpenings:Credit,0,1\nCustomer,C001,ReceivedCheques,0,0\nCustomer,C002,CustomerOpenings:Debit,2,1\nCustomer,C002,CustomerOpenings:Credit,0,1\nCustomer,C002,ReceivedCheques,0,0\n";
+    await service.UploadAsync(project.Id, "ControlTotals", "synthetic-controls.csv", System.Text.Encoding.UTF8.GetBytes(controls), new(2026, 9, 30), default);
+}
 app.MapGet("/smoke-login", async (HttpContext context) => {
     var claims = new List<Claim> { new(ClaimTypes.NameIdentifier, "migration-tester"), new(ClaimTypes.Name, "Synthetic Migration Tester") };
     var mode = context.Request.Query["mode"].ToString();
@@ -36,7 +48,16 @@ app.MapGet("/smoke-login", async (HttpContext context) => {
     else claims.Add(new("Permission", Permissions.SuperAdmin));
     await context.SignInAsync(AuthConstants.IdentityScheme, new ClaimsPrincipal(new ClaimsIdentity(claims, AuthConstants.IdentityScheme))); return Results.Redirect("/Migration");
 }).AllowAnonymous();
-app.MapGet("/smoke-state", async () => { await using var db = database.Open(); return Results.Ok(new { projects = await db.MigrationProjects.CountAsync(), items = await db.CustomerOpeningItems.CountAsync(), journals = await db.JournalEntries.CountAsync(), units = await db.MigrationUnits.CountAsync(), runs = await db.MigrationRuns.Select(x => x.Status).ToListAsync() }); });
+app.MapGet("/smoke-state", async () => { await using var db = database.Open(); return Results.Ok(new { syntheticSmokeHost = true, projects = await db.MigrationProjects.CountAsync(), items = await db.CustomerOpeningItems.CountAsync(), journals = await db.JournalEntries.CountAsync(), units = await db.MigrationUnits.CountAsync(), runs = await db.MigrationRuns.Select(x => x.Status).ToListAsync() }); });
+app.MapGet("/smoke-viewport", (int width = 375) =>
+{
+    if (width is not (375 or 768 or 1024 or 1440)) return Results.BadRequest("Use 375, 768, 1024 or 1440.");
+    return Results.Content($"""
+        <!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Migration viewport verification</title></head>
+        <body style="margin:0;background:#e9ecef"><h1 style="font:16px sans-serif;margin:8px">Synthetic Migration Centre — {width}px viewport</h1>
+        <iframe title="Migration Centre viewport" src="/Migration" style="display:block;width:{width}px;height:1100px;border:0"></iframe></body></html>
+        """, "text/html");
+});
 app.MapPost("/smoke-stop", (IHostApplicationLifetime lifetime) => { lifetime.StopApplication(); return Results.Ok("Stopping; synthetic database will be deleted."); });
 app.MapControllerRoute("default", "{controller=Home}/{action=Index}/{id?}");
 Console.WriteLine("Migration Centre smoke host: http://127.0.0.1:5191/smoke-login; POST /smoke-stop cleans up owned database."); await app.RunAsync();
@@ -57,6 +78,7 @@ sealed class SyntheticJobs(IServiceScopeFactory scopes) : IBackgroundJobService
         _ = Task.Run(async () => { states[id] = "Processing"; try { using var scope = scopes.CreateScope(); await call.Compile()((T)scope.ServiceProvider.GetRequiredService(typeof(T))); states[id] = "Succeeded"; } catch { states[id] = "Failed"; } }); return id;
     }
     public string? GetState(string id) => states.GetValueOrDefault(id);
+    public BackgroundJobState LookupState(string id) => states.TryGetValue(id, out var state) ? BackgroundJobState.FromName(state) : new(BackgroundJobStatus.Missing);
     public string Enqueue<T>(Expression<Action<T>> call) => throw new NotSupportedException();
     public string Schedule<T>(Expression<Action<T>> call, TimeSpan delay) => throw new NotSupportedException();
     public void AddOrUpdateRecurring<T>(string id, Expression<Action<T>> call, string cron, string queue = "default") => throw new NotSupportedException();

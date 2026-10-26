@@ -21,6 +21,14 @@ namespace NexusFlow.AppCore.Interfaces
         DbSet<MigrationOrigin> MigrationOrigins { get; set; }
         DbSet<MigrationRun> MigrationRuns { get; set; }
         DbSet<MigrationAudit> MigrationAudits { get; set; }
+        DbSet<MigrationOperation> MigrationOperations { get; set; }
+        DbSet<MigrationOperationPayload> MigrationOperationPayloads { get; set; }
+        DbSet<MigrationOperationItem> MigrationOperationItems { get; set; }
+        DbSet<MigrationOperationItemPayload> MigrationOperationItemPayloads { get; set; }
+        DbSet<MigrationOperationIssue> MigrationOperationIssues { get; set; }
+        DbSet<MigrationRunData> MigrationRunPayloads { get; set; }
+        Task<IDisposable> AcquireMigrationWorkerAsync(int projectId, CancellationToken ct = default);
+        IDisposable EnterMigrationActor(string userId);
         DbSet<SupplierOpeningItem> SupplierOpeningItems { get; set; }
         DbSet<SupplierCreditApplication> SupplierCreditApplications { get; set; }
         DbSet<OpeningBankItem> OpeningBankItems { get; set; }

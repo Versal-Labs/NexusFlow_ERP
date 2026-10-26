@@ -9,6 +9,6 @@ public sealed class MigrationJobFilterProvider : IJobFilterProvider
 {
     public IEnumerable<JobFilter> GetFilters(Job job)
     {
-        if (job.Type == typeof(MigrationExecutionJob)) yield return new JobFilter(new AutomaticRetryAttribute { Attempts = 0 }, JobFilterScope.Type, null);
+        if (job.Type == typeof(MigrationExecutionJob) || job.Type == typeof(MigrationOperationJob)) yield return new JobFilter(new AutomaticRetryAttribute { Attempts = 0 }, JobFilterScope.Type, null);
     }
 }

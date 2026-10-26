@@ -29,6 +29,16 @@ namespace NexusFlow.Infrastructure.Hangfire
             using var connection = JobStorage.Current.GetConnection();
             return connection.GetStateData(jobId)?.Name;
         }
+        public BackgroundJobState LookupState(string jobId)
+        {
+            try
+            {
+                using var connection = JobStorage.Current.GetConnection();
+                var state = connection.GetStateData(jobId);
+                return state == null ? new(BackgroundJobStatus.Missing) : BackgroundJobState.FromName(state.Name);
+            }
+            catch { return new(BackgroundJobStatus.Unavailable); }
+        }
 
         public string Schedule<T>(Expression<Action<T>> methodCall, TimeSpan delay)
             => _client.Schedule(methodCall, delay);

@@ -1,0 +1,2 @@
+LegacyRecordId,Code,Reference,DocumentDate,Amount,Kind,BankReflected,ClosingDate
+UAT:BANK:OUTSTANDING-DEPOSIT:001,1112,UAT-DEPOSIT-001,2026-09-28,2500.00,OutstandingDeposit,true,2026-09-30

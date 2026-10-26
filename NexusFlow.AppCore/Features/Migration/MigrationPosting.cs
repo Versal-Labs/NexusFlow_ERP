@@ -1,5 +1,7 @@
 using System.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using NexusFlow.AppCore.Interfaces;
 using NexusFlow.AppCore.DTOs.Finance;
 using NexusFlow.Domain.Common;
 using NexusFlow.Domain.Entities.Finance;
@@ -21,8 +23,8 @@ public sealed partial class MigrationCentreService
         var p = await Project(id, true, ct); await Editable(p, ct);
         var preview = await ValidateAsync(id, request.Selection, ct);
         if (!preview.CanApprove || preview.Hash != request.Hash) throw new InvalidOperationException("Validation failed or the preview changed. Validate and review the current data again.");
-        p.ApprovedHash = preview.Hash; p.ApprovedBy = user.UserId; p.ApprovedAt = DateTime.UtcNow;
-        Audit(id, "Approved", request.Evidence + "; hash " + preview.Hash); await db.SaveChangesAsync(ct); await tx.CommitAsync(ct);
+        p.ApprovedHash = preview.Hash; p.ApprovedBy = ActorId; p.ApprovedAt = DateTime.UtcNow;
+        Audit(id, "Approved", request.Evidence + "; hash " + preview.Hash); await CompleteSimpleOperationAsync(ct); await db.SaveChangesAsync(ct); await tx.CommitAsync(ct);
     }
     public async Task<int> ExecuteAsync(int id, MigrationSelection selection, CancellationToken ct)
     {
@@ -33,24 +35,35 @@ public sealed partial class MigrationCentreService
             var p = await Project(id, true, ct); await Editable(p, ct);
             var preview = await ValidateAsync(id, selection, ct);
             if (!preview.CanApprove || p.ApprovedHash != preview.Hash || p.ApprovedAt == null) throw new InvalidOperationException("The current selection must be validated and approved before execution.");
-            var run = new MigrationRun { ProjectId = id, ApprovedHash = preview.Hash, SelectionJson = MigrationJson.Write(new MigrationRunPayload { Selection = selection, Preview = preview }) };
-            db.MigrationRuns.Add(run); Audit(id, "Execution queued", preview.Hash); await db.SaveChangesAsync(ct); runId = run.Id; await tx.CommitAsync(ct);
+            var run = new MigrationRun { ProjectId = id, ApprovedHash = preview.Hash };
+            db.MigrationRuns.Add(run); Audit(id, "Execution queued", preview.Hash); await db.SaveChangesAsync(ct); runId = run.Id;
+            db.MigrationRunPayloads.Add(new() { RunId = runId, PayloadJson = MigrationJson.Write(new MigrationRunPayload { Selection = selection, Preview = preview }) });
+            if (owningOperationId is { } operationId)
+            {
+                var op = await db.MigrationOperations.SingleAsync(x => x.Id == operationId, ct); op.RunId = runId;
+                var targets = preview.Units.Where(x => x.Status == "Pending").ToList(); op.Total = targets.Count;
+                for (var i = 0; i < targets.Count; i++) db.MigrationOperationItems.Add(new() { OperationId = operationId, Ordinal = i, Module = targets[i].Module, Kind = MigrationCatalog.ScopeKind(targets[i].Module), Code = targets[i].Scope, Rows = targets[i].Rows.Count });
+            }
+            await db.SaveChangesAsync(ct); await tx.CommitAsync(ct);
         }
         // The durable run is created first. If enqueue fails, the administrator can retry dispatch.
-        await DispatchAsync(id, runId, ct); return runId;
+        if (owningOperationId == null) await DispatchAsync(id, runId, ct); return runId;
     }
     public async Task DispatchAsync(int id, int runId, CancellationToken ct)
     {
+        using var worker = await db.AcquireMigrationWorkerAsync(id, ct);
         using var dispatch = await db.BeginTransactionAsync(IsolationLevel.Serializable, ct);
         await db.LockMigrationProjectAsync(id, ct);
         await Project(id, true, ct); var run = await db.MigrationRuns.SingleAsync(x => x.Id == runId && x.ProjectId == id, ct);
+        if (await db.MigrationOperations.AnyAsync(x => x.RunId == runId, ct)) throw new InvalidOperationException("Resume the owning operation from its progress panel.");
+        using var ownership = OwnRun(runId); await Editable(await Project(id, true, ct), ct);
         if (run.Status == "Completed") return;
         if (run.JobId != null)
         {
-            var state = jobs.GetState(run.JobId);
-            if (state is "Processing" or "Enqueued" or "Scheduled" || run.Status == "Running" && state is not "Failed" and not "Succeeded" and not "Deleted") throw new InvalidOperationException("The background job is active or its state cannot be confirmed. Check the job service before retrying; an interrupted Running job may resume once its failed/stopped state is confirmed.");
+            if (!jobs.LookupState(run.JobId).ConfirmedInactive) throw new InvalidOperationException("The background job is active or its state cannot be confirmed. Check the job service before retrying.");
         }
         run.Status = "Queued"; run.Error = null; await db.SaveChangesAsync(ct);
+        worker.Dispose(); // The project transaction still guards claim; a new worker needs this lease.
         try { run.JobId = jobs.EnqueueAsync<MigrationExecutionJob>(job => job.RunAsync(runId)); await db.SaveChangesAsync(ct); await dispatch.CommitAsync(ct); }
         catch { run.Status = "Failed"; run.Error = "Background job could not be dispatched. Use Resume run after the job service is available."; await db.SaveChangesAsync(ct); await dispatch.CommitAsync(ct); throw; }
     }
@@ -58,6 +71,15 @@ public sealed partial class MigrationCentreService
     {
         MigrationRun run; MigrationProject p;
         var projectId = await db.MigrationRuns.AsNoTracking().Where(x => x.Id == runId).Select(x => x.ProjectId).SingleAsync(ct);
+        IDisposable? worker = null;
+        if (owningOperationId == null)
+        {
+            if (await db.MigrationOperations.AnyAsync(x => x.RunId == runId, ct)) return;
+            try { worker = await db.AcquireMigrationWorkerAsync(projectId, ct); }
+            catch (InvalidOperationException) { return; }
+        }
+        using var workerLease = worker;
+        using var ownership = OwnRun(runId);
         using (var claim = await db.BeginTransactionAsync(IsolationLevel.Serializable, ct))
         {
             await db.LockMigrationProjectAsync(projectId, ct);
@@ -65,11 +87,11 @@ public sealed partial class MigrationCentreService
             if (run.Status == "Completed") return;
             if (run.Status != "Queued") return; // Duplicate delivery never changes another worker's active/failed run.
             p = await Project(run.ProjectId, true, ct);
+            await Editable(p, ct);
             if (p.ApprovedHash != run.ApprovedHash) throw new InvalidOperationException("The approved project changed; this run must not execute.");
             run.Status = "Running"; await db.SaveChangesAsync(ct); await claim.CommitAsync(ct);
         }
-        var payload = MigrationJson.Read<MigrationRunPayload>(run.SelectionJson);
-        var settings = MigrationJson.Read<MigrationSettings>(p.SettingsJson);
+        var payload = await ReadRunPayloadAsync(run, ct);
         // One party's selected components or all layers of one SKU share a database transaction.
         var groups = payload.Preview.Units.Where(x => x.Status == "Pending").GroupBy(x => x.Module.EndsWith("Master") ? "Master/" + x.Module + "/" + x.Scope : MigrationCatalog.ScopeKind(x.Module) + "/" + x.Scope)
             .OrderBy(g => g.Min(x => Array.IndexOf(MigrationCatalog.Modules.Keys.ToArray(), x.Module))).ToList();
@@ -77,32 +99,30 @@ public sealed partial class MigrationCentreService
         {
             foreach (var group in groups)
             {
-                using var tx = await db.BeginTransactionAsync(IsolationLevel.Serializable, ct);
-                await db.LockMigrationProjectAsync(p.Id, ct);
-                using var permission = db.EnterMigrationPosting(p.Id);
-                // Revalidate only this atomic group. The original approved unit hashes still
-                // guard its data/mappings, and validation reloads its current masters/activity.
-                var groupSelection = new MigrationSelection { Modules = group.Select(x => x.Module).Distinct().ToList() };
-                var kind = MigrationCatalog.ScopeKind(group.First().Module);
-                var code = group.First().Scope;
-                switch (kind) { case "Customer": groupSelection.Customers.Add(code); break; case "Supplier": groupSelection.Suppliers.Add(code); break; case "Stock": groupSelection.Skus.Add(code); break; case "Bank": groupSelection.Banks.Add(code); break; }
-                var fresh = await ValidateAsync(p.Id, groupSelection, ct);
-                if (fresh.Errors.Count != 0) throw new InvalidOperationException(string.Join("; ", fresh.Errors.Select(x => x.Message)));
-                foreach (var expected in group)
+                if (owningOperationId is { } currentOperationId)
                 {
-                    var checkedUnit = fresh.Units.SingleOrDefault(x => x.Module == expected.Module && x.Scope == expected.Scope);
-                    if (checkedUnit == null || checkedUnit.Hash != expected.Hash || checkedUnit.Errors.Count != 0)
-                        throw new InvalidOperationException($"{expected.Module}/{expected.Scope}: mappings, data, accounting period or financial activity changed after approval. Review this scope again.");
+                    var current = await db.MigrationOperations.SingleAsync(x => x.Id == currentOperationId, ct);
+                    current.Phase = "Importing selected units"; current.CurrentItem = group.First().Module + "/" + group.First().Scope; current.UpdatedAt = DateTime.UtcNow;
+                    await db.SaveChangesAsync(ct);
                 }
-                foreach (var u in group.OrderBy(x => Array.IndexOf(MigrationCatalog.Modules.Keys.ToArray(), x.Module)))
+                try
                 {
-                    var old = await db.MigrationUnits.SingleOrDefaultAsync(x => x.ProjectId == p.Id && x.Module == u.Module && x.ScopeKey == u.Scope && x.Status == "Posted", ct);
-                    if (old != null) { if (old.Hash != u.Hash || old.Status != "Posted") throw new InvalidOperationException("Previously committed scope differs from the approved run."); continue; }
-                    await PostUnit(p, u, settings, ct); run.CommittedUnits++;
+                    using var scope = scopeFactory.CreateScope(); var service = scope.ServiceProvider.GetRequiredService<MigrationCentreService>();
+                    service.owningOperationId = owningOperationId; service.owningRunId = runId; service.operationActor = operationActor;
+                    await service.ExecutePostingGroupAsync(runId, group.ToList(), ct);
                 }
-                await db.SaveChangesAsync(ct); await tx.CommitAsync(ct);
+                catch (InvalidOperationException ex) when (owningOperationId != null)
+                {
+                    using var clean = scopeFactory.CreateScope(); var service = clean.ServiceProvider.GetRequiredService<MigrationCentreService>();
+                    var childDb = clean.ServiceProvider.GetRequiredService<IErpDbContext>();
+                    var modules = group.Select(x => x.Module).ToArray(); var code = group.First().Scope;
+                    var items = await childDb.MigrationOperationItems.Where(x => x.OperationId == owningOperationId && modules.Contains(x.Module) && x.Code == code && x.Status == "Pending").Select(x => x.Id).ToListAsync(ct);
+                    foreach (var item in items) await service.CompleteOperationItemAsync(owningOperationId.Value, item, ex.Message, ct);
+                }
             }
-            run.Status = "Completed"; run.CompletedAt = DateTime.UtcNow; Audit(p.Id, "Execution completed", $"Run {runId}; {run.CommittedUnits} units committed."); await db.SaveChangesAsync(ct);
+            var savedRun = await db.MigrationRuns.AsNoTracking().SingleAsync(x => x.Id == runId, ct); run.CommittedUnits = savedRun.CommittedUnits;
+            var issues = owningOperationId != null && await db.MigrationOperationItems.AnyAsync(x => x.OperationId == owningOperationId && x.Status == "NeedsAttention", ct);
+            run.Status = issues ? "CompletedWithIssues" : "Completed"; run.CompletedAt = DateTime.UtcNow; Audit(p.Id, "Execution completed", $"Run {runId}; {run.CommittedUnits} selected units committed."); await db.SaveChangesAsync(ct);
         }
         catch (Exception ex)
         {
@@ -111,11 +131,50 @@ public sealed partial class MigrationCentreService
             throw new MigrationRunException(runId, ex.Message, ex);
         }
     }
+    private async Task ExecutePostingGroupAsync(int runId, List<MigrationPreviewUnit> group, CancellationToken ct)
+    {
+        var run = await db.MigrationRuns.SingleAsync(x => x.Id == runId, ct);
+        using var tx = await db.BeginTransactionAsync(IsolationLevel.Serializable, ct);
+        await db.LockMigrationProjectAsync(run.ProjectId, ct);
+        var p = await Project(run.ProjectId, true, ct); await Editable(p, ct);
+        using var actor = db.EnterMigrationActor(ActorId); using var permission = db.EnterMigrationPosting(p.Id);
+        var modules = group.Select(x => x.Module).Distinct().ToList(); var code = group[0].Scope;
+        if (owningOperationId != null && !await db.MigrationOperationItems.AnyAsync(x => x.OperationId == owningOperationId && modules.Contains(x.Module) && x.Code == code && x.Status == "Pending", ct)) return;
+        var selection = new MigrationSelection { Modules = modules };
+        switch (MigrationCatalog.ScopeKind(group[0].Module)) { case "Customer": selection.Customers.Add(code); break; case "Supplier": selection.Suppliers.Add(code); break; case "Stock": selection.Skus.Add(code); break; case "Bank": selection.Banks.Add(code); break; }
+        var fresh = await ValidateAsync(p.Id, selection, ct);
+        if (fresh.Errors.Count != 0) throw new InvalidOperationException(string.Join("; ", fresh.Errors.Select(x => x.Message)));
+        var settings = MigrationJson.Read<MigrationSettings>(p.SettingsJson);
+        foreach (var expected in group)
+        {
+            var checkedUnit = fresh.Units.SingleOrDefault(x => x.Module == expected.Module && x.Scope == expected.Scope);
+            if (checkedUnit == null || checkedUnit.Hash != expected.Hash || checkedUnit.Errors.Count != 0) throw new InvalidOperationException($"{expected.Module}/{expected.Scope}: mappings, data, accounting period or financial activity changed after approval. Review this scope again.");
+        }
+        foreach (var u in group.OrderBy(x => Array.IndexOf(MigrationCatalog.Modules.Keys.ToArray(), x.Module)))
+        {
+            var old = await db.MigrationUnits.SingleOrDefaultAsync(x => x.ProjectId == p.Id && x.Module == u.Module && x.ScopeKey == u.Scope && x.Status == "Posted", ct);
+            if (old != null) { if (old.Hash != u.Hash) throw new InvalidOperationException("Previously committed scope differs from the approved run."); }
+            else { await PostUnit(p, u, settings, ct); run.CommittedUnits++; }
+            if (owningOperationId is { } operationId)
+            {
+                var item = await db.MigrationOperationItems.SingleAsync(x => x.OperationId == operationId && x.Module == u.Module && x.Code == u.Scope, ct);
+                await CompleteOperationItemAsync(operationId, item.Id, null, ct);
+                item.Message = "Imported";
+                var op = await db.MigrationOperations.SingleAsync(x => x.Id == operationId, ct); op.CurrentItem = u.Module + "/" + u.Scope; op.Phase = "Importing selected units";
+            }
+        }
+        await db.SaveChangesAsync(ct); await tx.CommitAsync(ct);
+    }
+    private async Task<MigrationRunPayload> ReadRunPayloadAsync(MigrationRun run, CancellationToken ct) => MigrationJson.Read<MigrationRunPayload>(
+        await db.MigrationRunPayloads.AsNoTracking().Where(x => x.RunId == run.Id).Select(x => x.PayloadJson).SingleOrDefaultAsync(ct) ?? run.SelectionJson);
     public async Task MarkRunFailedAsync(int runId, string error, CancellationToken ct)
     {
         var run = await db.MigrationRuns.SingleAsync(x => x.Id == runId, ct); if (run.Status == "Completed") return;
         run.Status = "Failed"; run.Error = error.Length > 4000 ? error[..4000] : error;
-        run.CommittedUnits = await db.MigrationUnits.CountAsync(x => x.ProjectId == run.ProjectId, ct);
+        var expected = (await ReadRunPayloadAsync(run, ct)).Preview.Units.Where(x => x.Status == "Pending").Select(x => (x.Module, x.Scope, x.Hash)).ToHashSet();
+        var modules = expected.Select(x => x.Module).Distinct().ToArray();
+        var units = await db.MigrationUnits.AsNoTracking().Where(x => x.ProjectId == run.ProjectId && x.Status == "Posted" && modules.Contains(x.Module)).Select(x => new { x.Module, x.ScopeKey, x.Hash }).ToListAsync(ct);
+        run.CommittedUnits = units.Count(x => expected.Contains((x.Module, x.ScopeKey, x.Hash)));
         Audit(run.ProjectId, "Execution stopped", $"Run {runId}: {run.Error}. Committed work retained; uncommitted work rolled back."); await db.SaveChangesAsync(ct);
     }
     private async Task PostUnit(MigrationProject p, MigrationPreviewUnit preview, MigrationSettings settings, CancellationToken ct)

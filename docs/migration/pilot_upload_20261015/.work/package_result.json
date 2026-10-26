@@ -1,0 +1,11 @@
+{
+  "FullPackage": "F:\\source\\NexusFlow_ERP\\docs\\migration\\NexusFlow_Pilot_Package_20261015.zip",
+  "Bytes": 1138255,
+  "SHA256": "6E809FEF910DF23F64D28289F06CB74964D3818A2D6C7879AE78FA0F23167C2C",
+  "DeliveredFiles": 72,
+  "ExcelWorkbooks": 13,
+  "IndividualCSVs": 12,
+  "StageZIPs": 7,
+  "ReviewOnlyZIP": "F:\\source\\NexusFlow_ERP\\docs\\migration\\NexusFlow_Pilot_Review_Workbooks_20261015.zip",
+  "Integrity": "All delivered hashes, CRCs, nested manifests and payloads pass"
+}

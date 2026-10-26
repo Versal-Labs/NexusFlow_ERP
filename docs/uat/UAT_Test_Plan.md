@@ -92,3 +92,15 @@ Exit: every critical MC case passes, each financial scope has a complete indepen
 ## Continue after finalized opening migration
 
 After the administrator verifies the finalized baseline and starts the updated dashboard build, execute ordinary receipts, payments, credit applications, stock operations and cheque/bank tests against the opening documents. Keep source evidence read-only. The measured baseline, sequencing, expected results and mapping issues needing business confirmation are in [Post_Finalization_Check_20261015.md](../migration/Post_Finalization_Check_20261015.md). A finalized UAT project does not approve a production closing.
+
+## Migration Centre guided workspace and background operations — 2026-10-21
+
+Scope: `/Migration` now offers Upload files, Map data, Validate and review, Approve and import, Reconcile and release, Trial Balance and ledger, and Final sign-off. Validation, approval, import, bulk release, full-ledger checking and finalization run as saved server operations. Pause/Stop is outside this release.
+
+Use a disposable local/UAT project for write tests. Hosted project **3 / Data Migrate**, source **TESTTTT**, opening **2026-10-01**, is finalized: inspect it read-only and preserve its datasets, released scopes, journals and final evidence. No reset, re-import or reopening is part of this rollout.
+
+Entry: additive `AddMigrationOperations` schema installed, application/static assets deployed together, workers idle during upgrade and then running, original-file storage available, and test users assigned the actual permissions below. No hosted migration or deployment was executed during implementation. On 2026-10-21 @Browser reached the hosted sign-in page; authenticated hosted acceptance remains pending.
+
+Execute the MC-BG cases in UAT_Test_Cases.md. Cover selected versus project totals, a 2,050-scope interruption after 223 commits, refresh/reopen, enqueue outage, unknown job state, controls, stale previews, permissions, bounded lists, persisted forms and filters, keyboard access, reduced motion and connection loss. Record Pass/Fail and evidence per case. Local automated verification is distinct from hosted business acceptance. Desired maker/checker role separation and certified closing evidence are **Needs business confirmation**.
+
+Exit: no duplicate financial effects, unfinished work recoverable, all accounting checks unchanged, no progress/history amplification, temporal-on and temporal-off upgrades retain their actual settings, and business acceptance recorded. See [operation guide](../migration/Migration_Centre_Background_Operations.md) and [local upgrade instructions](../installation/UAT_Update_Migration_Operations.md).

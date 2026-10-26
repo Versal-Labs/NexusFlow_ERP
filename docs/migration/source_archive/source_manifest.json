@@ -1,0 +1,72 @@
+[
+  {
+    "key": "Customers",
+    "path": "C:\\Users\\user\\OneDrive - Negombo Wisdom College\\Documents\\Versal Labs\\Projects\\Nexus Flow ERP\\System uploads\\New Data\\customermasterfile.xls",
+    "filename": "customermasterfile.xls",
+    "bytes": 212334,
+    "sha256": "7f8379d05bc213f5e843ba8a9f1628bb03574abb9a3bc3127815541a76a6779a"
+  },
+  {
+    "key": "Suppliers",
+    "path": "C:\\Users\\user\\OneDrive - Negombo Wisdom College\\Documents\\Versal Labs\\Projects\\Nexus Flow ERP\\System uploads\\New Data\\supliermasterfile.xls",
+    "filename": "supliermasterfile.xls",
+    "bytes": 84986,
+    "sha256": "8d5da55cc76392930e6afe230fea2b09adbb66a4a6bc258d166ec6b57d85b9d0"
+  },
+  {
+    "key": "CustomerOpenings",
+    "path": "C:\\Users\\user\\OneDrive - Negombo Wisdom College\\Documents\\Versal Labs\\Projects\\Nexus Flow ERP\\imports new\\cusout.xls",
+    "filename": "cusout.xls",
+    "bytes": 756461,
+    "sha256": "d7b53efaa7cc360e06e5d28db56869c45cd6932e085df265de0b0eb141a1414c"
+  },
+  {
+    "key": "SupplierOpenings",
+    "path": "C:\\Users\\user\\OneDrive - Negombo Wisdom College\\Documents\\Versal Labs\\Projects\\Nexus Flow ERP\\imports new\\supplier outstanding.xlsx",
+    "filename": "supplier outstanding.xlsx",
+    "bytes": 27107,
+    "sha256": "ed4d81a3b073a9e48a236e9112ea8a472ca38d43267ac100609afb3dfb3f2b56"
+  },
+  {
+    "key": "ReceivedCheques",
+    "path": "C:\\Users\\user\\OneDrive - Negombo Wisdom College\\Documents\\Versal Labs\\Projects\\Nexus Flow ERP\\imports new\\cheque in hand.xlsx",
+    "filename": "cheque in hand.xlsx",
+    "bytes": 15278,
+    "sha256": "fd62bbebc3ec10631282dd2c07e29dfb98636276b50fc4a52f8dd4deca3260c2"
+  },
+  {
+    "key": "FinishedGoodsExcel",
+    "path": "C:\\Users\\user\\OneDrive - Negombo Wisdom College\\Documents\\Versal Labs\\Projects\\Nexus Flow ERP\\Stock\\stock.xls",
+    "filename": "stock.xls",
+    "bytes": 304259,
+    "sha256": "972f615c54db80e12bead6e016c165650095c41286f2e94aba81782c1a9a13b8"
+  },
+  {
+    "key": "FinishedGoodsCSV",
+    "path": "C:\\Users\\user\\OneDrive - Negombo Wisdom College\\Documents\\Versal Labs\\Projects\\Nexus Flow ERP\\Stock\\stock.csv",
+    "filename": "stock.csv",
+    "bytes": 68273,
+    "sha256": "675b7f3f869ccf2608ef6d857510163719e33dbef0062c8d6b2f8bdebbb49635"
+  },
+  {
+    "key": "RawMaterialExcel",
+    "path": "C:\\Users\\user\\OneDrive - Negombo Wisdom College\\Documents\\Versal Labs\\Projects\\Nexus Flow ERP\\Stock\\Raw Material Stcok.xlsx",
+    "filename": "Raw Material Stcok.xlsx",
+    "bytes": 33579,
+    "sha256": "d6b03c2f43fc3442f0f43e663c97bb58c1ff4267873bc4440ff5666c555866f2"
+  },
+  {
+    "key": "RawMaterialCSV",
+    "path": "C:\\Users\\user\\OneDrive - Negombo Wisdom College\\Documents\\Versal Labs\\Projects\\Nexus Flow ERP\\Stock\\Raw Material Stcok.csv",
+    "filename": "Raw Material Stcok.csv",
+    "bytes": 41318,
+    "sha256": "c2f6ec310eabc556c871cad56a53682e9d0509aebb1581f72bf35c540915c8be"
+  },
+  {
+    "key": "TrialBalance",
+    "path": "C:\\Users\\user\\OneDrive - Negombo Wisdom College\\Documents\\Versal Labs\\Projects\\Nexus Flow ERP\\imports new\\trial balance.xlsx",
+    "filename": "trial balance.xlsx",
+    "bytes": 21901,
+    "sha256": "40830915d7105d685e41881317b21a253ccca67be9cb3a6eb9c2e6292c5f94f6"
+  }
+]

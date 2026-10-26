@@ -1,0 +1,13 @@
+Module,Successful local rows,Pilot CSV rows,Positive LKR,Negative LKR,Signed net/value LKR,Duplicate stable identities,Unmatched codes against finalized local baseline,Azure validation
+Accounts,39,39,0.00,0.00,0.00,0,0,Required
+BankOpening,1,1,100000.00,0.00,100000.00,0,0,Required
+BankRecon,1,1,2500.00,0.00,2500.00,0,0,Required
+ControlTotals,5212,5212,0.00,0.00,0.00,0,0,Required
+CustomerMaster,896,896,0.00,0.00,0.00,0,0,Required
+CustomerOpenings,1150,1150,162436582.24,-321597.10,162114985.14,0,0,Required
+IssuedCheques,1,1,15000.00,0.00,15000.00,0,0,Required
+ReceivedCheques,49,49,5328628.00,0.00,5328628.00,0,0,Required
+Stock,938,938,114417245.74,0.00,114417245.74,0,0,Required
+SupplierMaster,215,215,0.00,0.00,0.00,0,0,Required
+SupplierOpenings,180,180,96073265.55,-1883015.00,94190250.55,0,0,Required
+TrialBalance,39,39,0.00,0.00,0.00,0,0,Required

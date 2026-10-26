@@ -1,0 +1,34 @@
+Mapping type,Exact legacy code,Target master code,Target label,When required,Reason
+Stock,",JH,GH",",jh,gh",H.DAIZ WAIST BAND TAG (SIZEWISE),When this existing SKU is present,Existing SKU case alias; map to the existing SKU to avoid attempted duplicate creation
+Stock,",LIYUK",",liyuk",CARE LABLE - H.DAIZ (SIDEWISE),When this existing SKU is present,Existing SKU case alias; map to the existing SKU to avoid attempted duplicate creation
+Stock,AFE,afe,H.DAIZ STRING - RED,When this existing SKU is present,Existing SKU case alias; map to the existing SKU to avoid attempted duplicate creation
+Stock,AWE,awe,HUGO BOSS WAIST BAND TAG (SIZEWISE),When this existing SKU is present,Existing SKU case alias; map to the existing SKU to avoid attempted duplicate creation
+Stock,BFDB,bfdb,SCOPIO  CARE LABLE - TROUSER (SIZEWISE),When this existing SKU is present,Existing SKU case alias; map to the existing SKU to avoid attempted duplicate creation
+Stock,BRH,brh,MAGMA COMPOSITION LABLE (SIZEWISE),When this existing SKU is present,Existing SKU case alias; map to the existing SKU to avoid attempted duplicate creation
+Stock,ERT,ert,CARE LABLE COMMON (SIZEWISE),When this existing SKU is present,Existing SKU case alias; map to the existing SKU to avoid attempted duplicate creation
+Stock,FGFG,fgfg,MAGMA COLLAR TAG (SIZEWISE),When this existing SKU is present,Existing SKU case alias; map to the existing SKU to avoid attempted duplicate creation
+Stock,FSDF,fsdf,SCOPIO MAIN LABLE (SIZEWISE),When this existing SKU is present,Existing SKU case alias; map to the existing SKU to avoid attempted duplicate creation
+Stock,GDS,gds,CELLO TAPE CLEAR,When this existing SKU is present,Existing SKU case alias; map to the existing SKU to avoid attempted duplicate creation
+Stock,GVC,gvc,POLY BAG,When this existing SKU is present,Existing SKU case alias; map to the existing SKU to avoid attempted duplicate creation
+Stock,HDFG,hdfg,GARNET POLLY TWILL TAPE BLACK - BUNDLE,When this existing SKU is present,Existing SKU case alias; map to the existing SKU to avoid attempted duplicate creation
+Stock,HGTJHGF,hgtjhgf,GARNET POLLY TWILL TAPE - BAG,When this existing SKU is present,Existing SKU case alias; map to the existing SKU to avoid attempted duplicate creation
+Stock,HYT,hyt,H.DAIZ STRING - BLUE,When this existing SKU is present,Existing SKU case alias; map to the existing SKU to avoid attempted duplicate creation
+Stock,JHTRGF,jhtrgf,GARNET POLLY TWILL TAPE (WHITE),When this existing SKU is present,Existing SKU case alias; map to the existing SKU to avoid attempted duplicate creation
+Stock,JKYT,jkyt,H.DAIZ MAIN LABLE TROUSER,When this existing SKU is present,Existing SKU case alias; map to the existing SKU to avoid attempted duplicate creation
+Stock,JUJT,jujt,ZIPPER - SIZEWISE,When this existing SKU is present,Existing SKU case alias; map to the existing SKU to avoid attempted duplicate creation
+Stock,LKUI,lkui,MAGMA MAIN LABLE - BLACK (SIZEWISE),When this existing SKU is present,Existing SKU case alias; map to the existing SKU to avoid attempted duplicate creation
+Stock,OKYUIK,okyuik,MAGMA CARE LABLE (SIDEWISE),When this existing SKU is present,Existing SKU case alias; map to the existing SKU to avoid attempted duplicate creation
+Stock,RFGRG,rfgrg,GARNET POLLY TWILL TAPE MAROON - BUNDLE,When this existing SKU is present,Existing SKU case alias; map to the existing SKU to avoid attempted duplicate creation
+Stock,RTYER,rtyer,GARNET STRING,When this existing SKU is present,Existing SKU case alias; map to the existing SKU to avoid attempted duplicate creation
+Stock,RYTJRT,rytjrt,MAGMA MAIN LABLE SHIRT MAROON (SIZEWISE),When this existing SKU is present,Existing SKU case alias; map to the existing SKU to avoid attempted duplicate creation
+Stock,SDASF,sdasf,GARNET POLLY TWILL TAPE BLUE - BUNDLE,When this existing SKU is present,Existing SKU case alias; map to the existing SKU to avoid attempted duplicate creation
+Stock,SDF,sdf,GARNET SIDE LABLE - SHIRT,When this existing SKU is present,Existing SKU case alias; map to the existing SKU to avoid attempted duplicate creation
+Stock,SRG,srg,BOSS SIZE LABLE (SIZEWISE),When this existing SKU is present,Existing SKU case alias; map to the existing SKU to avoid attempted duplicate creation
+Stock,STHFG,sthfg,MAGMA  MAIN LABLE SHIRT - WHITE (SIZEWISE),When this existing SKU is present,Existing SKU case alias; map to the existing SKU to avoid attempted duplicate creation
+Stock,STHSDFG,sthsdfg,MAGMA HANG TAG  (SIZEWISE),When this existing SKU is present,Existing SKU case alias; map to the existing SKU to avoid attempted duplicate creation
+Stock,VBCV,vbcv,SCOPIO LEATHER LABLE,When this existing SKU is present,Existing SKU case alias; map to the existing SKU to avoid attempted duplicate creation
+Stock,WEFD,wefd,MAGMA COMPOSITION LABLE (SIZEWISE),When this existing SKU is present,Existing SKU case alias; map to the existing SKU to avoid attempted duplicate creation
+Stock,WEFWE,wefwe,ELASTIC,When this existing SKU is present,Existing SKU case alias; map to the existing SKU to avoid attempted duplicate creation
+Stock,WER,wer,SIZE STICKER,When this existing SKU is present,Existing SKU case alias; map to the existing SKU to avoid attempted duplicate creation
+Stock,WRE,wre,MAGMA MAIN LABLE - PINK (SIZEWISE),When this existing SKU is present,Existing SKU case alias; map to the existing SKU to avoid attempted duplicate creation
+Stock,YJT,yjt,BOSS WASIT BAND TAG (SIZEWISE),When this existing SKU is present,Existing SKU case alias; map to the existing SKU to avoid attempted duplicate creation

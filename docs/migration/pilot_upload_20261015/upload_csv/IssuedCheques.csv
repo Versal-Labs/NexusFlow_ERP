@@ -1,0 +1,2 @@
+LegacyRecordId,Code,Reference,ChequeNumber,ChequeDate,DocumentDate,Amount,BankAccountCode,PartyReflected,BankReflected,ClosingDate
+UAT:ISSUED:AH143:000001:20260925,AH143,UAT-ISSUED-001,000001,2026-09-29,2026-09-25,15000.00,1112,true,true,2026-09-30

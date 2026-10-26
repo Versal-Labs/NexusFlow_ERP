@@ -1,0 +1,13 @@
+Topic,Pilot treatment,Live cutover requirement
+Purpose,User-authorized replay of the successful local functional test,Replace fixtures with certified closing exports before live financial sign-off
+Snapshot dates,Test closing 2026-09-30 retained; original older report dates remain in archive,Fresh common-date closing position
+Bank book/statement,"1112: book 100000.00, statement 112500.00",Actual bank book and statement schedule
+Issued cheque,AH143 / UAT-ISSUED-001 / cheque 000001 / 15000.00; both reflection flags true,Actual pending issued instruments
+Bank reconciliation,UAT-DEPOSIT-001 +2500.00; statement bridge 112500+2500-15000=100000,Actual uncleared positions without duplicate cheques
+Trial balance,39-account synthetic balanced TB including rent debit/sales credit residual 1000000.00,Correct complete actual TB; original supplied TB remains unbalanced by 613120.00
+Branch substitutions,14 source bank/branch codes point to documented same-bank pilot substitutes,Actual verified branches
+Missing master fixtures,Four customer and two supplier UAT names retained with original legacy codes,Genuine master details
+Stock classification,81 new FG rows retain MSH/UNBRANDED/pcs fixture classification; original quantities/costs unchanged,Approved real product classification and unit conversion
+Supplier expenses,5110 temporary expense except explicit rent 6210/electricity 6220,Business-approved supplier expense assignment
+Supplier dates,Four post-closing supplier dates retain the earlier UAT adjustment,Certified correct-date outstanding export
+Operational use,Keep pilot transactions distinguishable; retain a pre-pilot recovery point,Reviewed cleanup/rebuild and real-data reconciliation before accepting live balances

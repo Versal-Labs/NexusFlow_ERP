@@ -7,7 +7,7 @@ namespace NexusFlow.AppCore.Features.Migration;
 
 public sealed partial class MigrationCentreService
 {
-    public async Task<MigrationPreview> ValidateAsync(int id, MigrationSelection selection, CancellationToken ct)
+    public async Task<MigrationPreview> ValidateAsync(int id, MigrationSelection selection, CancellationToken ct, Func<int, int, string, int, Task>? report = null)
     {
         var p = await Project(id, false, ct); var s = MigrationJson.Read<MigrationSettings>(p.SettingsJson);
         var result = new MigrationPreview { ProjectId = id, Version = p.Version };
@@ -73,6 +73,8 @@ public sealed partial class MigrationCentreService
             }
             allRows[dataset.Module] = rows;
         }
+        var totalUnits = allRows.Where(x => selection.Modules.Contains(x.Key) && s.DatasetStates.GetValueOrDefault(x.Key) != "NotApplicable")
+            .Sum(x => x.Value.Where(r => Selected(MigrationCatalog.ScopeKind(x.Key), r.Get("Code"))).Select(r => MigrationCatalog.ScopeKind(x.Key) == "General" ? "ALL" : r.Get("Code")).Distinct().Count());
         foreach (var module in MigrationCatalog.Modules.Keys.Where(selection.Modules.Contains))
         {
             if (s.DatasetStates.GetValueOrDefault(module) == "NotApplicable")
@@ -89,6 +91,7 @@ public sealed partial class MigrationCentreService
                 if (!data.Any(x => x.Get("Code") == MigrationJson.Code(codes))) result.Errors.Add(new(module, codes, 0, "Selected code has no rows in this dataset. Supply evidence of a zero component in scope reconciliation; do not silently skip it."));
             foreach (var group in selectedRows.GroupBy(x => kind == "General" ? "ALL" : x.Get("Code")))
             {
+                if (report != null) await report(totalUnits, result.Units.Count, module + "/" + group.Key, result.Units.Count(x => x.Errors.Count != 0));
                 var u = new MigrationPreviewUnit { Module = module, Scope = group.Key, Rows = group.ToList() }; result.Units.Add(u);
                 if (module.EndsWith("Master") && u.Rows.Count > 1) u.Errors.Add(new(module, group.Key, 0, "Master file must contain one row per unique legacy code."));
                 if (MigrationCatalog.FinancialModules.Contains(module) && projectScopes.Any(x => x.Kind == kind && x.Code == group.Key && (x.Status == "Released" || x.Status == "NoLegacyOpening")) && !posted.Any(x => x.Module == module && x.ScopeKey == group.Key && x.Status == "Posted")) u.Errors.Add(new(module, group.Key, 0, "This scope has already been released/classified. Additional opening balances require a reviewed dated correction."));
@@ -301,6 +304,7 @@ public sealed partial class MigrationCentreService
                 if (previous != null) { u.Status = previous.Status == "Posted" ? "Already imported" : "Reversed"; if (previous.Hash != u.Hash) u.Errors.Add(new(module, group.Key, 0, "This posted scope has changed. A full original scope snapshot and dated correction are required.")); }
                 if (u.Rows.Any(r => originsByIdentity.ContainsKey((module, MigrationJson.Hash(MigrationCatalog.Identity(module, r))))) && previous == null) u.Errors.Add(new(module, group.Key, 0, "Some records were imported in a different project/scope. They cannot be posted again."));
                 u.Warnings = u.Warnings.Distinct().ToList();
+                if (report != null) await report(totalUnits, result.Units.Count, module + "/" + group.Key, result.Units.Count(x => x.Errors.Count != 0));
             }
         }
         result.Hash = MigrationJson.Hash(MigrationJson.Write(new { p.Id, p.Version, p.SourceSystem, p.OpeningDate, p.ClosingDate, p.SettingsJson, Selection = selection, Units = result.Units.Select(x => x.Hash).OrderBy(x => x) }));
